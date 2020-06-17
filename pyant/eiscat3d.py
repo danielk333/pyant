@@ -1,22 +1,12 @@
 #!/usr/bin/env python
 
-'''A collection of functions that return common instances of the :class:`~antenna.BeamPattern` class.
+'''A collection of functions that return instances of the :class:`~pyant.Beam` for the EISCAT 3D Radar system.
 
-Contains for example:
- * Uniformly filled circular aperture of radius a
- * Cassegrain antenna with radius a0 and subreflector radius a1
- * Planar gaussian illuminated aperture (approximates a phased array)
-
-Reference:
-https://www.cv.nrao.edu/course/astr534/2DApertures.html
 '''
-import os
-#import pdb
-
 import numpy as np
-import scipy.constants as c
-import scipy.special as s
-import scipy.interpolate as sio
+import scipy.constants
+import scipy.special
+import scipy.interpolate
 import h5py
 
 

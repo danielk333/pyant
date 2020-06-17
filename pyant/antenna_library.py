@@ -14,9 +14,9 @@ import os
 #import pdb
 
 import numpy as np
-import scipy.constants as c
-import scipy.special as s
-import scipy.interpolate as sio
+import scipy.constants
+import scipy.special
+import scipy.interpolate
 import h5py
 
 
