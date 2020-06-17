@@ -10,6 +10,4 @@ Modules
    :toctree: _autodoc/pyant
 
    pyant.beam
-   pyant.eiscat3d
-   pyant.eiscatuhf
-   pyant.eiscatvhf
+   pyant.coordinates

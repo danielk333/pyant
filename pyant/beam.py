@@ -96,11 +96,11 @@ class Beam(ABC):
         return coordinates.vector_angle(self.pointing, k, radians=radians)
 
     @abstractmethod
-    def gain(self,k):
+    def gain(self, k):
         '''Return the gain in the given direction.
 
         :param numpy.array k: Direction in local coordinates to evaluate gain in.
         
         :return float: Radar gain in the given direction.
         '''
-        return self.gain_func(k, self)
+        pass

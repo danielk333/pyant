@@ -45,7 +45,7 @@ Example gallery of the different modular functionality of the toolbox.
 .. toctree::
    :maxdepth: 2
 
-   auto_gallery/index
+   ../../examples/README
 
 
 

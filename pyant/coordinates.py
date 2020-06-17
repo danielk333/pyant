@@ -49,11 +49,11 @@ def sph_to_cart(vec, radians=False):
 
 
 def vector_angle(a, b, radians=False):
-    '''Angle in between two vectors :math:`\theta = \cos^{-1}\\frac{\langle\mathbf{a},\mathbf{b}\rangle}{|\mathbf{a}||\mathbf{b}|}`, where :math:`\langle\mathbf{a},\mathbf{b}\rangle` is the dot product and :math:`|\mathbf{a}|` denotes the norm.
+    '''Angle in between two vectors :math:`\\theta = \\cos^{-1}\\frac{\\langle\\mathbf{a},\\mathbf{b}\\rangle}{|\\mathbf{a}||\\mathbf{b}|}`, where :math:`\\langle\\mathbf{a},\\mathbf{b}\\rangle` is the dot product and :math:`|\\mathbf{a}|` denotes the norm.
     
-    :param numpy.ndarray a: Vector :math:`\mathbf{a}`.
-    :param numpy.ndarray b: Vector :math:`\mathbf{b}`.
-    :return: Angle :math:`\theta` between vectors :math:`\mathbf{a}` and :math:`\mathbf{a}`.
+    :param numpy.ndarray a: Vector :math:`\\mathbf{a}`.
+    :param numpy.ndarray b: Vector :math:`\\mathbf{b}`.
+    :return: Angle :math:`\\theta` between vectors :math:`\\mathbf{a}` and :math:`\\mathbf{a}`.
     :rtype: float.
     '''
     proj = np.dot(a,b)/(np.sqrt(np.dot(a,a))*np.sqrt(np.dot(b,b)))
