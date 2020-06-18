@@ -42,11 +42,7 @@ Examples
 
 Example gallery of the different modular functionality of the toolbox.
 
-.. toctree::
-   :maxdepth: 2
-
-   ../../examples/README
-
+.. include:: ../../examples/index
 
 
 API Reference
