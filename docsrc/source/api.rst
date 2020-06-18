@@ -11,3 +11,4 @@ Modules
 
    pyant.beam
    pyant.coordinates
+   pyant.airy

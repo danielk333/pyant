@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-'''
+'''Useful coordinate related functions.
 
+(c) 2020 Daniel Kastinen
 '''
 
 import numpy as np
@@ -11,7 +12,7 @@ def cart_to_sph(vec, radians=False):
     '''Convert from Cartesian coordinates (east, north, up) to Spherical coordinates (azimuth, elevation, range) in a degrees east of north and elevation fashion
 
     :param numpy.ndarray vec: Vector of Cartesian coordinates (east, north, up)
-    :param bool radians: If `True` all angles returned are in radians instead of degrees
+    :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
     :return: Vector of Spherical coordinates (azimuth, elevation, range)
     :rtype: numpy.ndarray
     '''
@@ -36,7 +37,7 @@ def sph_to_cart(vec, radians=False):
     '''Convert from spherical coordinates (azimuth, elevation, range) to Cartesian (east, north, up) in a degrees east of north and elevation fashion
 
     :param numpy.ndarray vec: Vector of Cartesian Spherical (azimuth, elevation, range)
-    :param bool radians: If `True` all angles returned are in radians instead of degrees
+    :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
     :return: Vector of Cartesian coordinates (east, north, up)
     :rtype: numpy.ndarray
     '''
@@ -53,6 +54,7 @@ def vector_angle(a, b, radians=False):
     
     :param numpy.ndarray a: Vector :math:`\\mathbf{a}`.
     :param numpy.ndarray b: Vector :math:`\\mathbf{b}`.
+    :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
     :return: Angle :math:`\\theta` between vectors :math:`\\mathbf{a}` and :math:`\\mathbf{a}`.
     :rtype: float.
     '''

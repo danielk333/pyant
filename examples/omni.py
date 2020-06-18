@@ -1,10 +1,9 @@
 '''
-Omnidirectional antenna
+Omni-directional antenna
 ========================
 '''
 
 import pyant
-
 import numpy as np
 
 class Omni(pyant.Beam):
@@ -18,3 +17,6 @@ ant = Omni(
 )
 
 print(ant.gain([0,0,1]))
+
+pyant.plotting.gain_heatmap(ant)
+pyant.plotting.show()
