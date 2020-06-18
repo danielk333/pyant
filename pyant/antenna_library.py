@@ -42,39 +42,6 @@ def elliptic_airy(k_in, beam):
     return( )
 
 
-def airy(k_in, beam):
-    '''# TODO: Descriptive doc string.
-
-     a = radius
-     f = frequency
-     I_0 = gain at center
-    '''
-    theta = np.pi*coord.angle_deg(beam.on_axis,k_in)/180.0
-    lam=c.c/beam.f
-    
-    k=2.0*np.pi/lam
-    
-    return(beam.I_0*((2.0*s.jn(1,k*beam.a*np.sin(theta))/(k*beam.a*np.sin(theta))))**2.0)
-
-
-def cassegrain(k_in, beam):
-    '''# TODO: Descriptive doc string.
-
-    A better model of the EISCAT UHF antenna
-    '''
-    theta = np.pi*coord.angle_deg(beam.on_axis,k_in)/180.0
-
-    lam=c.c/beam.f
-    k=2.0*np.pi/lam
-    
-    A=(beam.I_0*((lam/(np.pi*np.sin(theta)))**2.0))/((beam.a0**2.0-beam.a1**2.0)**2.0)
-    B=(beam.a0*s.jn(1,beam.a0*np.pi*np.sin(theta)/lam)-beam.a1*s.jn(1,beam.a1*np.pi*np.sin(theta)/lam))**2.0
-    A0=(beam.I_0*((lam/(np.pi*np.sin(1e-6)))**2.0))/((beam.a0**2.0-beam.a1**2.0)**2.0)
-    B0=(beam.a0*s.jn(1,beam.a0*np.pi*np.sin(1e-6)/lam)-beam.a1*s.jn(1,beam.a1*np.pi*np.sin(1e-6)/lam))**2.0
-    const=beam.I_0/(A0*B0)
-    return(A*B*const)
-
-
 
 def uhf_meas(k_in,beam):
     '''Measured UHF beam pattern

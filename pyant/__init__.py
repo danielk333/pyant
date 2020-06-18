@@ -12,6 +12,7 @@ from .beam import Beam
 from . import coordinates
 
 from .airy import Airy
+from .cassegrain import Cassegrain
 
 try:
     from . import plotting
