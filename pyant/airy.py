@@ -28,7 +28,7 @@ class Airy(Beam):
             return self.I0
 
         lam = scipy.constants.c/self.frequency
-        k_n=2.0*np.pi/lam
+        k_n = 2.0*np.pi/lam
         alph = k_n*self.radius*np.sin(theta)
         jn_val = scipy.special.jn(1,alph)
         G = self.I0*((2.0*jn_val/alph))**2.0

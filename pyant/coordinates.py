@@ -67,3 +67,37 @@ def vector_angle(a, b, radians=False):
     if not radians:
         theta = np.degrees(theta)
     return theta
+
+
+def rot2d(theta):
+    '''Matrix for rotation in the plane
+    '''
+    M_rot = np.empty((2,2), dtype=np.float)
+    M_rot[0,0] = np.cos(theta)
+    M_rot[1,0] = np.sin(theta)
+    M_rot[0,1] = -np.sin(theta)
+    M_rot[1,1] = np.cos(theta)
+    return M_rot
+
+def scale2d(x,y):
+    '''Matrix for scaling in the plane
+    '''
+    M_rot = np.zeros((2,2), dtype=np.float)
+    M_rot[0,0] = x
+    M_rot[1,1] = y
+    return M_rot
+
+def plane_scaling_matrix(vec, factor):
+    '''Generate scaling matrix according to planar array beam steering
+
+    #TODO: Better docstring
+    '''
+    theta = -np.arctan2(vec[1], vec[0])
+    
+    M_rot = rot2d(theta)
+    M_scale = scale2d(factor, 1)
+    M_rot_inv = rot2d(-theta)
+
+    M = M_rot_inv.dot(M_scale.dot(M_rot))
+
+    return M

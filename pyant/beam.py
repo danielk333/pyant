@@ -13,13 +13,13 @@ class Beam(ABC):
     '''Defines the radiation pattern of a radar station.
 
     :param float frequency: Frequency of radiation pattern.
-    :param float azimuth: Azimuth of pointing direction in dgreees.
-    :param float elevation: Elevation of pointing direction in degrees.
+    :param float azimuth: Azimuth of pointing direction.
+    :param float elevation: Elevation of pointing direction.
     :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
     
     :ivar float frequency: Frequency of radiation pattern.
-    :ivar float azimuth: Azimuth of pointing direction in dgreees.
-    :ivar float elevation: Elevation of pointing direction in degrees.
+    :ivar float azimuth: Azimuth of pointing direction.
+    :ivar float elevation: Elevation of pointing direction.
     :ivar bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
     :ivar numpy.array pointing: Cartesian vector in local coordinates describing pointing direction.
     '''

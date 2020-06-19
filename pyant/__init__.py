@@ -13,8 +13,14 @@ from . import coordinates
 
 from .airy import Airy
 from .cassegrain import Cassegrain
+from .gaussian import Gaussian
+from .array import Array
+# from .interpolated import Interpolation
 
 try:
     from . import plotting
 except ImportError:
     plotting = None
+
+
+from .instances import *
