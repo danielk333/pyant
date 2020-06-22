@@ -13,7 +13,7 @@ from .airy import Airy
 from .cassegrain import Cassegrain
 from .gaussian import Gaussian
 from .array import Array
-from .unidir_rectangular_dish import UniDirRectangularDish
+from .finite_cylindrical_parabola import FiniteCylindricalParabola
 from .interpolated import Interpolation
 from .interpolated_array import PlaneArrayInterp
 

@@ -7,8 +7,8 @@ import scipy.special
 from .beam import Beam
 from . import coordinates
 
-class UniDirRectangularDish(Beam):
-    '''A unidirectional rectangular dish with an ???? receiver. The dish is curved in the longitudinal direction.
+class FiniteCylindricalParabola(Beam):
+    '''A finite Cylindrical Parabola with a finite receiver line feed in the longitudinal direction, i.e. in the direction of the cylinder.
 
     :param float I0: Peak gain (linear scale) in the pointing direction.
     :param float width: Panel width in meters

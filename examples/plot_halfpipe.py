@@ -5,7 +5,7 @@ Halfpipe radar
 
 import pyant
 
-ant = pyant.UniDirRectangularDish(
+ant = pyant.FiniteCylindricalParabola(
     azimuth=0,
     elevation=90.0, 
     frequency=224.0e6,
