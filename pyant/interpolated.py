@@ -2,7 +2,6 @@
 
 import numpy as np
 import scipy.interpolate
-from tqdm import tqdm
 
 from .beam import Beam
 from . import coordinates
@@ -36,21 +35,15 @@ class Interpolation(Beam):
         cnt = 0
         tot = resolution**2
 
-        pbar = tqdm(total=tot)
-        pbar.set_description('Generating interpolation grid')
-
         for i,x in enumerate(kx):
             for j,y in enumerate(ky):
-                
-                pbar.update(1)
-
                 z2 = x**2 + y**2
                 if z2 < 1.0:
                     k=np.array([x, y, np.sqrt(1.0 - z2)])
                     S[i,j]=beam.gain(k)
                 else:
                     S[i,j] = 0
-        pbar.close()
+
         self.interpolated = scipy.interpolate.interp2d(kx, ky, S.T, kind='linear')
 
 

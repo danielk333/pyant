@@ -16,7 +16,7 @@ def plane_wave(k,r,p):
     :param numpy.ndarray r: Spatial location (Antenna position in space)
     :param numpy.ndarray p: Beam-forming direction (antenna array "pointing" direction)
     '''
-    return np.exp(1j*np.pi*2.0*np.dot(k-p,r))
+    return np.exp(1j*np.pi*2.0*np.dot(r,k-p))
 
 
 class Array(Beam):
@@ -41,12 +41,17 @@ class Array(Beam):
 
 
     def gain(self, k):
-        k_ = k/np.linalg.norm(k)
-        G = np.exp(1j)*0.0
+        k_ = k/np.linalg.norm(k, axis=0)
+        if len(k.shape) == 1:
+            G = np.exp(1j)*0.0
+            p = self.pointing
+        else:
+            G = np.zeros((k.shape[1],), dtype=np.complex128)
+            p = np.repeat(self.pointing.reshape(3,1),k.shape[1], axis=1)
         wavelength = self.wavelength
 
         #r in meters, divide by lambda
         for r in self.antennas:
-            G += plane_wave(k_,r/wavelength,self.pointing)
+            G += plane_wave(k_,r/wavelength,p)
 
         return np.abs(G.conj()*G)*self.antenna_element(k_)

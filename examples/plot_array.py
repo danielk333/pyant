@@ -2,6 +2,7 @@
 Antenna array gain
 ===========================
 '''
+import time
 import numpy as np
 
 import pyant
@@ -17,6 +18,16 @@ ant = pyant.Array(
     frequency=46.5e6,
     antennas=antennas,
 )
+
+## Uncomment these to try the speed up for more complex gain calculations
+
+# start_time = time.time()
+# pyant.plotting.gain_heatmap(ant, resolution=100, min_elevation=80.0, vectorized=False)
+# print(f'"gain_heatmap" ({100**2}) loop       performance: {time.time() - start_time:.1e} seconds')
+
+# start_time = time.time()
+# pyant.plotting.gain_heatmap(ant, resolution=100, min_elevation=80.0, vectorized=True)
+# print(f'"gain_heatmap" ({100**2}) vectorized performance: {time.time() - start_time:.1e} seconds')
 
 
 pyant.plotting.gain_heatmap(ant, resolution=100, min_elevation=80.0)

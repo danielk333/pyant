@@ -57,14 +57,10 @@ class Gaussian(Beam):
         sigma1=0.7*a0p/lam
         sigma2=0.7*self.radius/lam
 
-        k0=k/np.sqrt(np.dot(k,k))
+        k0=k/np.linalg.norm(k,axis=0)
         
-        A=np.dot(k0,self.pointing)
-        kda=A*self.pointing
-        l1=np.dot(k0,ct)
-        kdc=l1*ct
-        m1=np.dot(k0,ot)
-        kdo=m1*ot
+        l1=np.dot(ct,k0)
+        m1=np.dot(ot,k0)
         
         l2=l1*l1
         m2=m1*m1

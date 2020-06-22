@@ -25,7 +25,7 @@ class FiniteCylindricalParabola(Beam):
         self.height = height
 
     def local_to_pointing(self, k):
-        k_ = k/np.linalg.norm(k)
+        k_ = k/np.linalg.norm(k, axis=0)
         
         if self.radians:
             ang_ = np.pi/2

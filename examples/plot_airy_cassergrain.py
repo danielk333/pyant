@@ -22,6 +22,6 @@ ant_c = pyant.Cassegrain(
     a1=40.0,
 )
 
-pyant.plotting.gain_heatmap(ant, resolution=300, min_elevation=80.0)
-pyant.plotting.gain_heatmap(ant_c, resolution=300, min_elevation=80.0)
+pyant.plotting.gain_heatmap(ant, resolution=301, min_elevation=80.0)
+pyant.plotting.gain_heatmap(ant_c, resolution=301, min_elevation=80.0)
 pyant.plotting.show()

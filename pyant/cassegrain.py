@@ -26,17 +26,27 @@ class Cassegrain(Beam):
     def gain(self, k):
         theta = coordinates.vector_angle(self.pointing, k, radians=True)
 
-        if theta < 1e-6:
-            return self.I0
-
         lam = self.wavelength
         k_n=2.0*np.pi/lam
 
-        A=(self.I0*((lam/(np.pi*np.sin(theta)))**2.0))/((self.a0**2.0-self.a1**2.0)**2.0)
-        B=(self.a0*scipy.special.jn(1,self.a0*np.pi*np.sin(theta)/lam)-self.a1*scipy.special.jn(1,self.a1*np.pi*np.sin(theta)/lam))**2.0
+        if len(k.shape) == 1:
+            theta = np.array([theta], dtype=k.dtype)
+
+        G = np.empty((len(theta),), dtype=k.dtype)
+        inds_ = np.pi*np.sin(theta) < 1e-9
+        not_inds_ = np.logical_not(inds_)
+
+        G[inds_] = self.I0
+
+        A=(self.I0*((lam/(np.pi*np.sin(theta[not_inds_])))**2.0))/((self.a0**2.0-self.a1**2.0)**2.0)
+        B=(self.a0*scipy.special.jn(1,self.a0*np.pi*np.sin(theta[not_inds_])/lam)-self.a1*scipy.special.jn(1,self.a1*np.pi*np.sin(theta[not_inds_])/lam))**2.0
         A0=(self.I0*((lam/(np.pi*np.sin(1e-6)))**2.0))/((self.a0**2.0-self.a1**2.0)**2.0)
         B0=(self.a0*scipy.special.jn(1,self.a0*np.pi*np.sin(1e-6)/lam)-self.a1*scipy.special.jn(1,self.a1*np.pi*np.sin(1e-6)/lam))**2.0
         const=self.I0/(A0*B0)
+        G[not_inds_] = A*B*const
 
-        return A*B*const
+        if len(k.shape) == 1:
+            G = G[0]
+        
+        return G
 
