@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import numpy as np
-import scipy.constants
 import scipy.special
 
 from .beam import Beam
@@ -30,7 +29,7 @@ class Cassegrain(Beam):
         if theta < 1e-6:
             return self.I0
 
-        lam = scipy.constants.c/self.frequency
+        lam = self.wavelength
         k_n=2.0*np.pi/lam
 
         A=(self.I0*((lam/(np.pi*np.sin(theta)))**2.0))/((self.a0**2.0-self.a1**2.0)**2.0)

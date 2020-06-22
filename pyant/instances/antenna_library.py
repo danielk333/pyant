@@ -38,23 +38,6 @@ def uhf_meas(k_in,beam):
 
 
 
-def interpolated_beam(k_in, beam):
-    '''Assume that the interpolated grid at zenith is merely shifted to the pointing direction and scaled by the sine of the elevation angle. 
-    '''
-    k = k_in/np.linalg.norm(k_in)
-
-    M = _plane_scaling_matrix(beam.on_axis[:2], beam.on_axis[2])
-    
-    k_trans = np.empty((3,), dtype = np.float)
-    k_trans[:2] = M.dot(k[:2] - beam.on_axis[:2])
-    k_trans[2] = k[2]
-
-    interp_gain = beam.interp_f(k_trans[0], k_trans[1])[0]
-    if interp_gain < 0:
-        interp_gain = 0.0
-    return interp_gain*beam.I_0*beam.on_axis[2]
-
-
 
 
 def airy_beam(az0, el0, I_0, f, a):
@@ -107,48 +90,8 @@ def planar_beam(az0, el0, I_0, f, a0, az1, el1):
     return beam
 
 
-def unidirectional_broadside_rectangular_array(ar,br,theta,phi):
-    # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
-    # y = transverse angle, 0 = boresight, radians
-    x = ar * np.sin(theta)    # sinc component (longitudinal)
-    y = br * np.sin(phi)      # sinc component (transverse)
-    z = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
-    z = z*np.cos(phi)         # density (from spherical integration)
-    z = z*z                   # sinc^2 fn. (= power)
-    return z
 
 
-
-def TSR_gain_point(k_in, beam, az, el):
-
-    k = k_in/np.linalg.norm(k_in)
-    
-    Rz = dpt.rot_mat_z(np.radians(az))
-    Rx = dpt.rot_mat_x(np.radians(90.0-el))
-
-    kb = Rx.dot(Rz.dot(k))
-
-    theta = np.arcsin(kb[1])
-    phi = np.arcsin(kb[0])
-    G = unidirectional_broadside_rectangular_array(beam.ar, beam.br, theta, phi)
-
-    return G*beam.I_0
-
-
-def TSR_gain(k_in, beam):
-
-    k = k_in/np.linalg.norm(k_in)
-    
-    Rz = dpt.rot_mat_z(np.radians(beam.az0))
-    Rx = dpt.rot_mat_x(np.radians(90.0-beam.el0))
-
-    kb = Rx.dot(Rz.dot(k))
-
-    theta = np.arcsin(kb[1])
-    phi = np.arcsin(kb[0])
-    G = unidirectional_broadside_rectangular_array(beam.ar, beam.br, theta, phi)
-
-    return G*beam.I_0
 
 
 def tsr_fence_beam(f = 224.0e6):

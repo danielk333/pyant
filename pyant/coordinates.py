@@ -69,8 +69,75 @@ def vector_angle(a, b, radians=False):
     return theta
 
 
+def rot_mat_z(theta, dtype=np.float, radians=False):
+    '''Generates the 3D transformation matrix for rotation around Z-axis.
+    
+    :param float theta: Angle to rotate.
+    :param numpy.dtype dtype: The data-type of the output matrix.
+    :param bool radians: Uses radians if set to :code:`True`.
+
+    :return: Rotation matrix
+    :rtype: (3,3) numpy.ndarray
+    '''
+    if not radians:
+        theta = np.radians(theta)
+
+    R = np.zeros((3,3), dtype=dtype)
+    R[0,0] = np.cos(theta)
+    R[0,1] = -np.sin(theta)
+    R[1,0] = np.sin(theta)
+    R[1,1] = np.cos(theta)
+    R[2,2] = 1.0
+    return R
+
+
+def rot_mat_x(theta, dtype=np.float, radians=False):
+    '''Generates the 3D transformation matrix for rotation around X-axis.
+    
+    :param float theta: Angle to rotate.
+    :param numpy.dtype dtype: The data-type of the output matrix.
+    :param bool radians: Uses radians if set to :code:`True`.
+
+    :return: Rotation matrix
+    :rtype: (3,3) numpy.ndarray
+    '''
+    if not radians:
+        theta = np.radians(theta)
+
+    R = np.zeros((3,3), dtype=dtype)
+    R[1,1] = np.cos(theta)
+    R[1,2] = -np.sin(theta)
+    R[2,1] = np.sin(theta)
+    R[2,2] = np.cos(theta)
+    R[0,0] = 1.0
+    return R
+
+
+def rot_mat_y(theta, dtype=np.float, radians=False):
+    '''Generates the 3D transformation matrix for rotation around Y-axis.
+    
+    :param float theta: Angle to rotate.
+    :param numpy.dtype dtype: The data-type of the output matrix.
+    :param bool radians: Uses radians if set to :code:`True`.
+
+    :return: Rotation matrix
+    :rtype: (3,3) numpy.ndarray
+    '''
+    if not radians:
+        theta = np.radians(theta)
+
+    R = np.zeros((3,3), dtype=dtype)
+    R[0,0] = np.cos(theta)
+    R[0,2] = np.sin(theta)
+    R[2,0] = -np.sin(theta)
+    R[2,2] = np.cos(theta)
+    R[1,1] = 1.0
+    return R
+
 def rot2d(theta):
     '''Matrix for rotation in the plane
+
+    #TODO docstring
     '''
     M_rot = np.empty((2,2), dtype=np.float)
     M_rot[0,0] = np.cos(theta)
@@ -81,23 +148,10 @@ def rot2d(theta):
 
 def scale2d(x,y):
     '''Matrix for scaling in the plane
+
+    #TODO docstring
     '''
     M_rot = np.zeros((2,2), dtype=np.float)
     M_rot[0,0] = x
     M_rot[1,1] = y
     return M_rot
-
-def plane_scaling_matrix(vec, factor):
-    '''Generate scaling matrix according to planar array beam steering
-
-    #TODO: Better docstring
-    '''
-    theta = -np.arctan2(vec[1], vec[0])
-    
-    M_rot = rot2d(theta)
-    M_scale = scale2d(factor, 1)
-    M_rot_inv = rot2d(-theta)
-
-    M = M_rot_inv.dot(M_scale.dot(M_rot))
-
-    return M

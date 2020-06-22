@@ -41,7 +41,7 @@ class Gaussian(Beam):
         else:
             ct=np.cross(self.pointing,self.normal)
         
-        lam = scipy.constants.c/self.frequency
+        lam = self.wavelength
         
         ct=ct/np.sqrt(np.dot(ct,ct))
         ht=np.cross(self.normal,ct)

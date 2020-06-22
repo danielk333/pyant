@@ -27,7 +27,7 @@ class Airy(Beam):
         if theta < 1e-6:
             return self.I0
 
-        lam = scipy.constants.c/self.frequency
+        lam = self.wavelength
         k_n = 2.0*np.pi/lam
         alph = k_n*self.radius*np.sin(theta)
         jn_val = scipy.special.jn(1,alph)

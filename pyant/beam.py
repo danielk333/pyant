@@ -7,6 +7,8 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
+import scipy.constants
+
 from . import coordinates
 
 class Beam(ABC):
@@ -38,33 +40,54 @@ class Beam(ABC):
         )
 
 
+    def _check_radians(self, azimuth, elevation, radians):
+        if radians is None:
+            return azimuth, elevation
+        else:
+            if radians == self.radians:
+                return azimuth, elevation
+            else:
+                if radians:
+                    return np.degrees(azimuth), np.degrees(elevation)
+                else:
+                    return np.radians(azimuth), np.radians(elevation)
+
+
+    @property
+    def wavelength(self):
+        return scipy.constants.c/self.frequency
+
+
     def copy(self):
         '''Return a copy of the current instance.
         '''
         return NotImplementedError('')
 
 
-    def point(self, azimuth, elevation):
+    def sph_point(self, azimuth, elevation, radians=None):
         '''Point beam towards azimuth and elevation coordinate.
         
-            :param float azimuth: Azimuth east of north of pointing direction.
-            :param float elevation: Elevation from horizon of pointing direction.
-            :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
-            :return: :code:`None`
+        :param float azimuth: Azimuth east of north of pointing direction.
+        :param float elevation: Elevation from horizon of pointing direction.
+        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
+        :return: :code:`None`
+
         '''
+        azimuth, elevation = self._check_radians(azimuth, elevation, radians)
+
         self.azimuth = azimuth
         self.elevation = elevation
         self.pointing = coordinates.sph_to_cart(
-            np.array([azimuth, elevation, 1], dtype=np.float64),
+            np.array([self.azimuth, self.elevation, 1], dtype=np.float64),
             radians = self.radians,
         )
 
 
-    def sph_point(self, k):
+    def point(self, k):
         '''Point beam in local cartesian direction.
         
-            :param numpy.ndarray k: Pointing direction in local coordinates.
-            :return: :code:`None`
+        :param numpy.ndarray k: Pointing direction in local coordinates.
+        :return: :code:`None`
         '''
         self.pointing = k/np.linalg.norm(k)
         sph = coordinates.cart_to_sph(
@@ -75,28 +98,34 @@ class Beam(ABC):
         self.elevation = sph[1]
         
 
-    def sph_angle(self, azimuth, elevation, radians=False):
+    def sph_angle(self, azimuth, elevation, radians=None):
         '''Get angle between azimuth and elevation and pointing direction.
-        
-            :param float azimuth: Azimuth east of north to measure from.
-            :param float elevation: Elevation from horizon to measure from.
-            :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
-            
-            :return: Angle between pointing and given direction.
-            :rtype: float
+    
+        :param float azimuth: Azimuth east of north to measure from.
+        :param float elevation: Elevation from horizon to measure from.
+        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
+
+        :return: Angle between pointing and given direction.
+        :rtype: float
         '''
+        if radians is None:
+            radians = self.radians
+
         direction = coordinates.azel_to_cart(azimuth, elevation, 1.0, radians=radians)
         return coordinates.vector_angle(self.pointing, direction, radians=radians)
 
-    def angle(self, k, radians=False):
+    def angle(self, k, radians=None):
         '''Get angle between local direction and pointing direction.
         
-            :param numpy.array k: Direction to evaluate angle to.
-            :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
+        :param numpy.array k: Direction to evaluate angle to.
+        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
 
-            :return: Angle between pointing and given direction.
-            :rtype: float
+        :return: Angle between pointing and given direction.
+        :rtype: float
         '''
+        if radians is None:
+            radians = self.radians
+
         return coordinates.vector_angle(self.pointing, k, radians=radians)
 
     @abstractmethod
@@ -110,14 +139,18 @@ class Beam(ABC):
         pass
 
     
-    def sph_gain(self, azimuth, elevation, radians=False):
+    def sph_gain(self, azimuth, elevation, radians=None):
         '''Return the gain in the given direction.
 
         :param float azimuth: Azimuth east of north to evaluate gain in.
         :param float elevation: Elevation from horizon to evaluate gain in.
-        :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
+        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
+
         :return: Radar gain in the given direction.
         :rtype: float
         '''
+        if radians is None:
+            radians = self.radians
+
         k = coordinates.azel_to_cart(azimuth, elevation, 1.0, radians=radians)
         return self.gain(k)

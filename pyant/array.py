@@ -43,10 +43,10 @@ class Array(Beam):
     def gain(self, k):
         k_ = k/np.linalg.norm(k)
         G = np.exp(1j)*0.0
-        lam = scipy.constants.c/self.frequency
+        wavelength = self.wavelength
 
         #r in meters, divide by lambda
         for r in self.antennas:
-            G += plane_wave(k_,r/lam,self.pointing)
+            G += plane_wave(k_,r/wavelength,self.pointing)
 
         return np.abs(G.conj()*G)*self.antenna_element(k_)
