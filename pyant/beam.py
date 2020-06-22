@@ -23,7 +23,7 @@ class Beam(ABC):
     :ivar float azimuth: Azimuth of pointing direction.
     :ivar float elevation: Elevation of pointing direction.
     :ivar bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
-    :ivar numpy.array pointing: Cartesian vector in local coordinates describing pointing direction.
+    :ivar numpy.ndarray pointing: Cartesian vector in local coordinates describing pointing direction.
     '''
 
 
@@ -117,7 +117,7 @@ class Beam(ABC):
     def angle(self, k, radians=None):
         '''Get angle between local direction and pointing direction.
         
-        :param numpy.array k: Direction to evaluate angle to.
+        :param numpy.ndarray k: Direction to evaluate angle to.
         :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
 
         :return: Angle between pointing and given direction.
@@ -130,11 +130,11 @@ class Beam(ABC):
 
     @abstractmethod
     def gain(self, k):
-        '''Return the gain in the given direction.
+        '''Return the gain in the given direction. This method should be vectorized.
 
-        :param numpy.array k: Direction in local coordinates to evaluate gain in.
-        :return: Radar gain in the given direction.
-        :rtype: float
+        :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.
+        :return: Radar gain in the given direction. If input is a `(3,)` vector, output is a float. If input is a `(3,n)` matrix output is a `(n,)` vector of gains.
+        :rtype: float/numpy.ndarray
         '''
         pass
 
