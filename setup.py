@@ -4,8 +4,6 @@ from setuptools.command.develop import develop
 from setuptools.command.install import install
 import subprocess
 
-import pyant
-
 with open('README.rst', 'r') as fh:
     long_description = fh.read()
 
@@ -17,7 +15,7 @@ with open('requirements', 'r') as fh:
 
 setuptools.setup(
     name='pyant',
-    version=pyant.__version__,
+    version='0.1.0',
     long_description=long_description,
     url='https://github.com/danielk333/pyant',
     classifiers=[
