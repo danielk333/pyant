@@ -14,7 +14,7 @@ def show():
     plt.show()
 
 
-def gain_heatmap(beam, resolution=201, min_elevation=0.0, ax=None):
+def gain_heatmap(beam, resolution=201, min_elevation=0.0, ax=None, vectorized=True):
     '''Creates a heatmap of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
     
     :param Beam beam: Beam pattern to plot.
@@ -44,20 +44,39 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, ax=None):
         num=resolution,
     )
     
-    S=np.zeros((resolution,resolution))
+    
     K=np.zeros((resolution,resolution,2))
-    for i,x in enumerate(kx):
-        for j,y in enumerate(ky):
-            z2_c = (beam.pointing[0]-x)**2 + (beam.pointing[1]-y)**2
-            z2 = x**2 + y**2
-            if z2_c < np.cos(min_elevation*np.pi/180.0)**2 and z2 <= 1.0:
 
-                k=np.array([x, y, np.sqrt(1.0 - z2)])
-                S[i,j]=beam.gain(k)
-            else:
-                S[i,j] = 0;
-            K[i,j,0]=x
-            K[i,j,1]=y
+    if vectorized:
+        K[:,:,0], K[:,:,1] = np.meshgrid(kx, ky, sparse=False, indexing='ij')
+        size = resolution**2
+        k = np.empty((3,size), dtype=np.float64)
+        k[0,:] = K[:,:,0].reshape(1,size)
+        k[1,:] = K[:,:,1].reshape(1,size)
+
+        z2 = k[0,:]**2 + k[1,:]**2
+        z2_c = (beam.pointing[0] - k[0,:])**2 + (beam.pointing[1] - k[1,:])**2
+        inds_ = np.logical_and(z2_c < np.cos(min_elevation*np.pi/180.0)**2, z2 <= 1.0)
+        not_inds_ = np.logical_not(inds_)
+
+        k[2,inds_] = np.sqrt(1.0 - z2[inds_])
+        k[2,not_inds_] = 0
+        S = np.zeros((1,size))
+        S[0,inds_] = beam.gain(k[:,inds_])
+        S = S.reshape(resolution,resolution)
+
+    else:
+        S = np.zeros((resolution,resolution))
+        for i,x in enumerate(kx):
+            for j,y in enumerate(ky):
+                z2_c = (beam.pointing[0]-x)**2 + (beam.pointing[1]-y)**2
+                z2 = x**2 + y**2
+                if z2_c < np.cos(min_elevation*np.pi/180.0)**2 and z2 <= 1.0:
+
+                    k=np.array([x, y, np.sqrt(1.0 - z2)])
+                    S[i,j]=beam.gain(k)
+                K[i,j,0]=x
+                K[i,j,1]=y
     
     SdB = np.log10(S)*10.0
     SdB[np.isinf(SdB)] = 0

@@ -1,5 +1,5 @@
 '''
-Vectorized misc functions
+Vectorized coordinate functions
 ================================
 '''
 import numpy as np
@@ -166,6 +166,6 @@ for y in x.T:
 
 
 
-# coordinates_vector_angle()
-# coordinates_sph_to_cart()
+coordinates_vector_angle()
+coordinates_sph_to_cart()
 coordinates_cart_to_sph()
