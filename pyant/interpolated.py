@@ -30,21 +30,24 @@ class Interpolation(Beam):
         kx = np.linspace(-1.0, 1.0, num=resolution)
         ky = np.linspace(-1.0, 1.0, num=resolution)
         
-        S = np.zeros((resolution,resolution))
+        size = resolution**2
 
-        cnt = 0
-        tot = resolution**2
+        xv, yv = np.meshgrid(kx, ky, sparse=False, indexing='ij')
+        k = np.empty((3,size), dtype=np.float64)
+        k[0,:] = xv.reshape(1,size)
+        k[1,:] = yv.reshape(1,size)
+        z2 = k[0,:]**2 + k[1,:]**2
 
-        for i,x in enumerate(kx):
-            for j,y in enumerate(ky):
-                z2 = x**2 + y**2
-                if z2 < 1.0:
-                    k=np.array([x, y, np.sqrt(1.0 - z2)])
-                    S[i,j]=beam.gain(k)
-                else:
-                    S[i,j] = 0
+        inds_ = z2 <= 1.0
+        not_inds_ = np.logical_not(inds_)
 
-        self.interpolated = scipy.interpolate.interp2d(kx, ky, S.T, kind='linear')
+        k[2,inds_] = np.sqrt(1.0 - z2[inds_])
+
+        G = np.zeros((1,size))
+        G[0,inds_] = beam.gain(k[:,inds_])
+        G = G.reshape(len(kx),len(ky))
+
+        self.interpolated = scipy.interpolate.RectBivariateSpline(kx, ky, G.T)
 
 
     def save(self, fname):
@@ -59,9 +62,11 @@ class Interpolation(Beam):
     def gain(self, k):
         k_trans = self.pointing_transform(k)
 
-        interp_gain = self.interpolated(k_trans[0], k_trans[1])[0]
-        if interp_gain < 0:
-            interp_gain = 0.0
+        interp_gain = self.interpolated(k_trans[0,...], k_trans[1,...], grid=False)
+        interp_gain[interp_gain < 0] = 0
+
+        if len(k.shape) == 1:
+            interp_gain = interp_gain[0]
 
         G = self.pointing_scale(interp_gain*self.scaling)
 

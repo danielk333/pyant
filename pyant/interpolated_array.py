@@ -16,7 +16,7 @@ class PlaneArrayInterp(Interpolation):
 
 
     def pointing_transform(self, k):
-        k_ = k/np.linalg.norm(k)
+        k_ = k/np.linalg.norm(k, axis=0)
 
         theta = -np.arctan2(self.pointing[1], self.pointing[0])
         
@@ -26,9 +26,11 @@ class PlaneArrayInterp(Interpolation):
 
         M = M_rot_inv.dot(M_scale.dot(M_rot))
         
-        k_trans = np.empty((3,), dtype = np.float)
-        k_trans[:2] = M.dot(k_[:2] - self.pointing[:2])
-        k_trans[2] = k_[2]
+        k_trans = np.empty(k_.shape, dtype = np.float)
+        k_[0,...] -= self.pointing[0]
+        k_[1,...] -= self.pointing[1]
+        k_trans[:2,...] = M.dot(k_[:2,...])
+        k_trans[2,...] = k_[2,...]
         return k_trans
 
 
