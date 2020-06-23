@@ -4,7 +4,7 @@
 
 '''
 
-__version__ = '0.1.0'
+from .version import __version__
 
 from .beam import Beam
 from . import coordinates

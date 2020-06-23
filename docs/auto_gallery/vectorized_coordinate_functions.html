@@ -1,0 +1,366 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Vectorized coordinate functions &#8212; PyAnt 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Interpolated Antenna array gain" href="plot_interp_antenna.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_interp_antenna.html" title="Interpolated Antenna array gain"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnt 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Examples</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_interp_antenna.html"
+                        title="previous chapter">Interpolated Antenna array gain</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../api.html"
+                        title="next chapter">API Reference</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/auto_gallery/vectorized_coordinate_functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-gallery-vectorized-coordinate-functions-py"><span class="std std-ref">here</span></a>     to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="vectorized-coordinate-functions">
+<span id="sphx-glr-auto-gallery-vectorized-coordinate-functions-py"></span><h1>Vectorized coordinate functions<a class="headerlink" href="#vectorized-coordinate-functions" title="Permalink to this headline">¶</a></h1>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[0 1]
+ [1 1]
+ [0 0]]
+90.0
+45.00000000000001
+[90. 45.]
+[ 17.9803033  108.41985708  61.48280465  62.09899472  20.97938692
+ 158.42508375 117.01733794 129.00483553  33.40925949  49.04873367
+ 137.91449595 102.05077726  80.4491431  146.83933068 118.22063016
+  61.33754322  63.73132131 127.01156106   9.11192459 109.19168275
+  76.24190804  42.44934463 152.52203704 140.3932413   95.63844023
+  49.20049082  39.41322288 135.08663867  75.59060564 114.45840203
+ 151.88383949  17.84448359 108.58595241  76.13133174  39.16665191
+  51.16726527  89.31298951 138.29510317 114.78104615  99.55375715
+ 170.66831943 102.64233294 105.27162627  81.78722697  88.39090514
+ 142.50103215  52.86332897 129.20093302 120.78588025 155.02371363
+ 114.3359583  149.04127046 157.37049853 113.76210212  67.43502584
+  44.99050879  97.79673725  24.50697303  70.43975197  28.38469838
+  29.1940539  132.47270419  78.41486657  65.72870628 100.58686299
+ 164.20833132  46.47628384  97.72302976  52.12996719  83.3264601
+ 110.68701219  84.08459147  53.46678074 100.94091148 108.23924668
+ 110.37279709  22.23451298  52.75516627 158.95272496 140.05868016
+  65.79346887  87.99474456 116.24680379 121.38700785 126.14327068
+  71.44438721  59.56891491  80.48423907  49.52944894  52.91839309
+  95.00243142  88.59590912  75.40877836  50.41599195  27.03598093
+ 107.76312042 135.7167363   55.81082806  43.46267817  37.27794816]
+&quot;vector_angle&quot; (100) loop       performance: 2.0e+00 seconds
+&quot;vector_angle&quot; (100) vectorized performance: 2.5e-02 seconds
+[[  0. 120.]
+ [ 45.  85.]
+ [  1.   1.]]
+[0.         0.70710678 0.70710678]
+[ 0.07547909 -0.04357787  0.9961947 ]
+[[ 0.          0.07547909]
+ [ 0.70710678 -0.04357787]
+ [ 0.70710678  0.9961947 ]]
+[[ 0.02044639  0.02509242  0.00604926 -0.02886215 -0.01966093  0.00230625
+  -0.00813496  0.00401154 -0.01401502  0.00472753]
+ [ 0.99953081  0.99938604  0.99997943  0.99937367  0.99972997  0.99945888
+   0.99989276  0.99946424  0.9999007   0.99998734]
+ [-0.02280583 -0.02445232 -0.00213289  0.02047542  0.01238652 -0.03281213
+  -0.01217746 -0.03248278 -0.0014741  -0.00172185]]
+&quot;sph_to_cart&quot; (100) loop       performance: 1.3e+00 seconds
+&quot;sph_to_cart&quot; (100) vectorized performance: 1.5e-02 seconds
+[[1. 0.]
+ [1. 0.]
+ [1. 1.]]
+[45.         35.26438968  1.73205081]
+[ 0. 90.  1.]
+[[45.          0.        ]
+ [35.26438968 90.        ]
+ [ 1.73205081  1.        ]]
+[[ 54.56087546  -3.62161631 217.9653295  122.61560424  92.32910271
+  -66.81652366  93.20493556 -64.72454439 -69.36568579 191.74351267]
+ [ 10.27440341  28.30549616  -3.46127214  50.79621929  35.87332779
+   12.47564264 -12.34977886 -62.13926921  16.30227739  69.36576588]
+ [  1.2103633    1.1489424    1.13526047   1.64665088   0.74140168
+    3.29496016   1.86100629   1.84363529   2.74295241   2.02396473]]
+&quot;cart_to_sph&quot; (100) loop       performance: 1.3e+00 seconds
+&quot;cart_to_sph&quot; (100) vectorized performance: 3.5e-02 seconds
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pyant</span>
+
+<span class="kn">import</span> <span class="nn">timeit</span>
+
+<span class="n">number</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="k">def</span> <span class="nf">coordinates_vector_angle</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">b</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">c</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">bc</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.append.html#numpy.append" title="numpy.append" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">append</span></a><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">c</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+
+    <span class="n">th_ab</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">th_ab</span><span class="p">)</span>
+
+    <span class="n">th_ac</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">th_ac</span><span class="p">)</span>
+
+    <span class="n">th_abc</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">bc</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">th_abc</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.randn.html#numpy.random.randn" title="numpy.random.randn" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">th_ax</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">th_ax</span><span class="p">)</span>
+    <span class="c1"># As opposed to</span>
+    <span class="c1">#</span>
+    <span class="c1"># for y in x.T:</span>
+    <span class="c1">#     print(pyant.coordinates.vector_angle(a,y))</span>
+
+    <span class="n">dt_l</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">for y in x.T:</span>
+<span class="sd">    pyant.coordinates.vector_angle(a,y)</span>
+<span class="sd">&#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="n">setup</span><span class="o">=</span>
+        <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">import pyant</span>
+<span class="s1">import numpy as np</span>
+<span class="s1">a = np.array([1,0,0])</span>
+<span class="s1">x = np.random.randn(3,</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">)</span>
+<span class="s1">    &#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">dt_v</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+        <span class="s1">&#39;pyant.coordinates.vector_angle(a,x)&#39;</span><span class="p">,</span>
+        <span class="n">setup</span><span class="o">=</span>
+    <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">import pyant</span>
+<span class="s1">import numpy as np</span>
+<span class="s1">a = np.array([1,0,0])</span>
+<span class="s1">x = np.random.randn(3,</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">)</span>
+<span class="s1">    &#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;vector_angle&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) loop       performance: </span><span class="si">{</span><span class="n">dt_l</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;vector_angle&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) vectorized performance: </span><span class="si">{</span><span class="n">dt_v</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+
+
+
+<span class="k">def</span> <span class="nf">coordinates_sph_to_cart</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">45</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.generic.html#numpy.generic" title="numpy.generic" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">120</span><span class="p">,</span><span class="mi">85</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.generic.html#numpy.generic" title="numpy.generic" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">)</span>
+    <span class="n">ab</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.append.html#numpy.append" title="numpy.append" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">append</span></a><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+
+    <span class="n">sph_a</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_a</span><span class="p">)</span>
+
+    <span class="n">sph_b</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_b</span><span class="p">)</span>
+
+    <span class="n">sph_ab</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_ab</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.randn.html#numpy.random.randn" title="numpy.random.randn" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">sph_x</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_x</span><span class="p">)</span>
+    <span class="c1"># As opposed to</span>
+    <span class="c1">#</span>
+    <span class="c1"># for y in x.T:</span>
+    <span class="c1">#     print(pyant.coordinates.sph_to_cart(y))</span>
+
+    <span class="n">setup</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">import pyant</span>
+<span class="s1">import numpy as np</span>
+<span class="s1">x = np.random.randn(3,</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">)</span>
+<span class="s1">x[2,:] = 1.0</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+    <span class="n">dt_l</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">for y in x.T:</span>
+<span class="sd">    pyant.coordinates.sph_to_cart(y)</span>
+<span class="sd">    &#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">dt_v</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+        <span class="s1">&#39;pyant.coordinates.sph_to_cart(x)&#39;</span><span class="p">,</span>
+        <span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;sph_to_cart&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) loop       performance: </span><span class="si">{</span><span class="n">dt_l</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;sph_to_cart&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) vectorized performance: </span><span class="si">{</span><span class="n">dt_v</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+
+
+
+<span class="k">def</span> <span class="nf">coordinates_cart_to_sph</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.generic.html#numpy.generic" title="numpy.generic" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.generic.html#numpy.generic" title="numpy.generic" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class"><span class="n">np</span><span class="o">.</span><span class="n">float64</span></a><span class="p">)</span>
+    <span class="n">ab</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.append.html#numpy.append" title="numpy.append" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">append</span></a><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+
+    <span class="n">sph_a</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">cart_to_sph</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_a</span><span class="p">)</span>
+
+    <span class="n">sph_b</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">cart_to_sph</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_b</span><span class="p">)</span>
+
+    <span class="n">sph_ab</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">cart_to_sph</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_ab</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.randn.html#numpy.random.randn" title="numpy.random.randn" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">sph_x</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">cart_to_sph</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sph_x</span><span class="p">)</span>
+    <span class="c1"># As opposed to</span>
+    <span class="c1">#</span>
+    <span class="c1"># for y in x.T:</span>
+    <span class="c1">#     print(pyant.coordinates.cart_to_sph(y))</span>
+
+    <span class="n">setup</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">import pyant</span>
+<span class="s1">import numpy as np</span>
+<span class="s1">x = np.random.randn(3,</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">)</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+    <span class="n">dt_l</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">for y in x.T:</span>
+<span class="sd">    pyant.coordinates.cart_to_sph(y)</span>
+<span class="sd">    &#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">dt_v</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span>
+        <span class="s1">&#39;pyant.coordinates.cart_to_sph(x)&#39;</span><span class="p">,</span>
+        <span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span><span class="p">,</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="n">number</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;cart_to_sph&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) loop       performance: </span><span class="si">{</span><span class="n">dt_l</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;cart_to_sph&quot; (</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">) vectorized performance: </span><span class="si">{</span><span class="n">dt_v</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+
+
+
+<span class="n">coordinates_vector_angle</span><span class="p">()</span>
+<span class="n">coordinates_sph_to_cart</span><span class="p">()</span>
+<span class="n">coordinates_cart_to_sph</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.640 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-gallery-vectorized-coordinate-functions-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/2a4cf881efccec3dbfc732dd9577d93d/vectorized_coordinate_functions.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">vectorized_coordinate_functions.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/c93e4b495a5baf01c5a890ee0ae11521/vectorized_coordinate_functions.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">vectorized_coordinate_functions.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plot_interp_antenna.html" title="Interpolated Antenna array gain"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnt 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Examples</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

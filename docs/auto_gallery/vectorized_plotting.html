@@ -1,0 +1,169 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Vectorized plotting &#8212; PyAnt 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Antenna array gain" href="plot_array.html" />
+    <link rel="prev" title="Airy disk antenna gain" href="plot_airy_cassergrain.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plot_array.html" title="Antenna array gain"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_airy_cassergrain.html" title="Airy disk antenna gain"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnt 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Examples</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_airy_cassergrain.html"
+                        title="previous chapter">Airy disk antenna gain</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_array.html"
+                        title="next chapter">Antenna array gain</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/auto_gallery/vectorized_plotting.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-gallery-vectorized-plotting-py"><span class="std std-ref">here</span></a>     to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="vectorized-plotting">
+<span id="sphx-glr-auto-gallery-vectorized-plotting-py"></span><h1>Vectorized plotting<a class="headerlink" href="#vectorized-plotting" title="Permalink to this headline">¶</a></h1>
+<ul class="sphx-glr-horizontal">
+<li><img alt="Gain pattern" class="sphx-glr-multi-img" src="../_images/sphx_glr_vectorized_plotting_001.png" />
+</li>
+<li><img alt="Gain pattern" class="sphx-glr-multi-img" src="../_images/sphx_glr_vectorized_plotting_002.png" />
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;gain_heatmap&quot; (90000) loop       performance: 2.5e+00 seconds
+&quot;gain_heatmap&quot; (90000) vectorized performance: 2.1e-01 seconds
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pyant</span>
+
+<span class="n">ant</span> <span class="o">=</span> <span class="n">pyant</span><span class="o">.</span><span class="n">Airy</span><span class="p">(</span>
+    <span class="n">azimuth</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span>
+    <span class="n">elevation</span><span class="o">=</span><span class="mf">75.0</span><span class="p">,</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="mf">930e6</span><span class="p">,</span>
+    <span class="n">I0</span><span class="o">=</span><span class="mi">10</span><span class="o">**</span><span class="mf">4.81</span><span class="p">,</span>
+    <span class="n">radius</span><span class="o">=</span><span class="mf">23.0</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">pyant</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">gain_heatmap</span><span class="p">(</span><span class="n">ant</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">min_elevation</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;gain_heatmap&quot; (</span><span class="si">{</span><span class="mi">300</span><span class="o">**</span><span class="mi">2</span><span class="si">}</span><span class="s1">) loop       performance: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">pyant</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">gain_heatmap</span><span class="p">(</span><span class="n">ant</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">min_elevation</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;gain_heatmap&quot; (</span><span class="si">{</span><span class="mi">300</span><span class="o">**</span><span class="mi">2</span><span class="si">}</span><span class="s1">) vectorized performance: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+
+
+<span class="n">pyant</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.097 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-gallery-vectorized-plotting-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/e1bbc9bfda1d813d206775e92343ece6/vectorized_plotting.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">vectorized_plotting.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9b0697b422aa8b21c5f29354641e9638/vectorized_plotting.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">vectorized_plotting.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plot_array.html" title="Antenna array gain"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plot_airy_cassergrain.html" title="Airy disk antenna gain"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnt 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Examples</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
