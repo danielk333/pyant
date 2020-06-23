@@ -42,12 +42,12 @@ Interpolated Antenna array gain
 
  .. code-block:: none
 
-    /home/danielk/IRF/IRF_GITLAB/pyant/pyant/plotting.py:83: RuntimeWarning: divide by zero encountered in log10
+    /home/danielk/venvs/sorts/lib/python3.7/site-packages/pyant/plotting.py:83: RuntimeWarning: divide by zero encountered in log10
       SdB = np.log10(S)*10.0
     Heatmap plot pointing interp: 0.1 seconds
-    Heatmap plot antenna array: 0.7 seconds
+    Heatmap plot antenna array: 0.8 seconds
     Heatmap plot interpolated array: 0.1 seconds
-    Speedup = factor of 13.12
+    Speedup = factor of 15.10
 
 
 
@@ -108,7 +108,7 @@ Interpolated Antenna array gain
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  2.973 seconds)
+   **Total running time of the script:** ( 0 minutes  3.192 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_plot_interp_antenna.py:

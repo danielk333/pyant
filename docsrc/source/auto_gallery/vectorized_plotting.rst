@@ -36,7 +36,7 @@ Vectorized plotting
 
  .. code-block:: none
 
-    "gain_heatmap" (90000) loop       performance: 2.5e+00 seconds
+    "gain_heatmap" (90000) loop       performance: 2.4e+00 seconds
     "gain_heatmap" (90000) vectorized performance: 2.1e-01 seconds
 
 
@@ -74,7 +74,7 @@ Vectorized plotting
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  3.097 seconds)
+   **Total running time of the script:** ( 0 minutes  2.963 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_vectorized_plotting.py:

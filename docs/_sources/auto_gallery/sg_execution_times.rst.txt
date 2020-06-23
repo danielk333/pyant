@@ -5,24 +5,24 @@
 
 Computation times
 =================
-**00:14.583** total execution time for **auto_gallery** files:
+**00:14.670** total execution time for **auto_gallery** files:
 
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_vectorized_coordinate_functions.py` (``vectorized_coordinate_functions.py``) | 00:04.640 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_vectorized_coordinate_functions.py` (``vectorized_coordinate_functions.py``) | 00:04.710 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_vectorized_plotting.py` (``vectorized_plotting.py``)                         | 00:03.097 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_interp_antenna.py` (``plot_interp_antenna.py``)                         | 00:03.192 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_interp_antenna.py` (``plot_interp_antenna.py``)                         | 00:02.973 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_vectorized_plotting.py` (``vectorized_plotting.py``)                         | 00:02.963 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_halfpipe.py` (``plot_halfpipe.py``)                                     | 00:01.327 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_halfpipe.py` (``plot_halfpipe.py``)                                     | 00:01.283 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_array.py` (``plot_array.py``)                                           | 00:00.893 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_airy_cassergrain.py` (``plot_airy_cassergrain.py``)                     | 00:00.879 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_airy_cassergrain.py` (``plot_airy_cassergrain.py``)                     | 00:00.888 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_array.py` (``plot_array.py``)                                           | 00:00.871 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_omni.py` (``plot_omni.py``)                                             | 00:00.454 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_omni.py` (``plot_omni.py``)                                             | 00:00.453 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_gaussian.py` (``plot_gaussian.py``)                                     | 00:00.308 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_gaussian.py` (``plot_gaussian.py``)                                     | 00:00.316 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_gallery_vectorized_gain.py` (``vectorized_gain.py``)                                 | 00:00.004 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
