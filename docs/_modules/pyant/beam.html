@@ -1,0 +1,244 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pyant.beam &#8212; PyAnt 0.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyant.beam</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="sd">&#39;&#39;&#39;Defines an antenna&#39;s or entire radar system&#39;s radiation pattern</span>
+
+<span class="sd">(c) 2020 Daniel Kastinen</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">scipy.constants</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">coordinates</span>
+
+<div class="viewcode-block" id="Beam"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.html#pyant.Beam">[docs]</a><span class="k">class</span> <span class="nc">Beam</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Defines the radiation pattern of a radar station.</span>
+
+<span class="sd">    :param float frequency: Frequency of radiation pattern.</span>
+<span class="sd">    :param float azimuth: Azimuth of pointing direction.</span>
+<span class="sd">    :param float elevation: Elevation of pointing direction.</span>
+<span class="sd">    :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees</span>
+<span class="sd">    </span>
+<span class="sd">    :ivar float frequency: Frequency of radiation pattern.</span>
+<span class="sd">    :ivar float azimuth: Azimuth of pointing direction.</span>
+<span class="sd">    :ivar float elevation: Elevation of pointing direction.</span>
+<span class="sd">    :ivar bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees</span>
+<span class="sd">    :ivar numpy.ndarray pointing: Cartesian vector in local coordinates describing pointing direction.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="Beam.__init__"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.__init__.html#pyant.Beam.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Basic constructor.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">azimuth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevation</span> <span class="o">=</span> <span class="n">elevation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radians</span> <span class="o">=</span> <span class="n">radians</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pointing</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="n">radians</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_check_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">radians</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">radians</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">radians</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">radians</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">azimuth</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">azimuth</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">c</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span>
+
+
+<div class="viewcode-block" id="Beam.copy"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.copy.html#pyant.Beam.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a copy of the current instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Beam.sph_point"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.sph_point.html#pyant.Beam.sph_point">[docs]</a>    <span class="k">def</span> <span class="nf">sph_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Point beam towards azimuth and elevation coordinate.</span>
+<span class="sd">        </span>
+<span class="sd">        :param float azimuth: Azimuth east of north of pointing direction.</span>
+<span class="sd">        :param float elevation: Elevation from horizon of pointing direction.</span>
+<span class="sd">        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.</span>
+<span class="sd">        :return: :code:`None`</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_radians</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">radians</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">azimuth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevation</span> <span class="o">=</span> <span class="n">elevation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pointing</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevation</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Beam.point"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.point.html#pyant.Beam.point">[docs]</a>    <span class="k">def</span> <span class="nf">point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Point beam in local cartesian direction.</span>
+<span class="sd">        </span>
+<span class="sd">        :param numpy.ndarray k: Pointing direction in local coordinates.</span>
+<span class="sd">        :return: :code:`None`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pointing</span> <span class="o">=</span> <span class="n">k</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">sph</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">cart_to_sph</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">sph</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevation</span> <span class="o">=</span> <span class="n">sph</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+        
+
+<div class="viewcode-block" id="Beam.sph_angle"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.sph_angle.html#pyant.Beam.sph_angle">[docs]</a>    <span class="k">def</span> <span class="nf">sph_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get angle between azimuth and elevation and pointing direction.</span>
+<span class="sd">    </span>
+<span class="sd">        :param float azimuth: Azimuth east of north to measure from.</span>
+<span class="sd">        :param float elevation: Elevation from horizon to measure from.</span>
+<span class="sd">        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.</span>
+
+<span class="sd">        :return: Angle between pointing and given direction.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">radians</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span>
+
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">azel_to_cart</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="n">radians</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="n">radians</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Beam.angle"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.angle.html#pyant.Beam.angle">[docs]</a>    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Get angle between local direction and pointing direction.</span>
+<span class="sd">        </span>
+<span class="sd">        :param numpy.ndarray k: Direction to evaluate angle to.</span>
+<span class="sd">        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.</span>
+
+<span class="sd">        :return: Angle between pointing and given direction.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">radians</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span>
+
+        <span class="k">return</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="n">radians</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Beam.gain"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.gain.html#pyant.Beam.gain">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the gain in the given direction. This method should be vectorized.</span>
+
+<span class="sd">        :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.</span>
+<span class="sd">        :return: Radar gain in the given direction. If input is a `(3,)` vector, output is a float. If input is a `(3,n)` matrix output is a `(n,)` vector of gains.</span>
+<span class="sd">        :rtype: float/numpy.ndarray</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="Beam.sph_gain"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.beam.Beam.sph_gain.html#pyant.Beam.sph_gain">[docs]</a>    <span class="k">def</span> <span class="nf">sph_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return the gain in the given direction.</span>
+
+<span class="sd">        :param float azimuth: Azimuth east of north to evaluate gain in.</span>
+<span class="sd">        :param float elevation: Elevation from horizon to evaluate gain in.</span>
+<span class="sd">        :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.</span>
+
+<span class="sd">        :return: Radar gain in the given direction.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">radians</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">azel_to_cart</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="n">radians</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

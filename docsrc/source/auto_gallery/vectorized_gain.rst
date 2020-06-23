@@ -21,14 +21,21 @@ Vectorized gain functions
 
  .. code-block:: none
 
-    [[1.92696577e-03 2.85224039e-05 1.08804214e-03]
-     [2.14590880e-05 7.37802930e-02 1.86885670e-02]
-     [1.08804214e-03 2.85224039e-05 6.19255788e-05]]
-    [[1.92696577e-03 2.85224039e-05 1.08804214e-03]
-     [2.14590880e-05 7.37802930e-02 1.86885670e-02]
-     [1.08804214e-03 2.85224039e-05 6.19255788e-05]]
-    "Airy.gain" (9) loop       performance: 4.4e-04 seconds
-    "Airy.gain" (9) vectorized performance: 1.9e-04 seconds
+    [[1.92696577e-03 1.80917826e-03 1.67612471e-03 ... 2.18244716e-03
+      1.63826916e-03 1.08804214e-03]
+     [2.16683970e-03 2.10801193e-03 2.02777437e-03 ... 9.43162700e-04
+      4.82358637e-04 1.57360885e-04]
+     [2.20533307e-03 2.21623503e-03 2.20374063e-03 ... 9.53736902e-05
+      9.13226607e-09 9.89730697e-05]
+     ...
+     [2.03992683e-05 5.10151845e-05 9.53736902e-05 ... 3.24889799e-03
+      4.37890431e-03 5.42088165e-03]
+     [3.78825861e-04 4.82358637e-04 5.96543451e-04 ... 4.55391135e-04
+      1.16659279e-03 2.12054850e-03]
+     [1.08804214e-03 1.23645778e-03 1.38894437e-03 ... 3.69180178e-04
+      3.28738228e-05 6.19255788e-05]]
+    "Airy.gain" (1000000) loop       performance: 3.1e+01 seconds
+    "Airy.gain" (1000000) vectorized performance: 1.2e+00 seconds
 
 
 
@@ -47,7 +54,7 @@ Vectorized gain functions
 
 
     number = 1000
-    kn = 3
+    kn = 1000
 
     ant = pyant.Airy(
         azimuth=45.0,
@@ -73,8 +80,6 @@ Vectorized gain functions
 
     loop_time = time.time() - start_time
 
-    print(G)
-
     #vectorized version
     start_time = time.time()
 
@@ -99,7 +104,7 @@ Vectorized gain functions
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.004 seconds)
+   **Total running time of the script:** ( 0 minutes  31.779 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_vectorized_gain.py:

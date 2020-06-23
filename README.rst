@@ -21,7 +21,7 @@ or
    cd pyant
    pip install .
 
-Then get started with then documentation at 
+Then get started by looking at the examples gallery and API in the `Documentation <https://danielk333.github.io/pyant/>`_.
 
 
 Example

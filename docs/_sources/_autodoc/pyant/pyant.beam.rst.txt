@@ -1,22 +1,40 @@
-pyant.beam
-==========
+beam
+====
 
 .. automodule:: pyant.beam
 
-   
-   
-   
+.. currentmodule:: pyant.beam
 
-   
-   
-   .. rubric:: Classes
+Module summary
+--------------
 
-   .. autosummary::
-   
-      Beam
-   
-   
 
-   
-   
-   
+.. rubric:: Classes
+
+.. autosummary::
+    :toctree: .
+    
+    Beam
+    
+
+
+
+
+
+Contents
+----------
+
+
+
+
+.. rubric:: Beam
+
+.. autoclass:: Beam
+   :show-inheritance:
+   :noindex:
+   :members:
+   :inherited-members:
+
+
+
+

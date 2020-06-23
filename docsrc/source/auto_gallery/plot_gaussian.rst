@@ -44,7 +44,7 @@ Gaussian planar array gain
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.316 seconds)
+   **Total running time of the script:** ( 0 minutes  0.311 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_plot_gaussian.py:

@@ -1,0 +1,188 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Gaussian &#8212; PyAnt 0.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Gaussian.__init__" href="pyant.Gaussian.__init__.html" />
+    <link rel="prev" title="Cassegrain.wavelength" href="pyant.Cassegrain.wavelength.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyant.Gaussian.__init__.html" title="Gaussian.__init__"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyant.Cassegrain.wavelength.html" title="Cassegrain.wavelength"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../api.html" accesskey="U">API Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyant.Cassegrain.wavelength.html"
+                        title="previous chapter">Cassegrain.wavelength</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyant.Gaussian.__init__.html"
+                        title="next chapter">Gaussian.__init__</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/_autodoc/pyant/pyant.Gaussian.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gaussian">
+<h1>Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pyant.Gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">pyant.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">azimuth</span></em>, <em class="sig-param"><span class="n">elevation</span></em>, <em class="sig-param"><span class="n">frequency</span></em>, <em class="sig-param"><span class="n">I0</span></em>, <em class="sig-param"><span class="n">radius</span></em>, <em class="sig-param"><span class="n">normal_azimuth</span></em>, <em class="sig-param"><span class="n">normal_elevation</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyant.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyant.beam.Beam.html#pyant.beam.Beam" title="pyant.beam.Beam"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyant.beam.Beam</span></code></a></p>
+<p>Gaussian tapered planar array model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>I0</strong> (<em>float</em>) – Peak gain (linear scale) in the pointing direction.</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – Radius in meters of the planar array</p></li>
+<li><p><strong>normal_azimuth</strong> (<em>float</em>) – Azimuth of normal vector of the planar array in dgreees.</p></li>
+<li><p><strong>normal_elevation</strong> (<em>float</em>) – Elevation of pointing direction in degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>I0</strong> (<em>float</em>) – Peak gain (linear scale) in the pointing direction.</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – Radius in meters of the airy disk</p></li>
+<li><p><strong>normal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><em>numpy.ndarray</em></a>) – Planar array normal vector in local coordinates</p></li>
+<li><p><strong>normal_azimuth</strong> (<em>float</em>) – Azimuth of normal vector of the planar array in dgreees.</p></li>
+<li><p><strong>normal_elevation</strong> (<em>float</em>) – Elevation of pointing direction in degrees.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.Gaussian.__init__.html#pyant.Gaussian.__init__" title="pyant.Gaussian.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(azimuth, elevation, frequency, I0, …)</p></td>
+<td><p>Basic constructor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.Gaussian.angle.html#pyant.Gaussian.angle" title="pyant.Gaussian.angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">angle</span></code></a>(k[, radians])</p></td>
+<td><p>Get angle between local direction and pointing direction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.Gaussian.copy.html#pyant.Gaussian.copy" title="pyant.Gaussian.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Return a copy of the current instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.Gaussian.gain.html#pyant.Gaussian.gain" title="pyant.Gaussian.gain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gain</span></code></a>(k)</p></td>
+<td><p>Return the gain in the given direction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.Gaussian.point.html#pyant.Gaussian.point" title="pyant.Gaussian.point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code></a>(k)</p></td>
+<td><p>Point beam in local cartesian direction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.Gaussian.sph_angle.html#pyant.Gaussian.sph_angle" title="pyant.Gaussian.sph_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sph_angle</span></code></a>(azimuth, elevation[, radians])</p></td>
+<td><p>Get angle between azimuth and elevation and pointing direction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.Gaussian.sph_gain.html#pyant.Gaussian.sph_gain" title="pyant.Gaussian.sph_gain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sph_gain</span></code></a>(azimuth, elevation[, radians])</p></td>
+<td><p>Return the gain in the given direction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.Gaussian.sph_point.html#pyant.Gaussian.sph_point" title="pyant.Gaussian.sph_point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sph_point</span></code></a>(azimuth, elevation[, radians])</p></td>
+<td><p>Point beam towards azimuth and elevation coordinate.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.Gaussian.wavelength.html#pyant.Gaussian.wavelength" title="pyant.Gaussian.wavelength"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wavelength</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyant.Gaussian.__init__.html" title="Gaussian.__init__"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyant.Cassegrain.wavelength.html" title="Cassegrain.wavelength"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../api.html" >API Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

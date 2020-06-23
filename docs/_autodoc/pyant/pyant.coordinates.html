@@ -5,7 +5,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>pyant.coordinates &#8212; PyAnt 0.3.0 documentation</title>
+    <title>coordinates &#8212; PyAnt 0.3.0 documentation</title>
     <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
@@ -21,8 +21,8 @@
     <script src="../../_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="pyant.airy" href="pyant.airy.html" />
-    <link rel="prev" title="pyant.beam" href="pyant.beam.html" />
+    <link rel="next" title="cart_to_sph" href="pyant.coordinates.cart_to_sph.html" />
+    <link rel="prev" title="Beam.wavelength" href="pyant.beam.Beam.wavelength.html" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <!--[if lt IE 9]>
     <script src="_static/css3-mediaqueries.js"></script>
@@ -38,10 +38,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pyant.airy.html" title="pyant.airy"
+          <a href="pyant.coordinates.cart_to_sph.html" title="cart_to_sph"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pyant.beam.html" title="pyant.beam"
+          <a href="pyant.beam.Beam.wavelength.html" title="Beam.wavelength"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../api.html" accesskey="U">API Reference</a> &#187;</li> 
@@ -49,12 +49,21 @@
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">coordinates</a><ul>
+<li><a class="reference internal" href="#module-summary">Module summary</a></li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pyant.beam.html"
-                        title="previous chapter">pyant.beam</a></p>
+  <p class="topless"><a href="pyant.beam.Beam.wavelength.html"
+                        title="previous chapter">Beam.wavelength</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pyant.airy.html"
-                        title="next chapter">pyant.airy</a></p>
+  <p class="topless"><a href="pyant.coordinates.cart_to_sph.html"
+                        title="next chapter">cart_to_sph</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -81,11 +90,13 @@
           <div class="body" role="main">
             
   <div class="section" id="module-pyant.coordinates">
-<span id="pyant-coordinates"></span><h1>pyant.coordinates<a class="headerlink" href="#module-pyant.coordinates" title="Permalink to this headline">¶</a></h1>
+<span id="coordinates"></span><h1>coordinates<a class="headerlink" href="#module-pyant.coordinates" title="Permalink to this headline">¶</a></h1>
 <p>Useful coordinate related functions.</p>
 <ol class="loweralpha simple" start="3">
 <li><p>2020 Daniel Kastinen</p></li>
 </ol>
+<div class="section" id="module-summary">
+<h2>Module summary<a class="headerlink" href="#module-summary" title="Permalink to this headline">¶</a></h2>
 <p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -93,32 +104,175 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_to_sph</span></code>(vec[, radians])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.coordinates.cart_to_sph.html#pyant.coordinates.cart_to_sph" title="pyant.coordinates.cart_to_sph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_to_sph</span></code></a>(vec[, radians])</p></td>
 <td><p>Convert from Cartesian coordinates (east, north, up) to Spherical coordinates (azimuth, elevation, range) in a degrees east of north and elevation fashion</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot2d</span></code>(theta)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.coordinates.rot2d.html#pyant.coordinates.rot2d" title="pyant.coordinates.rot2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot2d</span></code></a>(theta)</p></td>
 <td><p>Matrix for rotation in the plane</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_x</span></code>(theta[, dtype, radians])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.coordinates.rot_mat_x.html#pyant.coordinates.rot_mat_x" title="pyant.coordinates.rot_mat_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_x</span></code></a>(theta[, dtype, radians])</p></td>
 <td><p>Generates the 3D transformation matrix for rotation around X-axis.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_y</span></code>(theta[, dtype, radians])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.coordinates.rot_mat_y.html#pyant.coordinates.rot_mat_y" title="pyant.coordinates.rot_mat_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_y</span></code></a>(theta[, dtype, radians])</p></td>
 <td><p>Generates the 3D transformation matrix for rotation around Y-axis.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_z</span></code>(theta[, dtype, radians])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.coordinates.rot_mat_z.html#pyant.coordinates.rot_mat_z" title="pyant.coordinates.rot_mat_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_mat_z</span></code></a>(theta[, dtype, radians])</p></td>
 <td><p>Generates the 3D transformation matrix for rotation around Z-axis.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale2d</span></code>(x, y)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.coordinates.scale2d.html#pyant.coordinates.scale2d" title="pyant.coordinates.scale2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale2d</span></code></a>(x, y)</p></td>
 <td><p>Matrix for scaling in the plane</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sph_to_cart</span></code>(vec[, radians])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyant.coordinates.sph_to_cart.html#pyant.coordinates.sph_to_cart" title="pyant.coordinates.sph_to_cart"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sph_to_cart</span></code></a>(vec[, radians])</p></td>
 <td><p>Convert from spherical coordinates (azimuth, elevation, range) to Cartesian (east, north, up) in a degrees east of north and elevation fashion</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vector_angle</span></code>(a, b[, radians])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="pyant.coordinates.vector_angle.html#pyant.coordinates.vector_angle" title="pyant.coordinates.vector_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vector_angle</span></code></a>(a, b[, radians])</p></td>
 <td><p>Angle in between two vectors <span class="math notranslate nohighlight">\(\theta = \cos^{-1}\frac{\langle\mathbf{a},\mathbf{b}\rangle}{|\mathbf{a}||\mathbf{b}|}\)</span>, where <span class="math notranslate nohighlight">\(\langle\mathbf{a},\mathbf{b}\rangle\)</span> is the dot product and <span class="math notranslate nohighlight">\(|\mathbf{a}|\)</span> denotes the norm.</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Functions</p>
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">cart_to_sph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec</span></em>, <em class="sig-param"><span class="n">radians</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#cart_to_sph"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Convert from Cartesian coordinates (east, north, up) to Spherical coordinates (azimuth, elevation, range) in a degrees east of north and elevation fashion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vec</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><em>numpy.ndarray</em></a>) – Vector of Cartesian coordinates (east, north, up). This argument is vectorized in the second array dimension, i.e. it supports matrix <cite>(3,n)</cite> inputs as well as the standard <cite>(3,)</cite> vector inputs.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – If <code class="code docutils literal notranslate"><span class="pre">True</span></code> all input/output angles are in radians, else they are in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Vector of Spherical coordinates (azimuth, elevation, range)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">rot2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#rot2d"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Matrix for rotation in the plane</p>
+<p>#TODO docstring</p>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">rot_mat_x</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">dtype=&lt;class 'float'&gt;</em>, <em class="sig-param">radians=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#rot_mat_x"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates the 3D transformation matrix for rotation around X-axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>float</em>) – Angle to rotate.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.18)"><em>numpy.dtype</em></a>) – The data-type of the output matrix.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – Uses radians if set to <code class="code docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rotation matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(3,3) <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">rot_mat_y</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">dtype=&lt;class 'float'&gt;</em>, <em class="sig-param">radians=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#rot_mat_y"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates the 3D transformation matrix for rotation around Y-axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>float</em>) – Angle to rotate.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.18)"><em>numpy.dtype</em></a>) – The data-type of the output matrix.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – Uses radians if set to <code class="code docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rotation matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(3,3) <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">rot_mat_z</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">dtype=&lt;class 'float'&gt;</em>, <em class="sig-param">radians=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#rot_mat_z"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates the 3D transformation matrix for rotation around Z-axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>float</em>) – Angle to rotate.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.18)"><em>numpy.dtype</em></a>) – The data-type of the output matrix.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – Uses radians if set to <code class="code docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rotation matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(3,3) <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">scale2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#scale2d"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Matrix for scaling in the plane</p>
+<p>#TODO docstring</p>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">sph_to_cart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vec</span></em>, <em class="sig-param"><span class="n">radians</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#sph_to_cart"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Convert from spherical coordinates (azimuth, elevation, range) to Cartesian (east, north, up) in a degrees east of north and elevation fashion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vec</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><em>numpy.ndarray</em></a>) – Vector of Cartesian Spherical (azimuth, elevation, range). This argument is vectorized in the second array dimension, i.e. it supports matrix <cite>(3,n)</cite> inputs as well as the standard <cite>(3,)</cite> vector inputs.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – If <code class="code docutils literal notranslate"><span class="pre">True</span></code> all input/output angles are in radians, else they are in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Vector of Cartesian coordinates (east, north, up)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">pyant.coordinates.</code><code class="sig-name descname">vector_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em>, <em class="sig-param"><span class="n">radians</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/coordinates.html#vector_angle"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Angle in between two vectors <span class="math notranslate nohighlight">\(\theta = \cos^{-1}\frac{\langle\mathbf{a},\mathbf{b}\rangle}{|\mathbf{a}||\mathbf{b}|}\)</span>, where <span class="math notranslate nohighlight">\(\langle\mathbf{a},\mathbf{b}\rangle\)</span> is the dot product and <span class="math notranslate nohighlight">\(|\mathbf{a}|\)</span> denotes the norm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><em>numpy.ndarray</em></a>) – Vector <span class="math notranslate nohighlight">\(\mathbf{a}\)</span>.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><em>numpy.ndarray</em></a>) – Vector <span class="math notranslate nohighlight">\(\mathbf{b}\)</span>. This argument is vectorized in the second array dimension, i.e. it supports matrix <cite>(3,n)</cite> inputs as well as the standard <cite>(3,)</cite> vector inputs.</p></li>
+<li><p><strong>radians</strong> (<em>bool</em>) – If <code class="code docutils literal notranslate"><span class="pre">True</span></code> all input/output angles are in radians, else they are in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Angle <span class="math notranslate nohighlight">\(\theta\)</span> between vectors <span class="math notranslate nohighlight">\(\mathbf{a}\)</span> and <span class="math notranslate nohighlight">\(\mathbf{a}\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -137,10 +291,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pyant.airy.html" title="pyant.airy"
+          <a href="pyant.coordinates.cart_to_sph.html" title="cart_to_sph"
              >next</a> |</li>
         <li class="right" >
-          <a href="pyant.beam.html" title="pyant.beam"
+          <a href="pyant.beam.Beam.wavelength.html" title="Beam.wavelength"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../api.html" >API Reference</a> &#187;</li> 

@@ -1,0 +1,140 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>gain_heatmap &#8212; PyAnt 0.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="show" href="pyant.plotting.show.html" />
+    <link rel="prev" title="plotting" href="pyant.plotting.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyant.plotting.show.html" title="show"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyant.plotting.html" title="plotting"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../api.html" >API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyant.plotting.html" accesskey="U">plotting</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyant.plotting.html"
+                        title="previous chapter">plotting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyant.plotting.show.html"
+                        title="next chapter">show</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/_autodoc/pyant/pyant.plotting.gain_heatmap.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gain-heatmap">
+<h1>gain_heatmap<a class="headerlink" href="#gain-heatmap" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">gain_heatmap</p>
+<dl class="py function">
+<dt id="pyant.plotting.gain_heatmap">
+<code class="sig-prename descclassname">pyant.plotting.</code><code class="sig-name descname">gain_heatmap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">beam</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">201</span></em>, <em class="sig-param"><span class="n">min_elevation</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">levels</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">vectorized</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyant/plotting.html#gain_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyant.plotting.gain_heatmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a heatmap of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beam</strong> (<a class="reference internal" href="pyant.beam.Beam.html#pyant.beam.Beam" title="pyant.beam.Beam"><em>Beam</em></a>) – Beam pattern to plot.</p></li>
+<li><p><strong>resolution</strong> (<em>int</em>) – Number of points to divide the wave vector x and y components into, total number of calculation points is the square of this number.</p></li>
+<li><p><strong>min_elevation</strong> (<em>float</em>) – Minimum elevation in degrees, elevation range is from this number to <span class="math notranslate nohighlight">\(90^\circ\)</span>. This number defines the half the length of the square that the gain is calculated over, i.e. <span class="math notranslate nohighlight">\(\cos(el_{min})\)</span>.</p></li>
+<li><p><strong>levels</strong> (<em>int</em>) – Number of levels in the contour plot.</p></li>
+<li><p><strong>vectorized</strong> (<em>bool</em>) – Use vectorized gain functionality to calculate gain-map.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib axis and figure handles</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyant.plotting.show.html" title="show"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyant.plotting.html" title="plotting"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../api.html" >API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyant.plotting.html" >plotting</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

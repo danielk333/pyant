@@ -62,7 +62,7 @@ Airy disk antenna gain
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.879 seconds)
+   **Total running time of the script:** ( 0 minutes  0.869 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_plot_airy_cassergrain.py:

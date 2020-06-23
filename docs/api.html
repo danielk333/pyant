@@ -21,7 +21,7 @@
     <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyant.beam" href="_autodoc/pyant/pyant.beam.html" />
+    <link rel="next" title="beam" href="_autodoc/pyant/pyant.beam.html" />
     <link rel="prev" title="Vectorized coordinate functions" href="auto_gallery/vectorized_coordinate_functions.html" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <!--[if lt IE 9]>
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="_autodoc/pyant/pyant.beam.html" title="pyant.beam"
+          <a href="_autodoc/pyant/pyant.beam.html" title="beam"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="auto_gallery/vectorized_coordinate_functions.html" title="Vectorized coordinate functions"
@@ -52,6 +52,8 @@
   <ul>
 <li><a class="reference internal" href="#">API Reference</a><ul>
 <li><a class="reference internal" href="#modules">Modules</a></li>
+<li><a class="reference internal" href="#implementations">Implementations</a></li>
+<li><a class="reference internal" href="#instances">Instances</a></li>
 </ul>
 </li>
 </ul>
@@ -61,7 +63,7 @@
                         title="previous chapter">Vectorized coordinate functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="_autodoc/pyant/pyant.beam.html"
-                        title="next chapter">pyant.beam</a></p>
+                        title="next chapter">beam</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -103,7 +105,68 @@
 <tr class="row-even"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.coordinates.html#module-pyant.coordinates" title="pyant.coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.coordinates</span></code></a></p></td>
 <td><p>Useful coordinate related functions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.airy.html#module-pyant.airy" title="pyant.airy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.airy</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.plotting.html#module-pyant.plotting" title="pyant.plotting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.plotting</span></code></a></p></td>
+<td><p>Useful coordinate related functions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.interpolated.html#module-pyant.interpolated" title="pyant.interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.interpolated</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="implementations">
+<h2>Implementations<a class="headerlink" href="#implementations" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.Airy.html#pyant.Airy" title="pyant.Airy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.Airy</span></code></a>(azimuth, elevation, frequency, …)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param float I0</dt>
+<dd class="field-odd"><p>Peak gain (linear scale) in the pointing direction.</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.Cassegrain.html#pyant.Cassegrain" title="pyant.Cassegrain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.Cassegrain</span></code></a>(azimuth, elevation, …)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param float I0</dt>
+<dd class="field-odd"><p>Peak gain (linear scale) in the pointing direction.</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.Gaussian.html#pyant.Gaussian" title="pyant.Gaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.Gaussian</span></code></a>(azimuth, elevation, …)</p></td>
+<td><p>Gaussian tapered planar array model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.Array.html#pyant.Array" title="pyant.Array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.Array</span></code></a>(azimuth, elevation, frequency, …)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param numpy.ndarray antennas</dt>
+<dd class="field-odd"><p><cite>(n, 3)</cite> matrix of antenna spatial positions, where <cite>n</cite> is the number of antennas.</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.FiniteCylindricalParabola.html#pyant.FiniteCylindricalParabola" title="pyant.FiniteCylindricalParabola"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.FiniteCylindricalParabola</span></code></a>(azimuth, …)</p></td>
+<td><p>A finite Cylindrical Parabola with a finite receiver line feed in the longitudinal direction, i.e.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.PlaneArrayInterp.html#pyant.PlaneArrayInterp" title="pyant.PlaneArrayInterp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.PlaneArrayInterp</span></code></a>(azimuth, elevation, …)</p></td>
+<td><p>Interpolated gain pattern of an planar antenna array.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="instances">
+<h2>Instances<a class="headerlink" href="#instances" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autodoc/pyant/pyant.instances.html#module-pyant.instances" title="pyant.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyant.instances</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -127,7 +190,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="_autodoc/pyant/pyant.beam.html" title="pyant.beam"
+          <a href="_autodoc/pyant/pyant.beam.html" title="beam"
              >next</a> |</li>
         <li class="right" >
           <a href="auto_gallery/vectorized_coordinate_functions.html" title="Vectorized coordinate functions"

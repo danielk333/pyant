@@ -1,0 +1,158 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pyant.gaussian &#8212; PyAnt 0.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyant.gaussian</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.constants</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span>
+
+<span class="kn">from</span> <span class="nn">.beam</span> <span class="kn">import</span> <span class="n">Beam</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">coordinates</span>
+
+<div class="viewcode-block" id="Gaussian"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Gaussian.html#pyant.Gaussian">[docs]</a><span class="k">class</span> <span class="nc">Gaussian</span><span class="p">(</span><span class="n">Beam</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Gaussian tapered planar array model</span>
+
+<span class="sd">    :param float I0: Peak gain (linear scale) in the pointing direction.</span>
+<span class="sd">    :param float radius: Radius in meters of the planar array</span>
+<span class="sd">    :param float normal_azimuth: Azimuth of normal vector of the planar array in dgreees.</span>
+<span class="sd">    :param float normal_elevation: Elevation of pointing direction in degrees.</span>
+
+<span class="sd">    :ivar float I0: Peak gain (linear scale) in the pointing direction.</span>
+<span class="sd">    :ivar float radius: Radius in meters of the airy disk</span>
+<span class="sd">    :ivar numpy.ndarray normal: Planar array normal vector in local coordinates</span>
+<span class="sd">    :ivar float normal_azimuth: Azimuth of normal vector of the planar array in dgreees.</span>
+<span class="sd">    :ivar float normal_elevation: Elevation of pointing direction in degrees.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="Gaussian.__init__"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Gaussian.__init__.html#pyant.Gaussian.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">I0</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">normal_azimuth</span><span class="p">,</span> <span class="n">normal_elevation</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">I0</span> <span class="o">=</span> <span class="n">I0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normal_azimuth</span> <span class="o">=</span> <span class="n">normal_azimuth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normal_elevation</span> <span class="o">=</span> <span class="n">normal_elevation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normal</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">sph_to_cart</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">normal_azimuth</span><span class="p">,</span> <span class="n">normal_elevation</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+            <span class="n">radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radians</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Gaussian.gain"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Gaussian.gain.html#pyant.Gaussian.gain">[docs]</a>    <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">normal</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+            <span class="n">rd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">rd</span><span class="o">=</span><span class="n">rd</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rd</span><span class="p">,</span><span class="n">rd</span><span class="p">))</span>
+            <span class="n">ct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span><span class="n">rd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
+        
+        <span class="n">lam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
+        
+        <span class="n">ct</span><span class="o">=</span><span class="n">ct</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span><span class="n">ct</span><span class="p">))</span>
+        <span class="n">ht</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">normal</span><span class="p">,</span><span class="n">ct</span><span class="p">)</span>
+        <span class="n">ht</span><span class="o">=</span><span class="n">ht</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ht</span><span class="p">,</span><span class="n">ht</span><span class="p">))</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">vector_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span> <span class="n">ht</span><span class="p">,</span> <span class="n">radians</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">ot</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">,</span><span class="n">ct</span><span class="p">)</span>
+        <span class="n">ot</span><span class="o">=</span><span class="n">ot</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ot</span><span class="p">,</span><span class="n">ot</span><span class="p">))</span>
+
+        <span class="n">I_1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">I0</span>
+        <span class="n">a0p</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span>
+
+        <span class="n">sigma1</span><span class="o">=</span><span class="mf">0.7</span><span class="o">*</span><span class="n">a0p</span><span class="o">/</span><span class="n">lam</span>
+        <span class="n">sigma2</span><span class="o">=</span><span class="mf">0.7</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="o">/</span><span class="n">lam</span>
+
+        <span class="n">k0</span><span class="o">=</span><span class="n">k</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">l1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span><span class="n">k0</span><span class="p">)</span>
+        <span class="n">m1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ot</span><span class="p">,</span><span class="n">k0</span><span class="p">)</span>
+        
+        <span class="n">l2</span><span class="o">=</span><span class="n">l1</span><span class="o">*</span><span class="n">l1</span>
+        <span class="n">m2</span><span class="o">=</span><span class="n">m1</span><span class="o">*</span><span class="n">m1</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">I_1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">m2</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sigma1</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">l2</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sigma2</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">G</span></div></div>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">PyAnt 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020-2020, Daniel Kastinen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

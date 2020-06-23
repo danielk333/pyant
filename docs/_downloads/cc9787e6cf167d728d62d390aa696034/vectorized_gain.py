@@ -9,7 +9,7 @@ import pyant
 
 
 number = 1000
-kn = 3
+kn = 1000
 
 ant = pyant.Airy(
     azimuth=45.0,
@@ -34,8 +34,6 @@ for i,x in enumerate(kx):
         G[i,j] = ant.gain(k)
 
 loop_time = time.time() - start_time
-
-print(G)
 
 #vectorized version
 start_time = time.time()
