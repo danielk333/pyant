@@ -54,4 +54,4 @@ class Array(Beam):
         for r in self.antennas:
             G += plane_wave(k_,r/wavelength,p)
 
-        return np.abs(G.conj()*G)*self.antenna_element(k_)
+        return np.abs(G)*self.antenna_element(k_)
