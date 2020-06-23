@@ -4,6 +4,7 @@
 
 .. autoclass:: {{ objname }}
    :show-inheritance:
+   :no-inherited-members:
 
    {% block methods %}
    {% if methods %}
