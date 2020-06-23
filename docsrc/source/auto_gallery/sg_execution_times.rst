@@ -5,24 +5,26 @@
 
 Computation times
 =================
-**00:47.086** total execution time for **auto_gallery** files:
+**00:52.623** total execution time for **auto_gallery** files:
 
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_vectorized_gain.py` (``vectorized_gain.py``)                                 | 00:31.779 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_vectorized_gain.py` (``vectorized_gain.py``)                                 | 00:29.437 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_vectorized_coordinate_functions.py` (``vectorized_coordinate_functions.py``) | 00:04.694 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_predefined_instances.py` (``predefined_instances.py``)                       | 00:08.040 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_interp_antenna.py` (``plot_interp_antenna.py``)                         | 00:03.761 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_vectorized_coordinate_functions.py` (``vectorized_coordinate_functions.py``) | 00:04.527 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_vectorized_plotting.py` (``vectorized_plotting.py``)                         | 00:03.017 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_interp_antenna.py` (``plot_interp_antenna.py``)                         | 00:03.082 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_halfpipe.py` (``plot_halfpipe.py``)                                     | 00:01.333 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_vectorized_plotting.py` (``vectorized_plotting.py``)                         | 00:03.069 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_airy_cassergrain.py` (``plot_airy_cassergrain.py``)                     | 00:00.869 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_halfpipe.py` (``plot_halfpipe.py``)                                     | 00:01.469 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_array.py` (``plot_array.py``)                                           | 00:00.867 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_array.py` (``plot_array.py``)                                           | 00:01.331 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_omni.py` (``plot_omni.py``)                                             | 00:00.456 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_airy_cassergrain.py` (``plot_airy_cassergrain.py``)                     | 00:00.884 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_gallery_plot_gaussian.py` (``plot_gaussian.py``)                                     | 00:00.311 | 0.0 MB |
+| :ref:`sphx_glr_auto_gallery_plot_omni.py` (``plot_omni.py``)                                             | 00:00.469 | 0.0 MB |
++----------------------------------------------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_auto_gallery_plot_gaussian.py` (``plot_gaussian.py``)                                     | 00:00.314 | 0.0 MB |
 +----------------------------------------------------------------------------------------------------------+-----------+--------+

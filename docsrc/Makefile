@@ -23,9 +23,12 @@ wipe:
 	@rm source/auto_gallery -r
 	@rm source/_autodoc -r
 
-github:
-	@make wipe
-	@make html
+mv_github:
 	@rm -r ../docs
 	@mkdir ../docs
 	@cp -a build/html/. ../docs
+
+github:
+	@make wipe
+	@make html
+	@make mv_github

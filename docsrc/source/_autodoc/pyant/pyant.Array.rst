@@ -5,6 +5,7 @@ Array
 
 .. autoclass:: Array
    :show-inheritance:
+   :no-inherited-members:
 
    
    

@@ -5,6 +5,7 @@ PlaneArrayInterp
 
 .. autoclass:: PlaneArrayInterp
    :show-inheritance:
+   :no-inherited-members:
 
    
    

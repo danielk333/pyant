@@ -5,6 +5,7 @@ Airy
 
 .. autoclass:: Airy
    :show-inheritance:
+   :no-inherited-members:
 
    
    

@@ -5,6 +5,7 @@ Interpolation
 
 .. autoclass:: Interpolation
    :show-inheritance:
+   :no-inherited-members:
 
    
    

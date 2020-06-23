@@ -7,6 +7,18 @@
 Module summary
 --------------
 
+{% if attributes %}
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree: .
+   {% for item in attributes %}
+      {{ item }}
+   {%- endfor %}
+
+{% endif %}
+
+
 {% if classes %}
 .. rubric:: Classes
 
@@ -31,6 +43,18 @@ Module summary
 
 Contents
 ----------
+
+{% if attributes %}
+.. rubric:: Attributes
+
+{% for item in attributes %}
+
+.. autoattribute:: {{ item }}
+   :noindex:
+
+{%- endfor %}
+{% endif %}
+
 
 {% if classes %}
 {% for class in classes %}

@@ -8,7 +8,9 @@ from .beam import Beam
 from . import coordinates
 
 class Airy(Beam):
-    '''
+    '''Airy disk gain model of a radar dish.
+
+
     :param float I0: Peak gain (linear scale) in the pointing direction.
     :param float radius: Radius in meters of the airy disk
 
@@ -17,7 +19,7 @@ class Airy(Beam):
 
     **Notes:**
 
-    * :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}`
+    * To avoid singularity at beam center, use :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}` and a threshold.
 
     '''
     def __init__(self, azimuth, elevation, frequency, I0, radius, **kwargs):

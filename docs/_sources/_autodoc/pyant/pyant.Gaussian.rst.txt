@@ -5,6 +5,7 @@ Gaussian
 
 .. autoclass:: Gaussian
    :show-inheritance:
+   :no-inherited-members:
 
    
    

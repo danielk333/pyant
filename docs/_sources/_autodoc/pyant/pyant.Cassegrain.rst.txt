@@ -5,6 +5,7 @@ Cassegrain
 
 .. autoclass:: Cassegrain
    :show-inheritance:
+   :no-inherited-members:
 
    
    

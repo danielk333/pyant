@@ -82,7 +82,9 @@
 
 
 <div class="viewcode-block" id="Array"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Array.html#pyant.Array">[docs]</a><span class="k">class</span> <span class="nc">Array</span><span class="p">(</span><span class="n">Beam</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39;Gain pattern of an antenna array radar receiving/transmitting plane waves.</span>
+
+
 <span class="sd">    :param numpy.ndarray antennas: `(n, 3)` matrix of antenna spatial positions, where `n` is the number of antennas.</span>
 <span class="sd">    :param float scaling: Scaling parameter for the output gain, can be interpreted as an antenna element scalar gain.</span>
 
@@ -116,7 +118,20 @@
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">antennas</span><span class="p">:</span>
             <span class="n">G</span> <span class="o">+=</span> <span class="n">plane_wave</span><span class="p">(</span><span class="n">k_</span><span class="p">,</span><span class="n">r</span><span class="o">/</span><span class="n">wavelength</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">*</span><span class="n">G</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">antenna_element</span><span class="p">(</span><span class="n">k_</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">G</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">antenna_element</span><span class="p">(</span><span class="n">k_</span><span class="p">)</span></div></div>
+
+
+
+<span class="k">class</span> <span class="nc">CrossDipoleArray</span><span class="p">(</span><span class="n">Array</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Gain pattern of an Cross Dipole antenna array radar receiving/transmitting plane waves.</span>
+
+
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">antenna_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Cross Dipole antenna gain pattern approximated by the zenith angle-cosine</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointing</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scaling</span><span class="o">*</span><span class="n">k</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 </pre></div>
 
           </div>

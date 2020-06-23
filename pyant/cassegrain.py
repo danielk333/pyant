@@ -7,7 +7,9 @@ from .beam import Beam
 from . import coordinates
 
 class Cassegrain(Beam):
-    '''
+    '''Cassegrain gain model of a radar dish.
+
+
     :param float I0: Peak gain (linear scale) in the pointing direction.
     :param float a0: Radius longitudinal direction
     :param float a1: Radius latitudinal direction

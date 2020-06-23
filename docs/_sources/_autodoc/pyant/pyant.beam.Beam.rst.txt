@@ -5,6 +5,7 @@ Beam
 
 .. autoclass:: Beam
    :show-inheritance:
+   :no-inherited-members:
 
    
    

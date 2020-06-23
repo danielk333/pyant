@@ -70,7 +70,9 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">coordinates</span>
 
 <div class="viewcode-block" id="Airy"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Airy.html#pyant.Airy">[docs]</a><span class="k">class</span> <span class="nc">Airy</span><span class="p">(</span><span class="n">Beam</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39;Airy disk gain model of a radar dish.</span>
+
+
 <span class="sd">    :param float I0: Peak gain (linear scale) in the pointing direction.</span>
 <span class="sd">    :param float radius: Radius in meters of the airy disk</span>
 
@@ -79,7 +81,7 @@
 
 <span class="sd">    **Notes:**</span>
 
-<span class="sd">    * :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}`</span>
+<span class="sd">    * To avoid singularity at beam center, use :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}` and a threshold.</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
 <div class="viewcode-block" id="Airy.__init__"><a class="viewcode-back" href="../../_autodoc/pyant/pyant.Airy.__init__.html#pyant.Airy.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">elevation</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">I0</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>

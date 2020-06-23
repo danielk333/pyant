@@ -20,7 +20,9 @@ def plane_wave(k,r,p):
 
 
 class Array(Beam):
-    '''
+    '''Gain pattern of an antenna array radar receiving/transmitting plane waves.
+
+
     :param numpy.ndarray antennas: `(n, 3)` matrix of antenna spatial positions, where `n` is the number of antennas.
     :param float scaling: Scaling parameter for the output gain, can be interpreted as an antenna element scalar gain.
 
@@ -55,3 +57,16 @@ class Array(Beam):
             G += plane_wave(k_,r/wavelength,p)
 
         return np.abs(G)*self.antenna_element(k_)
+
+
+
+class CrossDipoleArray(Array):
+    '''Gain pattern of an Cross Dipole antenna array radar receiving/transmitting plane waves.
+
+
+
+    '''
+    def antenna_element(self, k):
+        '''Cross Dipole antenna gain pattern approximated by the zenith angle-cosine
+        '''
+        return self.pointing[2]*self.scaling*k[2]

@@ -33,8 +33,24 @@ Implementations
 Instances
 =========
 
+Contents
+----------
+
+.. automodule:: pyant.instances
+
+.. autosummary::
+   :toctree: .
+
+   e3d_array_module
+   e3d_array_stage1
+   e3d_array_stage2
+
+
+Misc
+-----
+
 .. autosummary::
    :template: autosummary/module.rst
    :toctree: _autodoc/pyant
 
-   pyant.instances
+   pyant.instances.eiscat3d

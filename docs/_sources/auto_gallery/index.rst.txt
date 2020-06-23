@@ -118,6 +118,27 @@ This is all the examples and tutorials
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="Predefined instances">
+
+.. only:: html
+
+ .. figure:: /auto_gallery/images/thumb/sphx_glr_predefined_instances_thumb.png
+     :alt: Predefined instances
+
+     :ref:`sphx_glr_auto_gallery_predefined_instances.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_gallery/predefined_instances
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="Antenna array gain">
 
 .. only:: html

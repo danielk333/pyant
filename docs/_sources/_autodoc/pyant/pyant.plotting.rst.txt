@@ -11,10 +11,15 @@ Module summary
 
 
 
+
+
+
 .. rubric:: Functions
 
 .. autosummary::
     :toctree: .
+    
+    antenna_configuration
     
     gain_heatmap
     
@@ -29,7 +34,15 @@ Contents
 
 
 
+
+
+
 .. rubric:: Functions
+
+
+.. autofunction:: antenna_configuration
+   :noindex:
+
 
 
 .. autofunction:: gain_heatmap

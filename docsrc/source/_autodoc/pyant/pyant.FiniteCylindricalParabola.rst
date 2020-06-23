@@ -5,6 +5,7 @@ FiniteCylindricalParabola
 
 .. autoclass:: FiniteCylindricalParabola
    :show-inheritance:
+   :no-inherited-members:
 
    
    

@@ -74,7 +74,7 @@ Vectorized plotting
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  3.017 seconds)
+   **Total running time of the script:** ( 0 minutes  3.069 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_vectorized_plotting.py:

@@ -34,8 +34,8 @@ Vectorized gain functions
       1.16659279e-03 2.12054850e-03]
      [1.08804214e-03 1.23645778e-03 1.38894437e-03 ... 3.69180178e-04
       3.28738228e-05 6.19255788e-05]]
-    "Airy.gain" (1000000) loop       performance: 3.1e+01 seconds
-    "Airy.gain" (1000000) vectorized performance: 1.2e+00 seconds
+    "Airy.gain" (1000000) loop       performance: 2.8e+01 seconds
+    "Airy.gain" (1000000) vectorized performance: 1.1e+00 seconds
 
 
 
@@ -104,7 +104,7 @@ Vectorized gain functions
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  31.779 seconds)
+   **Total running time of the script:** ( 0 minutes  29.437 seconds)
 
 
 .. _sphx_glr_download_auto_gallery_vectorized_gain.py:
