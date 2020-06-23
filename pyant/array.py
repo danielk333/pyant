@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 import numpy as np
@@ -37,12 +36,21 @@ class Array(Beam):
 
 
     def antenna_element(self, k):
-        '''Antenna element gain pattern
+        '''Antenna element gain pattern, projected aperture approximation based on pointing.
         '''
-        return self.pointing[2]*self.scaling
+        return k[2]*self.scaling
 
 
     def gain(self, k):
+        '''Gain of the antenna array.
+        '''
+        G = self.complex(k)
+        return np.abs(G)
+
+
+    def complex(self, k):
+        '''Complex voltage output signal after summation of antennas.
+        '''
         k_ = k/np.linalg.norm(k, axis=0)
         if len(k.shape) == 1:
             G = np.exp(1j)*0.0
@@ -56,8 +64,7 @@ class Array(Beam):
         for r in self.antennas:
             G += plane_wave(k_,r/wavelength,p)
 
-        return np.abs(G)*self.antenna_element(k_)
-
+        return G*self.antenna_element(k_)
 
 
 class CrossDipoleArray(Array):
@@ -67,6 +74,6 @@ class CrossDipoleArray(Array):
 
     '''
     def antenna_element(self, k):
-        '''Cross Dipole antenna gain pattern approximated by the zenith angle-cosine
+        '''Cross Dipole antenna gain pattern
         '''
-        return self.pointing[2]*self.scaling*k[2]
+        return self.scaling*k[2]

@@ -5,6 +5,9 @@
 (c) 2020 Daniel Kastinen
 '''
 
+from .beam import Beam
+from .beams import Beams
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -36,7 +39,7 @@ def antenna_configuration(antennas, ax=None):
 def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True):
     '''Creates a heatmap of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
     
-    :param Beam beam: Beam pattern to plot.
+    :param Beam/Beams beam: Beam pattern to plot.
     :param int resolution: Number of points to divide the wave vector x and y components into, total number of calculation points is the square of this number.
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     :param int levels: Number of levels in the contour plot.
@@ -53,15 +56,22 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
     else:
         fig = None
 
+    if isinstance(beam, Beam):
+        pointing = beam.pointing
+    elif isinstance(beam, Beams):
+        pointing = np.array([0,0,1])
+    else:
+        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+
 
     kx=np.linspace(
-        beam.pointing[0] - np.cos(min_elevation*np.pi/180.0),
-        beam.pointing[0] + np.cos(min_elevation*np.pi/180.0),
+        pointing[0] - np.cos(min_elevation*np.pi/180.0),
+        pointing[0] + np.cos(min_elevation*np.pi/180.0),
         num=resolution,
     )
     ky=np.linspace(
-        beam.pointing[1] - np.cos(min_elevation*np.pi/180.0),
-        beam.pointing[1] + np.cos(min_elevation*np.pi/180.0),
+        pointing[1] - np.cos(min_elevation*np.pi/180.0),
+        pointing[1] + np.cos(min_elevation*np.pi/180.0),
         num=resolution,
     )
     
@@ -76,26 +86,38 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
         k[1,:] = K[:,:,1].reshape(1,size)
 
         z2 = k[0,:]**2 + k[1,:]**2
-        z2_c = (beam.pointing[0] - k[0,:])**2 + (beam.pointing[1] - k[1,:])**2
+        z2_c = (pointing[0] - k[0,:])**2 + (pointing[1] - k[1,:])**2
         inds_ = np.logical_and(z2_c < np.cos(min_elevation*np.pi/180.0)**2, z2 <= 1.0)
         not_inds_ = np.logical_not(inds_)
 
         k[2,inds_] = np.sqrt(1.0 - z2[inds_])
         k[2,not_inds_] = 0
         S = np.ones((1,size))
-        S[0,inds_] = beam.gain(k[:,inds_])
+        if isinstance(beam, Beam):
+            S[0,inds_] = beam.gain(k[:,inds_])
+        elif isinstance(beam, Beams):
+            S[0,inds_] = beam.total_gain('add', k[:,inds_])
+        else:
+            raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+        
         S = S.reshape(resolution,resolution)
 
     else:
         S = np.ones((resolution,resolution))
         for i,x in enumerate(kx):
             for j,y in enumerate(ky):
-                z2_c = (beam.pointing[0]-x)**2 + (beam.pointing[1]-y)**2
+                z2_c = (pointing[0]-x)**2 + (pointing[1]-y)**2
                 z2 = x**2 + y**2
                 if z2_c < np.cos(min_elevation*np.pi/180.0)**2 and z2 <= 1.0:
 
                     k=np.array([x, y, np.sqrt(1.0 - z2)])
-                    S[i,j]=beam.gain(k)
+                    if isinstance(beam, Beam):
+                        S[i,j]=beam.gain(k)
+                    elif isinstance(beam, Beams):
+                        S[i,j] = beam.total_gain('add', k)
+                    else:
+                        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+                    
                 K[i,j,0]=x
                 K[i,j,1]=y
     

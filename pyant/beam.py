@@ -79,6 +79,12 @@ class Beam(ABC):
         return NotImplementedError('')
 
 
+    def complex(self,k):
+        '''The complex voltage output can be implemented as a middle step in gain calculation.
+        '''
+        return NotImplementedError('')
+
+
     def sph_point(self, azimuth, elevation, radians=None):
         '''Point beam towards azimuth and elevation coordinate.
         

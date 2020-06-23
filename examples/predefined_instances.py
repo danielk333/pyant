@@ -37,5 +37,7 @@ pyant.plotting.antenna_configuration(e3d.antennas)
 pyant.plotting.antenna_configuration(lib.e3d_array_module.antennas)
 
 pyant.plotting.gain_heatmap(e3d, resolution=100, min_elevation=80.0)
+e3d.sph_point(azimuth=45, elevation=50.0)
+pyant.plotting.gain_heatmap(e3d, resolution=100, min_elevation=80.0)
 pyant.plotting.show()
 

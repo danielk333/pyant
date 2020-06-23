@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''A collection of functions that return instances of the :class:`~pyant.Beam` for the EISCAT 3D Radar system.
+'''A collection of functions and information for the EISCAT 3D Radar system.
 
 '''
 

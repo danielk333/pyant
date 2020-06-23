@@ -25,6 +25,8 @@ class FiniteCylindricalParabola(Beam):
         self.height = height
 
     def local_to_pointing(self, k):
+        '''Convert from local wave vector direction to bore-sight relative longitudinal and transverse angles.
+        '''
         k_ = k/np.linalg.norm(k, axis=0)
         
         if self.radians:
