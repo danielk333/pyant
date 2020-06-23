@@ -79,7 +79,7 @@ class Beam(ABC):
         return NotImplementedError('')
 
 
-    def complex(self,k):
+    def complex(self, k):
         '''The complex voltage output can be implemented as a middle step in gain calculation.
         '''
         return NotImplementedError('')

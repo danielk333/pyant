@@ -7,15 +7,16 @@
 __all__ = []
 
 from ..gaussian import Gaussian
-from ..array import Array, CrossDipoleArray
+from ..array import Array
 from ..finite_cylindrical_parabola import FiniteCylindricalParabola
 
 from ..beams import Beams
 
 from . import eiscat3d
 from . import tromso_space_debris_radar as tsdr_module
+from .eiscat_uhf import EISCAT_UHF
 
-e3d_array_module = CrossDipoleArray(
+e3d_array_module = Array(
     azimuth = 0.0, 
     elevation = 90.0, 
     frequency = eiscat3d.e3d_frequency, 
@@ -26,14 +27,14 @@ e3d_array_module = CrossDipoleArray(
     scaling = eiscat3d.e3d_antenna_gain,
     radians = False,
 )
-'''EISCAT 3D Gain pattern for single antenna subarray.
+'''EISCAT 3D Gain pattern for single antenna sub-array.
 
 **Reference:** ???
 '''
 __all__ += ['e3d_array_module']
 
 
-e3d_array_stage1 = CrossDipoleArray(
+e3d_array_stage1 = Array(
     azimuth = 0.0, 
     elevation = 90.0, 
     frequency = eiscat3d.e3d_frequency, 
@@ -44,14 +45,14 @@ e3d_array_stage1 = CrossDipoleArray(
     scaling = eiscat3d.e3d_antenna_gain,
     radians = False,
 )
-'''EISCAT 3D Gain pattern for a dense core of active subarrays, i.e stage 1 of development.
+'''EISCAT 3D Gain pattern for a dense core of active sub-arrays, i.e stage 1 of development.
 
 **Reference:** ???
 '''
 __all__ += ['e3d_array_stage1']
 
 
-e3d_array_stage2 = CrossDipoleArray(
+e3d_array_stage2 = Array(
     azimuth = 0.0, 
     elevation = 90.0, 
     frequency = eiscat3d.e3d_frequency, 
@@ -62,7 +63,7 @@ e3d_array_stage2 = CrossDipoleArray(
     scaling = eiscat3d.e3d_antenna_gain,
     radians = False,
 )
-'''EISCAT 3D Gain pattern for a full site of active subarrays, i.e stage 2 of development.
+'''EISCAT 3D Gain pattern for a full site of active sub-arrays, i.e stage 2 of development.
 
 **Reference:** ???
 '''
@@ -97,3 +98,11 @@ tsdr_fence = Beams([
 '''Tromso Space Debris Radar system with panels moving independently.
 '''
 __all__ += ['tsdr_fence']
+
+e_uhf = EISCAT_UHF(
+    azimuth=0,
+    elevation=90.0,
+)
+'''EISCAT UHF
+'''
+__all__ += ['e_uhf']

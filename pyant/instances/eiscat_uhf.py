@@ -3,30 +3,39 @@
 '''
 
 '''
+import importlib.resources
+
+import numpy as np
+import scipy.interpolate
+
+from ..beam import Beam
+from .. import coordinates
 
 
+with importlib.resources.path('pyant.instances.data', 'eiscat_uhf_bp.txt') as pth:
+    _eiscat_beam_data = np.genfromtxt(pth)
 
-# def uhf_meas(k_in,beam):
-#     '''Measured UHF beam pattern
 
-#     '''
-#     theta = coord.angle_deg(beam.on_axis,k_in)
-#     # scale beam width by frequency
-#     sf=beam.f/930e6
-    
-#     return(beam.I_0*beam.gf(sf*np.abs(theta)))
+class EISCAT_UHF(Beam):
+    '''Measured gain pattern of the EISCAT UHF radar.
 
-# def uhf_beam(az0, el0, I_0, f, beam_name='UHF Measured beam'):
-#     '''# TODO: Description.
+    **Reference:** ???
+    '''
 
-#     '''
-#     beam = antenna.BeamPattern(uhf_meas, az0, el0, I_0, f, beam_name=beam_name)
+    def __init__(self, azimuth, elevation, frequency = 930e6, **kwargs):
+        super().__init__(azimuth, elevation, frequency, **kwargs)
 
-#     bmod=np.genfromtxt("data/bp.txt")
-#     angle=bmod[:,0]
-#     gain=10**(bmod[:,1]/10.0)
-#     gf=sio.interp1d(np.abs(angle),gain)
-    
-#     beam.gf = gf
-#     return beam
+        angle = _eiscat_beam_data[:,0]
+        gain = 10**(_eiscat_beam_data[:,1]/10.0)
+
+        self.beam_function = scipy.interpolate.interp1d(np.abs(angle),gain)
+
+
+    def gain(self, k):
+        theta = coordinates.vector_angle(self.pointing, k, radians=True)
+
+        sf=self.frequency/930e6 
+        G = 10**4.81*self.beam_function(sf*np.abs(theta))
+
+        return G
 

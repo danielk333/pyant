@@ -19,20 +19,37 @@ def plane_wave(k,r,p):
 
 
 class Array(Beam):
-    '''Gain pattern of an antenna array radar receiving/transmitting plane waves.
+    '''Gain pattern of an antenna array radar receiving/transmitting plane waves. Assumes the same antenna is used throughout the array.
 
+    Antennas can be combined into a single channel of multiple depending on the shape of the input :code:`antenna` ndarray.
 
-    :param numpy.ndarray antennas: `(n, 3)` matrix of antenna spatial positions, where `n` is the number of antennas.
+    :param numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of antenna spatial positions, where `n` is the number of antennas and `c` is the number of sub-arrays.
     :param float scaling: Scaling parameter for the output gain, can be interpreted as an antenna element scalar gain.
 
-    :ivar numpy.ndarray antennas: `(n, 3)` matrix of antenna spatial positions, where `n` is the number of antennas.
+    :ivar numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of antenna spatial positions, where `n` is the number of antennas and `c` is the number of sub-arrays.
     :ivar float scaling: Scaling parameter for the output gain, can be interpreted as an antenna element scalar gain.
+    :ivar int channels: Number of sub-arrays the antenna array has, i.e the number of channels.
 
     '''
     def __init__(self, azimuth, elevation, frequency, antennas, scaling=1.0, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
+        assert len(antennas.shape) in [2,3]
+        assert antennas.shape[0] == 3
+        assert isinstance(antennas, np.ndarray)
+
+        if len(antennas.shape) == 2:
+            antennas = antennas.reshape(antennas.shape[0], antennas.shape[1], 1)
+        antennas = np.transpose(antennas, (1, 0, 2))
+
         self.antennas = antennas
         self.scaling = scaling
+
+
+    @property
+    def channels(self):
+        '''Number of channels returned by complex output.
+        '''
+        return self.antennas.shape[2]
 
 
     def antenna_element(self, k):
@@ -44,36 +61,32 @@ class Array(Beam):
     def gain(self, k):
         '''Gain of the antenna array.
         '''
-        G = self.complex(k)
-        return np.abs(G)
+        G = self.complex(k, channels=None)
+        return np.abs(np.sum(G,axis=0))
 
 
-    def complex(self, k):
+    def complex(self, k, channels=None):
         '''Complex voltage output signal after summation of antennas.
         '''
+        inds = np.arange(self.channels, dtype=np.int)
+        if channels is not None:
+            inds[channels] = True
+
+        chan_num = len(inds)
+
         k_ = k/np.linalg.norm(k, axis=0)
         if len(k.shape) == 1:
-            G = np.exp(1j)*0.0
+            G = np.zeros((chan_num, ), dtype=np.complex128)
             p = self.pointing
         else:
-            G = np.zeros((k.shape[1],), dtype=np.complex128)
+            G = np.zeros((chan_num, k.shape[1]), dtype=np.complex128)
             p = np.repeat(self.pointing.reshape(3,1),k.shape[1], axis=1)
         wavelength = self.wavelength
 
         #r in meters, divide by lambda
-        for r in self.antennas:
-            G += plane_wave(k_,r/wavelength,p)
+        for i in range(chan_num):
+            for r in self.antennas[:,:,inds[i]]:
+                G[i,...] += plane_wave(k_,r/wavelength,p)
 
         return G*self.antenna_element(k_)
 
-
-class CrossDipoleArray(Array):
-    '''Gain pattern of an Cross Dipole antenna array radar receiving/transmitting plane waves.
-
-
-
-    '''
-    def antenna_element(self, k):
-        '''Cross Dipole antenna gain pattern
-        '''
-        return self.scaling*k[2]

@@ -18,7 +18,7 @@ def show():
     plt.show()
 
 
-def antenna_configuration(antennas, ax=None):
+def antenna_configuration(antennas, ax=None, color=None):
     '''Plot the 3d antenna positions
     '''
     if ax is None:
@@ -27,7 +27,17 @@ def antenna_configuration(antennas, ax=None):
     else:
         fig = None
 
-    ax.plot(antennas[:,0], antennas[:,1], antennas[:,2],  '.b')
+    if color is None:
+        style_ = '.'
+    else:
+        style_ = '.' + color
+
+    ax.plot(
+        antennas[:,0,:].flatten(), 
+        antennas[:,1,:].flatten(), 
+        antennas[:,2,:].flatten(),  
+        style_
+    )
     ax.set_title('Antennas', fontsize=22)
     ax.set_xlabel('X-position $x$ [m]', fontsize=20)
     ax.set_ylabel('Y-position $y$ [m]', fontsize=20)

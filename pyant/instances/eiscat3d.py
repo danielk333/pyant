@@ -82,9 +82,11 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
     elif configuration == 'module':
         dat = np.zeros((1,2))
 
-    antennas = []
+    antennas = np.zeros((3, len(sx), dat.shape[0]), dtype=dat.dtype)
     for i in range(dat.shape[0]):
         for j in range(len(sx)):
-            antennas.append([ sx[j] + dat[i,0],sy[j] + dat[i,1],sz[j] ])
-    return np.array(antennas)
+            antennas[0,j,i] = sx[j] + dat[i,0]
+            antennas[1,j,i] = sy[j] + dat[i,1]
+            antennas[2,j,i] = sz[j]
+    return antennas
 
