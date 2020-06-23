@@ -7,9 +7,7 @@ import time
 import numpy as np
 import pyant
 
-
-number = 1000
-kn = 1000
+kn = 500
 
 ant = pyant.Airy(
     azimuth=45.0,
@@ -51,7 +49,19 @@ G = G.reshape(len(kx),len(ky))
 
 vector_time = time.time() - start_time
 
-print(G)
-
 print(f'"Airy.gain" ({size}) loop       performance: {loop_time:.1e} seconds')
 print(f'"Airy.gain" ({size}) vectorized performance: {vector_time:.1e} seconds')
+
+#Can also do vectorized spherical arguments, there is some extra overhead for this feature
+start_time = time.time()
+G_sph = ant.sph_gain(azimuth=np.linspace(0,360,num=size), elevation=np.ones((size,))*75.0)
+vector_time = time.time() - start_time
+
+
+start_time = time.time()
+for az in np.linspace(0,360,num=size):
+    G_sph = ant.sph_gain(azimuth=az, elevation=75.0)
+loop_time = time.time() - start_time
+
+print(f'"Airy.sph_gain" ({size}) loop       performance: {loop_time:.1e} seconds')
+print(f'"Airy.sph_gain" ({size}) vectorized performance: {vector_time:.1e} seconds')

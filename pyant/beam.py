@@ -52,6 +52,21 @@ class Beam(ABC):
                 else:
                     return np.radians(azimuth), np.radians(elevation)
 
+    @staticmethod
+    def _azel_to_numpy(azimuth, elevation):
+        if isinstance(azimuth, np.ndarray):
+            sph = np.ones((3,len(azimuth)), dtype=azimuth.dtype)
+        elif isinstance(elevation, np.ndarray):
+            sph = np.ones((3,len(elevation)), dtype=elevation.dtype)
+        else:
+            sph = np.empty((3,), dtype=np.float64)
+
+        sph[0,...] = azimuth
+        sph[1,...] = elevation
+        sph[2,...] = 1.0
+
+        return sph
+
 
     @property
     def wavelength(self):
@@ -111,7 +126,9 @@ class Beam(ABC):
         if radians is None:
             radians = self.radians
 
-        direction = coordinates.sph_to_cart(np.array([azimuth, elevation, 1.0]), radians=radians)
+        sph = Beam._azel_to_numpy(azimuth, elevation)
+
+        direction = coordinates.sph_to_cart(sph, radians=radians)
         return coordinates.vector_angle(self.pointing, direction, radians=radians)
 
     def angle(self, k, radians=None):
@@ -152,5 +169,7 @@ class Beam(ABC):
         if radians is None:
             radians = self.radians
 
-        k = coordinates.sph_to_cart(np.array([azimuth, elevation, 1.0]), radians=radians)
+        sph = Beam._azel_to_numpy(azimuth, elevation)
+
+        k = coordinates.sph_to_cart(sph, radians=radians)
         return self.gain(k)
