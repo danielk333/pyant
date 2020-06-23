@@ -9,6 +9,13 @@ import pyant.instances as lib
 
 print(lib.__all__)
 
+e3d_m = lib.e3d_array_module
+e3d_m_I0 = e3d_m.sph_gain(
+    azimuth=e3d_m.azimuth, 
+    elevation=e3d_m.elevation,
+)
+print(f'EISCAT 3D Module peak gain: {10*np.log10(e3d_m_I0)}')
+
 e3d = lib.e3d_array_stage1
 
 e3d_I0 = e3d.sph_gain(
