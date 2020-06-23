@@ -111,7 +111,7 @@ class Beam(ABC):
         if radians is None:
             radians = self.radians
 
-        direction = coordinates.azel_to_cart(azimuth, elevation, 1.0, radians=radians)
+        direction = coordinates.sph_to_cart(np.array([azimuth, elevation, 1.0]), radians=radians)
         return coordinates.vector_angle(self.pointing, direction, radians=radians)
 
     def angle(self, k, radians=None):
@@ -152,5 +152,5 @@ class Beam(ABC):
         if radians is None:
             radians = self.radians
 
-        k = coordinates.azel_to_cart(azimuth, elevation, 1.0, radians=radians)
+        k = coordinates.sph_to_cart(np.array([azimuth, elevation, 1.0]), radians=radians)
         return self.gain(k)
