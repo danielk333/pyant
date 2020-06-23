@@ -7,11 +7,30 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 def show():
     '''Shorthand for matplotlib :code:`show` function.'''
     plt.show()
+
+
+def antenna_configuration(antennas, ax=None):
+    '''Plot the 3d antenna positions
+    '''
+    if ax is None:
+        fig = plt.figure(figsize=(15,7))
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        fig = None
+
+    ax.plot(antennas[:,0], antennas[:,1], antennas[:,2],  '.b')
+    ax.set_title('Antennas', fontsize=22)
+    ax.set_xlabel('X-position $x$ [m]', fontsize=20)
+    ax.set_ylabel('Y-position $y$ [m]', fontsize=20)
+    ax.set_zlabel('Z-position $z$ [m]', fontsize=20)
+
+    return fig, ax
 
 
 def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True):

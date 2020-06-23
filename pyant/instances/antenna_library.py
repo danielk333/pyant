@@ -23,6 +23,23 @@ import h5py
 
 
 
+def e3d_module_beam(az0=0, el0=90.0, I_0=10**2.2):
+    '''# TODO: Description.
+
+    '''
+    sx,sy,sz = e3d_subarray(233e6)
+    antennas = []
+    for j in range(len(sx)):
+        antennas.append([ sx[j] ,sy[j] ,sz[j] ])
+    antennas = np.array(antennas)
+
+    beam = array_beam(az0, el0, I_0=I_0, f=233e6, antennas = antennas)
+    beam.beam_name = 'E3D module'
+    beam.antennas_n = antennas.shape[0]
+    return beam
+
+
+
 def uhf_meas(k_in,beam):
     '''Measured UHF beam pattern
 
@@ -40,15 +57,6 @@ def uhf_meas(k_in,beam):
 
 
 
-def airy_beam(az0, el0, I_0, f, a):
-    '''# TODO: Description.
-
-    '''
-    beam = antenna.BeamPattern(airy, az0, el0, I_0, f, beam_name='Airy')
-    beam.a = a
-    return beam
-
-
 def uhf_beam(az0, el0, I_0, f, beam_name='UHF Measured beam'):
     '''# TODO: Description.
 
@@ -62,34 +70,6 @@ def uhf_beam(az0, el0, I_0, f, beam_name='UHF Measured beam'):
     
     beam.gf = gf
     return beam
-
-
-def cassegrain_beam(az0, el0, I_0, f, a0, a1, beam_name="Cassegrain"):
-    '''# TODO: Description.
-
-    az and el of on-axis
-    lat and lon of location
-    I_0 gain on-axis
-    a0 diameter of main reflector
-    a1 diameter of the subreflector
-    '''
-    beam = antenna.BeamPattern(cassegrain, az0, el0, I_0, f, beam_name=beam_name)
-    beam.a0 = a0
-    beam.a1 = a1
-    return beam
-
-def planar_beam(az0, el0, I_0, f, a0, az1, el1):
-    '''# TODO: Description.
-
-    '''
-    beam = antenna.BeamPattern(planar, az0, el0, I_0, f, beam_name='Planar')
-    beam.a0 = a0
-    beam.plane_normal=coord.azel_to_cart(az1, el1, 1.0)
-    beam.lam=c.c/f
-    beam.point(az0,el0)
-    return beam
-
-
 
 
 

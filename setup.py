@@ -23,6 +23,9 @@ setuptools.setup(
     ],
     install_requires=pip_req,
     packages=setuptools.find_packages(),
+    package_data={
+        'pyant.instances': ['data/*'],
+    },
     extras_require={'plotting': ['matplotlib>=3.2.0']},
     # metadata to display on PyPI
     author='Daniel Kastinen',
