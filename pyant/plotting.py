@@ -63,12 +63,12 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
 
         k[2,inds_] = np.sqrt(1.0 - z2[inds_])
         k[2,not_inds_] = 0
-        S = np.zeros((1,size))
+        S = np.ones((1,size))
         S[0,inds_] = beam.gain(k[:,inds_])
         S = S.reshape(resolution,resolution)
 
     else:
-        S = np.zeros((resolution,resolution))
+        S = np.ones((resolution,resolution))
         for i,x in enumerate(kx):
             for j,y in enumerate(ky):
                 z2_c = (beam.pointing[0]-x)**2 + (beam.pointing[1]-y)**2
