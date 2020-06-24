@@ -11,7 +11,7 @@ import numpy as np
 import scipy.constants
 
 e3d_frequency = 233e6
-e3d_antenna_gain = 10.0**0.5 #5 dB antenna gain
+e3d_antenna_gain = 10.0**0.3 #3 dB peak antenna gain?
 
 
 def e3d_subarray(freqeuncy):

@@ -59,6 +59,9 @@ class Array(Beam):
             antennas = antennas.reshape(antennas.shape[0], antennas.shape[1], 1)
         antennas = np.transpose(antennas, (1, 0, 2))
 
+        if not np.all(np.iscomplex(polarization)):
+            polarization = polarization.astype(np.complex128)
+
         self.antennas = antennas
         self.scaling = scaling
         self.polarization = polarization
@@ -83,12 +86,18 @@ class Array(Beam):
         '''
         if polarization is None:
             polarization = self.polarization
+        elif not np.all(np.iscomplex(polarization)):
+            polarization = polarization.astype(np.complex128)
+
         G = self.complex(k, polarization, channels=None)
 
-        pol_comp = self.polarization[0]*self.polarization[1].conj()
-        pol_comp = pol_comp.conj()/np.abs(pol_comp)
-        
-        G[:,0,...] *= pol_comp #compensate for polarization
+        lin_pol_check = np.abs(self.polarization) < 1e-6
+        if not np.any(lin_pol_check):
+
+            pol_comp = self.polarization[0]*self.polarization[1].conj()
+            pol_comp = pol_comp.conj()/np.abs(pol_comp)
+            G[:,0,...] *= pol_comp #align polarizations
+
         G = np.sum(G,axis=1) #coherent intergeneration over polarization
         G = np.sum(G,axis=0) #coherent intergeneration over channels
         return np.abs(G)
