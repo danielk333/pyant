@@ -6,12 +6,14 @@
 '''
 
 from .beam import Beam
-from .beams import Beams
 
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+
+import functools
+import operator
 
 def show():
     '''Shorthand for matplotlib :code:`show` function.'''
@@ -68,7 +70,7 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
 
     if isinstance(beam, Beam):
         pointing = beam.pointing
-    elif isinstance(beam, Beams):
+    elif isinstance(beam, list):
         pointing = np.array([0,0,1])
     else:
         raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
@@ -97,6 +99,7 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
 
         z2 = k[0,:]**2 + k[1,:]**2
         z2_c = (pointing[0] - k[0,:])**2 + (pointing[1] - k[1,:])**2
+
         inds_ = np.logical_and(z2_c < np.cos(min_elevation*np.pi/180.0)**2, z2 <= 1.0)
         not_inds_ = np.logical_not(inds_)
 
@@ -105,10 +108,10 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
         S = np.ones((1,size))
         if isinstance(beam, Beam):
             S[0,inds_] = beam.gain(k[:,inds_])
-        elif isinstance(beam, Beams):
-            S[0,inds_] = beam.total_gain('add', k[:,inds_])
+        elif isinstance(beam, list):
+            S[0,inds_] = functools.reduce(operator.add, [b.gain(k[:,inds_]) for b in beam])
         else:
-            raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+            raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
         
         S = S.reshape(resolution,resolution)
 
@@ -123,10 +126,10 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
                     k=np.array([x, y, np.sqrt(1.0 - z2)])
                     if isinstance(beam, Beam):
                         S[i,j]=beam.gain(k)
-                    elif isinstance(beam, Beams):
-                        S[i,j] = beam.total_gain('add', k)
+                    elif isinstance(beam, list):
+                        S[i,j] = functools.reduce(operator.add, [b.gain(k) for b in beam])
                     else:
-                        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+                        raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
                     
                 K[i,j,0]=x
                 K[i,j,1]=y

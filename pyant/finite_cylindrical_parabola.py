@@ -44,7 +44,7 @@ class FiniteCylindricalParabola(Beam):
 
         return theta, phi
 
-    def gain(self, k):
+    def gain(self, k, polarization=None):
         theta, phi = self.local_to_pointing(k)
 
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians

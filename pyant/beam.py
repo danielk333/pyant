@@ -79,8 +79,8 @@ class Beam(ABC):
         return NotImplementedError('')
 
 
-    def complex(self, k):
-        '''The complex voltage output can be implemented as a middle step in gain calculation.
+    def complex(self, k, polarization):
+        '''The complex voltage output can be implemented as a middle step in gain calculation. Can include polarization channels.
         '''
         return NotImplementedError('')
 
@@ -152,7 +152,7 @@ class Beam(ABC):
         return coordinates.vector_angle(self.pointing, k, radians=radians)
 
     @abstractmethod
-    def gain(self, k):
+    def gain(self, k, polarization=None):
         '''Return the gain in the given direction. This method should be vectorized.
 
         :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.

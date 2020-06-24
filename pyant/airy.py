@@ -28,7 +28,7 @@ class Airy(Beam):
         self.radius = radius
 
 
-    def gain(self, k):
+    def gain(self, k, polarization=None):
         theta = coordinates.vector_angle(self.pointing, k, radians=True)
 
         lam = self.wavelength

@@ -84,7 +84,7 @@ tsdr = FiniteCylindricalParabola(
 '''
 __all__ += ['tsdr']
 
-tsdr_fence = Beams([
+tsdr_fence = [
     FiniteCylindricalParabola(
         azimuth=az,
         elevation=el, 
@@ -94,8 +94,10 @@ tsdr_fence = Beams([
         height=40.0,
     )
     for az, el in zip([0.0, 0.0, 0.0, 180.0], [30.0, 60.0, 90.0, 60.0])
-])
+]
 '''Tromso Space Debris Radar system with panels moving independently.
+
+TODO: write proper notes about this: approx with panels and sidelobe distoritons and things
 '''
 __all__ += ['tsdr_fence']
 

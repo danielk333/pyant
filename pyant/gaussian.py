@@ -33,7 +33,7 @@ class Gaussian(Beam):
         )
 
 
-    def gain(self, k):
+    def gain(self, k, polarization=None):
         if np.abs(1-np.dot(self.pointing,self.normal)) < 1e-6:
             rd=np.random.randn(3)
             rd=rd/np.sqrt(np.dot(rd,rd))

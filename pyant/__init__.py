@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-'''
+'''GAIN IS AMPLITUDE AMPLIFICATION!!!!! DAMIT 
 
 '''
 
 from .version import __version__
 
 from .beam import Beam
-from .beams import Beams
 from . import coordinates
 
 from .airy import Airy

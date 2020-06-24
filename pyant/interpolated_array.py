@@ -15,7 +15,7 @@ class PlaneArrayInterp(Interpolation):
         super().__init__(azimuth, elevation, frequency, **kwargs)
 
 
-    def pointing_transform(self, k):
+    def pointing_transform(self, k, polarization=None):
         k_ = k/np.linalg.norm(k, axis=0)
 
         theta = -np.arctan2(self.pointing[1], self.pointing[0])

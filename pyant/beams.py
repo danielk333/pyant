@@ -8,6 +8,15 @@ from . import coordinates
 
 class Beams(list):
     '''Collection of beams.
+
+    Creates super-methods prefixed with :code:`get_` and :code:`total_`. 
+    The :code:`get_X` methods calls the method :code:`X` on each element 
+    in the list and returns a list with the results from all beams. 
+    The :code:`total_X` method calls the :code:`get_X` method and performs 
+    `reduce` on the result using the supplied `operator`. 
+    `operator` Can be a instance retrieved from the `operator` module, 
+    e.g :code:`operator='add'` to perform a sum.
+
     '''
     @property
     def wavelength(self):
