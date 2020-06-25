@@ -48,10 +48,11 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True):
+def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True):
     '''Creates a heatmap of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
     
     :param Beam/Beams beam: Beam pattern to plot.
+    :param numpy.ndarray polarization: The polarization in terms of a Jones vector of the incoming waves.
     :param int resolution: Number of points to divide the wave vector x and y components into, total number of calculation points is the square of this number.
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     :param int levels: Number of levels in the contour plot.
@@ -107,9 +108,9 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
         k[2,not_inds_] = 0
         S = np.ones((1,size))
         if isinstance(beam, Beam):
-            S[0,inds_] = beam.gain(k[:,inds_])
+            S[0,inds_] = beam.gain(k[:,inds_], polarization=polarization)
         elif isinstance(beam, list):
-            S[0,inds_] = functools.reduce(operator.add, [b.gain(k[:,inds_]) for b in beam])
+            S[0,inds_] = functools.reduce(operator.add, [b.gain(k[:,inds_], polarization=polarization) for b in beam])
         else:
             raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
         
@@ -125,9 +126,9 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
 
                     k=np.array([x, y, np.sqrt(1.0 - z2)])
                     if isinstance(beam, Beam):
-                        S[i,j] = beam.gain(k)
+                        S[i,j] = beam.gain(k, polarization=polarization)
                     elif isinstance(beam, list):
-                        S[i,j] = functools.reduce(operator.add, [b.gain(k) for b in beam])
+                        S[i,j] = functools.reduce(operator.add, [b.gain(k, polarization=polarization) for b in beam])
                     else:
                         raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
                     

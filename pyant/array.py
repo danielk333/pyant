@@ -142,7 +142,13 @@ class Array(Beam):
         return psi
 
 
-class DipoleArray(Beam):
+class DipoleArray(Array):
+    '''Array of dipole antennas.
+
+    :param float antenna_rotation: Azimuth east of north of the dipole axis.
+
+    :ivar float antenna_rotation: Azimuth east of north of the dipole axis.
+    '''
 
     def __init__(self, 
             azimuth, 
@@ -173,8 +179,9 @@ class DipoleArray(Beam):
         else:
             antr = self.antenna_rotation
 
-        raise NotImplementedError('')
-        ret = np.ones(polarization.shape, dtype=k.dtype)
-        ret[0] = np.cos(antr)
-        ret[0] = np.sin(antr)
-        return ret[:,None]*k[2,:]*self.scaling
+        az = np.pi/2 - np.arctan2(k[1,...],k[0,...])
+
+        ret = np.ones((2, k.shape[1]), dtype=k.dtype)
+        ret[0,...] = np.sin(az - antr)*k[2,:]
+        ret[1,...] = 0.0
+        return ret*self.scaling
