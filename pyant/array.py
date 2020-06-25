@@ -141,3 +141,40 @@ class Array(Beam):
 
         return psi
 
+
+class DipoleArray(Beam):
+
+    def __init__(self, 
+            azimuth, 
+            elevation, 
+            frequency, 
+            antennas, 
+            polarization=np.array([1, 1j])/np.sqrt(2), 
+            scaling=1.0, 
+            antenna_rotation = 0.0,
+            **kwargs
+        ):
+        super().__init__(
+            azimuth, 
+            elevation, 
+            frequency, 
+            antennas, 
+            polarization, 
+            scaling, 
+            **kwargs
+        )
+        self.antenna_rotation = antenna_rotation
+
+    def antenna_element(self, k, polarization):
+        '''Antenna element gain pattern, azimuthally symmetric dipole response.
+        '''
+        if not self.radians:
+            antr = np.radians(self.antenna_rotation)
+        else:
+            antr = self.antenna_rotation
+
+        raise NotImplementedError('')
+        ret = np.ones(polarization.shape, dtype=k.dtype)
+        ret[0] = np.cos(antr)
+        ret[0] = np.sin(antr)
+        return ret[:,None]*k[2,:]*self.scaling

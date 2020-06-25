@@ -4,13 +4,11 @@
 
 '''
 
-#Python standard import
-import importlib.resources
-
 import numpy as np
 import scipy.constants
 
 tsdr_frequency = 224.0e6
+tsdr_default_peak_gain = 10**4.81
 
 def find_normalization_constant(beam, num=4000):
 
@@ -26,10 +24,10 @@ def find_normalization_constant(beam, num=4000):
     k[2,:] = np.sqrt(1.0 - k[0,:]**2 + k[1,:]**2)
 
     G = np.zeros((1,size))
-    G[0,:] = beam.gain(k)
+    G[0,:] = beam.gain(k)/beam.I0
 
     # Normalise (4pi steradian * num.pixels / integrated gain / pi^2)
     scale = 4 * np.pi * len(G) / np.sum(G)   # Normalise over sphere
     sincint = np.pi*np.pi                    # Integral of the sinc^2()s: -inf:inf
 
-    return scale/sincint
+    return sincint/scale

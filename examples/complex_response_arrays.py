@@ -18,14 +18,14 @@ antennas = np.zeros((3, ant_n**2))
 antennas[0,:] = xv.flatten()
 antennas[1,:] = yv.flatten()
 
-ant = pyant.Array(
+beam = pyant.Array(
     azimuth=0,
     elevation=90.0, 
     frequency=46.5e6,
     antennas=antennas,
 )
 
-ant_lin = pyant.Array(
+beam_linp = pyant.Array(
     azimuth=0,
     elevation=90.0, 
     frequency=46.5e6,
@@ -37,11 +37,17 @@ k = np.array([0,0,1])
 km = np.array([[0,0,1],[0,0.1,0.9],[0,0.1,0.8]]).T
 
 
-print(f'Gain LHCP: {ant.gain(k)}')
-print(f'Gain LHCP: {ant.gain(km)}')
+print(f'Gain LHCP: {beam.gain(k)}')
+print(f'Gain LHCP: {beam.gain(km)}')
 
-print(f'Gain |H>: {ant_lin.gain(k)}')
-print(f'Gain |H>: {ant_lin.gain(km)}')
+print(f'Gain |H>: {beam_linp.gain(k)}')
+print(f'Gain |H>: {beam_linp.gain(km)}')
 
-print(f'Complex response from {k} of LHCP analysis when signal is |H>: {ant.complex(k=k, polarization=np.array([1,0]))}')
-print(f'Complex response from {k} of LHCP analysis when signal is LHCP: {ant.complex(k=k, polarization=ant.polarization)}')
+print(f'Complex response from {k} of LHCP analysis when signal is |H>: {beam.complex(k=k, polarization=np.array([1,0]))}')
+print(f'Complex response from {k} of LHCP analysis when signal is LHCP: {beam.complex(k=k, polarization=beam.polarization)}')
+
+print(f'Gain from {k} of LHCP analysis when signal is |H>: {beam.gain(k=k, polarization=np.array([1,0]))}')
+print(f'Gain from {k} of LHCP analysis when signal is LHCP: {beam.gain(k=k, polarization=beam.polarization)}')
+
+print(f'Gain from {k} of |H> analysis when signal is |H>: {beam_linp.gain(k=k, polarization=np.array([1,0]))}')
+print(f'Gain from {k} of |H> analysis when signal is LHCP: {beam_linp.gain(k=k, polarization=beam.polarization)}')

@@ -39,8 +39,8 @@ class FiniteCylindricalParabola(Beam):
 
         kb = Rx.dot(Rz.dot(k_))
 
-        theta = np.arcsin(kb[1])
-        phi = np.arcsin(kb[0])
+        theta = np.arcsin(kb[1,...])
+        phi = np.arcsin(kb[0,...])
 
         return theta, phi
 
@@ -54,5 +54,6 @@ class FiniteCylindricalParabola(Beam):
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*np.cos(phi)         # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
+        # G = np.abs(G) #amplitude??
 
         return G*self.I0

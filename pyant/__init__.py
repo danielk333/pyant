@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''GAIN IS AMPLITUDE AMPLIFICATION!!!!! DAMIT 
+'''
 
 '''
 

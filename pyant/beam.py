@@ -12,7 +12,7 @@ import scipy.constants
 from . import coordinates
 
 class Beam(ABC):
-    '''Defines the radiation pattern of a radar station.
+    '''Defines the radiation pattern, i.e gain, of a radar. Gain here means amplification of the electromagnetic wave amplitude when transfered to a complex voltage amplitude.
 
     :param float frequency: Frequency of radiation pattern.
     :param float azimuth: Azimuth of pointing direction.
@@ -71,6 +71,11 @@ class Beam(ABC):
     @property
     def wavelength(self):
         return scipy.constants.c/self.frequency
+
+
+    @wavelength.setter
+    def wavelength(self, val):
+        self.frequency = scipy.constants.c/val 
 
 
     def copy(self):
@@ -162,7 +167,7 @@ class Beam(ABC):
         pass
 
     
-    def sph_gain(self, azimuth, elevation, radians=None):
+    def sph_gain(self, azimuth, elevation, polarization=None, radians=None):
         '''Return the gain in the given direction.
 
         :param float azimuth: Azimuth east of north to evaluate gain in.
@@ -178,4 +183,4 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         k = coordinates.sph_to_cart(sph, radians=radians)
-        return self.gain(k)
+        return self.gain(k, polarization=polarization)

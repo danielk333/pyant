@@ -5,7 +5,7 @@ Gaussian planar array gain
 
 import pyant
 
-ant = pyant.Gaussian(
+beam = pyant.Gaussian(
     azimuth=0,
     elevation=90.0, 
     frequency=46.5e6,
@@ -16,5 +16,5 @@ ant = pyant.Gaussian(
 )
 
 
-pyant.plotting.gain_heatmap(ant, resolution=300, min_elevation=80.0)
+pyant.plotting.gain_heatmap(beam, resolution=300, min_elevation=80.0)
 pyant.plotting.show()

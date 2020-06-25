@@ -125,7 +125,7 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
 
                     k=np.array([x, y, np.sqrt(1.0 - z2)])
                     if isinstance(beam, Beam):
-                        S[i,j]=beam.gain(k)
+                        S[i,j] = beam.gain(k)
                     elif isinstance(beam, list):
                         S[i,j] = functools.reduce(operator.add, [b.gain(k) for b in beam])
                     else:
@@ -133,7 +133,7 @@ def gain_heatmap(beam, resolution=201, min_elevation=0.0, levels=20, ax=None, ve
                     
                 K[i,j,0]=x
                 K[i,j,1]=y
-    
+
     SdB = np.log10(S)*10.0
     SdB[np.isinf(SdB)] = 0
     SdB[np.isnan(SdB)] = 0
