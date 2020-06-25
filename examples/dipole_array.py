@@ -17,6 +17,7 @@ beam = pyant.DipoleArray(
     elevation=90.0, 
     frequency=46.5e6,
     antennas=antennas,
+    antenna_rotation=45.0,
 )
 
 ## Uncomment these to try the speed up for more complex gain calculations
