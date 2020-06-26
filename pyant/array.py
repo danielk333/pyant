@@ -155,7 +155,7 @@ class DipoleArray(Array):
             elevation, 
             frequency, 
             antennas, 
-            polarization=np.array([1, 1j])/np.sqrt(2), 
+            polarization=np.array([1, 0]), 
             scaling=1.0, 
             antenna_rotation = 0.0,
             **kwargs
@@ -172,7 +172,7 @@ class DipoleArray(Array):
         self.antenna_rotation = antenna_rotation
 
     def antenna_element(self, k, polarization):
-        '''Antenna element gain pattern, azimuthally symmetric dipole response.
+        '''Theoretical gain pattern of a single dipole antenna.
         '''
         if not self.radians:
             antr = np.radians(self.antenna_rotation)
@@ -181,7 +181,7 @@ class DipoleArray(Array):
 
         az = np.pi/2 - np.arctan2(k[1,...],k[0,...])
 
-        ret = np.ones((2, k.shape[1]), dtype=k.dtype)
-        ret[0,...] = np.sin(az - antr)*k[2,:]
+        ret = np.ones((2, k.shape[1]), dtype=np.complex128)
+        ret[0,...] = k[2,:]*(np.sin(az - antr)*polarization[0] + np.cos(az - antr)*polarization[1])
         ret[1,...] = 0.0
         return ret*self.scaling

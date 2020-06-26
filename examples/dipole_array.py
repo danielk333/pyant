@@ -2,8 +2,8 @@
 Dipole array
 =============
 '''
-import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 import pyant
 
@@ -20,15 +20,17 @@ beam = pyant.DipoleArray(
     antenna_rotation=45.0,
 )
 
-## Uncomment these to try the speed up for more complex gain calculations
+pols = [
+    (np.array([1, 1j])/np.sqrt(2), 'RHCP'),
+    (np.array([1, 0]), 'Vertical'),
+]
 
-# start_time = time.time()
-# pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=False)
-# print(f'"gain_heatmap" ({100**2}) loop       performance: {time.time() - start_time:.1e} seconds')
+fig, axes = plt.subplots(1,2,figsize=(10,6),dpi=80)
+for pol, ax in zip(pols, axes.flatten()):
+    jones, name = pol
+    pyant.plotting.gain_heatmap(beam, polarization = jones, ax=ax, min_elevation=80)
+    ax.set_title(f'Incoming Jones={name}', fontsize=22)
 
-# start_time = time.time()
-# pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=True)
-# print(f'"gain_heatmap" ({100**2}) vectorized performance: {time.time() - start_time:.1e} seconds')
+plt.suptitle(f'Square single-dipole antenna array @ {beam.antenna_rotation} degrees', fontsize=18)
 
-pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0)
 pyant.plotting.show()
