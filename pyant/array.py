@@ -94,7 +94,7 @@ class Array(Beam):
         return ret[:,None]*k[2,:]*self.scaling
 
 
-    def gain(self, k, polarization=None):
+    def gain(self, k, polarization=None, ind=None):
         '''Gain of the antenna array.
         '''
         if polarization is None:

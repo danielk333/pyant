@@ -6,6 +6,8 @@
 '''
 import numpy as np
 from abc import ABC, abstractmethod
+import collections
+
 
 import scipy.constants
 
@@ -30,13 +32,63 @@ class Beam(ABC):
     def __init__(self, azimuth, elevation, frequency, radians=False, **kwargs):
         '''Basic constructor.
         '''
-        self.frequency = frequency
-        self.azimuth = azimuth
-        self.elevation = elevation
-        self.radians = radians
+        if isinstance(frequency, list) or isinstance(frequency, tuple):
+            frequency = np.array(frequency, dtype=np.float64)
 
         sph = Beam._azel_to_numpy(azimuth, elevation)
+
+        self.frequency = frequency
+        self.azimuth = sph[0,...]
+        self.elevation = sph[1,...]
+        self.radians = radians
+
+
         self.pointing = coordinates.sph_to_cart(sph, radians = radians)
+
+    @staticmethod
+    def _get_len(obj):
+        if isinstance(obj, np.ndarray):
+            if len(obj.shape) == 0:
+                return None
+            else:
+                return obj.size
+        elif isinstance(obj, list) or isinstance(obj, tuple):
+            return len(obj)
+        else:
+            return None
+
+
+    def named_shape(self):
+        '''Return the named shape of all variables. This can be overridden to extend the possible variables contained in an instance.
+        '''
+        if len(self.pointing.shape) > 1:
+            p_len = self.pointing.shape[1]
+        else:
+            p_len = None
+        f_len = Beam._get_len(self.frequency)
+        return collections.OrderedDict(pointing=p_len, frequency=f_len)
+
+
+    @property
+    def shape(self):
+        '''The additional dimensions added to the output Gain.
+        '''
+        return tuple([x for x in self.named_shape().values() if x is not None])
+
+
+    @property
+    def variables(self):
+        return tuple([k for k,x in self.named_shape().items() if x is not None])
+
+
+    def default_ind(self, ind):
+        if ind is None:
+            ind = {}
+        shape = self.named_shape()
+        for key in shape:
+            if key not in ind and shape[key] is not None:
+                ind[key] = 0
+        return ind, shape
 
 
     def _check_radians(self, azimuth, elevation, radians):
@@ -53,13 +105,17 @@ class Beam(ABC):
 
     @staticmethod
     def _azel_to_numpy(azimuth, elevation):
-        if isinstance(azimuth, np.ndarray):
-            sph = np.ones((3,len(azimuth)), dtype=azimuth.dtype)
-        elif isinstance(elevation, np.ndarray):
-            sph = np.ones((3,len(elevation)), dtype=elevation.dtype)
-        else:
-            sph = np.empty((3,), dtype=np.float64)
+        az_len = Beam._get_len(azimuth)
+        el_len = Beam._get_len(elevation)
 
+        if az_len is not None:
+            shape = (3,az_len)
+        elif el_len is not None:
+            shape = (3,el_len)
+        else:
+            shape = (3,)
+
+        sph = np.empty(shape, dtype=np.float64)
         sph[0,...] = azimuth
         sph[1,...] = elevation
         sph[2,...] = 1.0
@@ -83,7 +139,7 @@ class Beam(ABC):
         return NotImplementedError('')
 
 
-    def complex(self, k, polarization):
+    def complex(self, k, polarization, ind):
         '''The complex voltage output can be implemented as a middle step in gain calculation. Can include polarization channels.
         '''
         return NotImplementedError('')
@@ -117,8 +173,8 @@ class Beam(ABC):
             self.pointing,
             radians = self.radians,
         )
-        self.azimuth = sph[0]
-        self.elevation = sph[1]
+        self.azimuth = sph[0,...]
+        self.elevation = sph[1,...]
         
 
     def sph_angle(self, azimuth, elevation, radians=None):
@@ -135,9 +191,8 @@ class Beam(ABC):
             radians = self.radians
 
         sph = Beam._azel_to_numpy(azimuth, elevation)
-
-        direction = coordinates.sph_to_cart(sph, radians=radians)
-        return coordinates.vector_angle(self.pointing, direction, radians=radians)
+        k = coordinates.sph_to_cart(sph, radians=radians)
+        return self.angle(k, radians=radians)
 
     def angle(self, k, radians=None):
         '''Get angle between local direction and pointing direction.
@@ -151,20 +206,35 @@ class Beam(ABC):
         if radians is None:
             radians = self.radians
 
-        return coordinates.vector_angle(self.pointing, k, radians=radians)
+        if len(self.pointing.shape) > 1:
+            if len(k.shape) > 1:
+                theta = np.empty((k.shape[1], self.pointing.shape[1]), dtype=k.dtype)
+            else:
+                theta = np.empty((self.pointing.shape[1], ), dtype=k.dtype)
+
+            for ind in range(self.pointing.shape[1]):
+                theta[...,ind] = coordinates.vector_angle(self.pointing[ind,:], k, radians=radians)
+        else:
+            theta = coordinates.vector_angle(self.pointing, k, radians=radians)
+
+        return theta
+
 
     @abstractmethod
-    def gain(self, k, polarization=None):
+    def gain(self, k, polarization=None, ind=None):
         '''Return the gain in the given direction. This method should be vectorized.
 
         :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.
+        :param numpy.ndarray polarization: The Jones vector of the incoming plane waves, if applicable for the beam in question.
+        :param dict ind: The incidences of the parameters that are variables. Defaults to the first element of each parameter. If e.g. pointing is a variable with 5 values, :code:`ind={'pointing':2}` would evaluate the gain using the third pointing direction.
+
         :return: Radar gain in the given direction. If input is a `(3,)` vector, output is a float. If input is a `(3,n)` matrix output is a `(n,)` vector of gains.
         :rtype: float/numpy.ndarray
         '''
         pass
 
     
-    def sph_gain(self, azimuth, elevation, polarization=None, radians=None):
+    def sph_gain(self, azimuth, elevation, polarization=None, radians=None, ind=None):
         '''Return the gain in the given direction.
 
         :param float azimuth: Azimuth east of north to evaluate gain in.
@@ -180,4 +250,4 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         k = coordinates.sph_to_cart(sph, radians=radians)
-        return self.gain(k, polarization=polarization)
+        return self.gain(k, polarization=polarization, ind = ind)

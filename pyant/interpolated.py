@@ -59,7 +59,7 @@ class Interpolation(Beam):
         self.interpolated = f_obj.item()
     
 
-    def gain(self, k, polarization=None):
+    def gain(self, k, polarization=None, ind=None):
         k_trans = self.pointing_transform(k)
 
         interp_gain = self.interpolated(k_trans[0,...], k_trans[1,...], grid=False)

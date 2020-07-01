@@ -5,7 +5,7 @@ Airy disk antenna gain
 
 import pyant
 
-ant = pyant.Airy(
+beam = pyant.Airy(
     azimuth=0,
     elevation=90.0, 
     frequency=930e6,
@@ -13,7 +13,7 @@ ant = pyant.Airy(
     radius=23.0,
 )
 
-ant_c = pyant.Cassegrain(
+beam_c = pyant.Cassegrain(
     azimuth=0,
     elevation=90.0, 
     frequency=930e6,
@@ -22,6 +22,6 @@ ant_c = pyant.Cassegrain(
     a1=40.0,
 )
 
-pyant.plotting.gain_heatmap(ant, resolution=301, min_elevation=80.0)
-pyant.plotting.gain_heatmap(ant_c, resolution=301, min_elevation=80.0)
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0)
+pyant.plotting.gain_heatmap(beam_c, resolution=301, min_elevation=80.0)
 pyant.plotting.show()

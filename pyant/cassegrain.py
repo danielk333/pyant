@@ -25,7 +25,7 @@ class Cassegrain(Beam):
         self.a0 = a0
 
 
-    def gain(self, k, polarization=None):
+    def gain(self, k, polarization=None, ind=None):
         theta = coordinates.vector_angle(self.pointing, k, radians=True)
 
         lam = self.wavelength
