@@ -67,6 +67,19 @@ class Array(Beam):
         self.polarization = polarization
 
 
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return Array(
+            frequency = self.frequency,
+            azimuth = self.azimuth,
+            elevation = self.elevation,
+            radians = self.radians,
+            antennas = self.antennas.copy(),
+            scaling = self.scaling,
+            polarization = self.polarization.copy(),
+        )
+
     @property
     def channels(self):
         '''Number of channels returned by complex output.
