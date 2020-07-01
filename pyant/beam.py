@@ -34,10 +34,9 @@ class Beam(ABC):
         self.azimuth = azimuth
         self.elevation = elevation
         self.radians = radians
-        self.pointing = coordinates.sph_to_cart(
-            np.array([azimuth, elevation, 1]),
-            radians = radians,
-        )
+
+        sph = Beam._azel_to_numpy(azimuth, elevation)
+        self.pointing = coordinates.sph_to_cart(sph, radians = radians)
 
 
     def _check_radians(self, azimuth, elevation, radians):
@@ -100,13 +99,11 @@ class Beam(ABC):
 
         '''
         azimuth, elevation = self._check_radians(azimuth, elevation, radians)
+        sph = Beam._azel_to_numpy(azimuth, elevation)
 
         self.azimuth = azimuth
         self.elevation = elevation
-        self.pointing = coordinates.sph_to_cart(
-            np.array([self.azimuth, self.elevation, 1], dtype=np.float64),
-            radians = self.radians,
-        )
+        self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
 
 
     def point(self, k):

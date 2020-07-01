@@ -75,7 +75,7 @@ class Array(Beam):
             azimuth = self.azimuth,
             elevation = self.elevation,
             radians = self.radians,
-            antennas = self.antennas.copy(),
+            antennas = np.transpose(self.antennas, (1, 0, 2)).copy(),
             scaling = self.scaling,
             polarization = self.polarization.copy(),
         )
