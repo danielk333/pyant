@@ -81,6 +81,22 @@ class Beam(ABC):
         return tuple([k for k,x in self.named_shape().items() if x is not None])
 
 
+    def get_parameters(self, ind):
+        ind, shape = self.default_ind(ind)
+        
+        if shape['frequency'] is not None:
+            frequency = self.frequency[ind['frequency']]
+        else:
+            frequency = self.frequency
+
+        if shape['pointing'] is not None:
+            pointing = self.pointing[:,ind['pointing']]
+        else:
+            pointing = self.pointing
+
+        return frequency, pointing
+
+
     def default_ind(self, ind):
         if ind is None:
             ind = {}
@@ -168,7 +184,7 @@ class Beam(ABC):
         :param numpy.ndarray k: Pointing direction in local coordinates.
         :return: :code:`None`
         '''
-        self.pointing = k/np.linalg.norm(k)
+        self.pointing = k/np.linalg.norm(k,axis=0)
         sph = coordinates.cart_to_sph(
             self.pointing,
             radians = self.radians,

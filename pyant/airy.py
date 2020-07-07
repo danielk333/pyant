@@ -29,19 +29,10 @@ class Airy(Beam):
 
 
     def gain(self, k, polarization=None, ind=None):
-        ind, shape = self.default_ind(ind)
-
-        if shape['frequency'] is not None:
-            lam = self.wavelength[ind['frequency']]
-        else:
-            lam = self.wavelength
-
-        if shape['pointing'] is not None:
-            point = self.pointing[:,ind['pointing']]
-        else:
-            point = self.pointing
+        frequency, pointing = self.get_parameters(ind)
+        lam = scipy.constants.c/frequency
         
-        theta = coordinates.vector_angle(point, k, radians=True)
+        theta = coordinates.vector_angle(pointing, k, radians=True)
         
         k_n = 2.0*np.pi/lam
         alph = k_n*self.radius*np.sin(theta)

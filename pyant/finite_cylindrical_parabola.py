@@ -24,18 +24,27 @@ class FiniteCylindricalParabola(Beam):
         self.width = width
         self.height = height
 
-    def local_to_pointing(self, k):
+    def local_to_pointing(self, k, ind=None):
         '''Convert from local wave vector direction to bore-sight relative longitudinal and transverse angles.
         '''
         k_ = k/np.linalg.norm(k, axis=0)
-        
+
+        ind, shape = self.default_ind(ind)
+        if shape['pointing'] is not None:
+            azimuth = self.azimuth[ind['pointing']]
+            elevation = self.elevation[ind['pointing']]
+        else:
+            azimuth = self.azimuth
+            elevation = self.elevation
+
+
         if self.radians:
             ang_ = np.pi/2
         else:
             ang_ = 90.0
 
-        Rz = coordinates.rot_mat_z(self.azimuth, radians = self.radians)
-        Rx = coordinates.rot_mat_x(ang_ - self.elevation, radians = self.radians)
+        Rz = coordinates.rot_mat_z(azimuth, radians = self.radians)
+        Rx = coordinates.rot_mat_x(ang_ - elevation, radians = self.radians)
 
         kb = Rx.dot(Rz.dot(k_))
 
@@ -45,12 +54,15 @@ class FiniteCylindricalParabola(Beam):
         return theta, phi
 
     def gain(self, k, polarization=None, ind=None):
-        theta, phi = self.local_to_pointing(k)
+        frequency, _ = self.get_parameters(ind)
+        theta, phi = self.local_to_pointing(k, ind)
+
+        wavelength = scipy.constants.c/frequency
 
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
-        x = self.width/self.wavelength*np.sin(theta)    # sinc component (longitudinal)
-        y = self.height/self.wavelength*np.sin(phi)      # sinc component (transverse)
+        x = self.width/wavelength*np.sin(theta)    # sinc component (longitudinal)
+        y = self.height/wavelength*np.sin(phi)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*np.cos(phi)         # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)

@@ -34,21 +34,22 @@ class Gaussian(Beam):
 
 
     def gain(self, k, polarization=None, ind=None):
-        if np.abs(1-np.dot(self.pointing,self.normal)) < 1e-6:
+        frequency, pointing = self.get_parameters(ind)
+        lam = scipy.constants.c/frequency
+
+        if np.abs(1-np.dot(pointing,self.normal)) < 1e-6:
             rd=np.random.randn(3)
             rd=rd/np.sqrt(np.dot(rd,rd))
             ct=np.cross(self.pointing,rd)
         else:
             ct=np.cross(self.pointing,self.normal)
         
-        lam = self.wavelength
-        
         ct=ct/np.sqrt(np.dot(ct,ct))
         ht=np.cross(self.normal,ct)
         ht=ht/np.sqrt(np.dot(ht,ht))
-        angle = coordinates.vector_angle(self.pointing, ht, radians=True)
+        angle = coordinates.vector_angle(pointing, ht, radians=True)
 
-        ot=np.cross(self.pointing,ct)
+        ot=np.cross(pointing,ct)
         ot=ot/np.sqrt(np.dot(ot,ot))
 
         I_1=np.sin(angle)*self.I0

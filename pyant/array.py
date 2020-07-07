@@ -102,7 +102,7 @@ class Array(Beam):
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        G = self.complex(k, polarization, channels=None)
+        G = self.complex(k, polarization, channels=None, ind=ind)
 
         lin_pol_check = np.abs(self.polarization) < 1e-6
         if not np.any(lin_pol_check):
@@ -116,11 +116,13 @@ class Array(Beam):
         return np.abs(G)
 
 
-    def complex(self, k, polarization, channels=None):
+    def complex(self, k, polarization, channels=None, ind=None):
         '''Complex voltage output signal after summation of antennas.
 
         :return: `(c,2,num_k)` ndarray where `c` is the number of channels requested, `2` are the two polarization axis of the Jones vector and `num_k` is the number of input wave vectors. If `num_k = 1` the returned ndarray is `(c,2)`.
         '''
+        frequency, pointing = self.get_parameters(ind)
+
         inds = np.arange(self.channels, dtype=np.int)
         if channels is not None:
             inds = inds[channels]
@@ -130,13 +132,13 @@ class Array(Beam):
         k_ = k/np.linalg.norm(k, axis=0)
         if len(k.shape) == 1:
             psi = np.zeros((chan_num, 2, 1, ), dtype=np.complex128)
-            p = self.pointing.reshape(3,1)
+            p = pointing.reshape(3,1)
             k_ = k_.reshape(3,1)
         else:
             psi = np.zeros((chan_num, 2, k.shape[1], ), dtype=np.complex128)
-            p = np.repeat(self.pointing.reshape(3,1),k.shape[1], axis=1)
+            p = np.repeat(pointing.reshape(3,1),k.shape[1], axis=1)
 
-        wavelength = self.wavelength
+        wavelength = scipy.constants.c/frequency
 
         #r in meters, divide by lambda
         for i in range(chan_num):

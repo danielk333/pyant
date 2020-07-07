@@ -26,9 +26,11 @@ class Cassegrain(Beam):
 
 
     def gain(self, k, polarization=None, ind=None):
-        theta = coordinates.vector_angle(self.pointing, k, radians=True)
+        frequency, pointing = self.get_parameters(ind)
 
-        lam = self.wavelength
+        theta = coordinates.vector_angle(pointing, k, radians=True)
+
+        lam = scipy.constants.c/frequency
         k_n=2.0*np.pi/lam
 
         if len(k.shape) == 1:
