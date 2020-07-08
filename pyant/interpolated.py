@@ -19,10 +19,10 @@ class Interpolation(Beam):
         self.scaling = scaling
 
 
-    def pointing_transform(self, k):
+    def pointing_transform(self, k, pointing, polarization=None):
         return k
 
-    def pointing_scale(self, G):
+    def pointing_scale(self, G, pointing, polarization=None):
         return G
 
     def generate_interpolation(self, beam, resolution=1000):
@@ -60,15 +60,17 @@ class Interpolation(Beam):
     
 
     def gain(self, k, polarization=None, ind=None):
-        k_trans = self.pointing_transform(k)
+        frequency, pointing = self.get_parameters(ind)
+        k_trans = self.pointing_transform(k, pointing)
 
         interp_gain = self.interpolated(k_trans[0,...], k_trans[1,...], grid=False)
         interp_gain[interp_gain < 0] = 0
 
         if len(k.shape) == 1:
-            interp_gain = interp_gain[0]
+            if len(interp_gain.shape) > 0:
+                interp_gain = interp_gain[0]
 
-        G = self.pointing_scale(interp_gain*self.scaling)
+        G = self.pointing_scale(interp_gain*self.scaling, pointing)
 
         return G
 
