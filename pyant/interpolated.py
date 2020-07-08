@@ -55,7 +55,7 @@ class Interpolation(Beam):
 
 
     def load(self, fname):
-        f_obj = np.load(fname)
+        f_obj = np.load(fname, allow_pickle=True)
         self.interpolated = f_obj.item()
     
 

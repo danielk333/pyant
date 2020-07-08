@@ -38,10 +38,10 @@ interp_time = time.time() - start_time
 
 #pointing causes no slow-down
 interp_beam.sph_point(elevation=30.0, azimuth=45.0)
+beam.sph_point(elevation=30.0, azimuth=45.0)
 
-start_time = time.time()
 pyant.plotting.gain_heatmap(interp_beam, resolution=100, min_elevation=80.0)
-print(f'Heatmap plot pointing interp: {time.time() - start_time:.1f} seconds')
+pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0)
 
 print(f'Heatmap plot antenna array: {array_time:.1f} seconds')
 print(f'Heatmap plot interpolated array: {interp_time:.1f} seconds')
