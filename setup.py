@@ -1,6 +1,6 @@
 import setuptools
 
-import pyant.version
+__version__ = '0.5.0'
 
 with open('README.rst', 'r') as fh:
     long_description = fh.read()
@@ -13,7 +13,7 @@ with open('requirements', 'r') as fh:
 
 setuptools.setup(
     name='pyant',
-    version=pyant.version.__version__,
+    version=__version__,
     long_description=long_description,
     url='https://github.com/danielk333/pyant',
     classifiers=[
