@@ -237,11 +237,9 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     if usetex:
         ax.set_xlabel('$k_x$ [1]',fontsize=24)
         ax.set_ylabel('$k_y$ [1]',fontsize=24)
-        ax.set_zlabel('Gain $G$ [dB]',fontsize=24)
     else:
         ax.set_xlabel('kx [1]',fontsize=24)
         ax.set_ylabel('ky [1]',fontsize=24)
-        ax.set_zlabel('Gain [dB]',fontsize=24)
     
     plt.xticks(fontsize=17)
     plt.yticks(fontsize=17)
