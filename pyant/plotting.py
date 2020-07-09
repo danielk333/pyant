@@ -57,7 +57,10 @@ def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
     '''
 
     #turn on TeX interperter
-    plt.rc('text', usetex=True)
+    try:
+        plt.rc('text', usetex=True)
+    except:
+        pass
 
     
     fig = plt.figure(figsize=(15,7))
@@ -94,7 +97,10 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     '''
     #turn on TeX interperter
-    plt.rc('text', usetex=True)
+    try:
+        plt.rc('text', usetex=True)
+    except:
+        pass
 
     
     fig = plt.figure(figsize=(15,7))
@@ -147,7 +153,10 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     '''
 
     #turn on TeX interperter
-    plt.rc('text', usetex=True)
+    try:
+        plt.rc('text', usetex=True)
+    except:
+        pass
 
     if ax is None:
         fig = plt.figure(figsize=(15,7))
