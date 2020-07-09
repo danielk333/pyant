@@ -23,4 +23,9 @@ except ImportError:
     plotting = None
 
 
-from .instances import *
+from . import instances
+
+def __getattr__(name):
+    if name in instances.beam_instances:
+        return getattr(instances, name)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
