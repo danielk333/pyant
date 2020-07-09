@@ -48,7 +48,7 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
+def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5, usetex=False):
     '''Plot the gain of a list of beam patterns as a function of elevation at :math:`0^\circ` degrees azimuth.
     
     :param beam: Beam or list of beams.
@@ -57,11 +57,8 @@ def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
     '''
 
     #turn on TeX interperter
-    try:
+    if usetex:
         plt.rc('text', usetex=True)
-    except:
-        pass
-
     
     fig = plt.figure(figsize=(15,7))
     ax = fig.add_subplot(111)
@@ -82,14 +79,17 @@ def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
     ax.set_xlabel('Zenith angle [deg]',fontsize=24)
     plt.xticks(fontsize=17)
     plt.yticks(fontsize=17)
-    ax.set_ylabel('Gain $G$ [dB]',fontsize=24)
+    if usetex:
+        ax.set_ylabel('Gain $G$ [dB]',fontsize=24)
+    else:
+        ax.set_ylabel('Gain [dB]',fontsize=24)
     ax.set_title('Gain patterns',fontsize=28)
 
     return fig, ax
 
 
 
-def gain_surface(beam, resolution=200, min_elevation = 0.0):
+def gain_surface(beam, resolution=200, min_elevation = 0.0, usetex=False):
     '''Creates a 3d plot of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
     
     :param BeamPattern beam: Beam pattern to plot.
@@ -97,10 +97,9 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     '''
     #turn on TeX interperter
-    try:
+    if usetex:
         plt.rc('text', usetex=True)
-    except:
-        pass
+    
 
     
     fig = plt.figure(figsize=(15,7))
@@ -126,13 +125,16 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     SdB[SdB < 0] = 0
     surf = ax.plot_surface(K[:,:,0],K[:,:,1],SdB,cmap=cm.plasma, linewidth=0, antialiased=False, vmin=0, vmax=n.max(SdB))
     #surf = ax.plot_surface(K[:,:,0],K[:,:,1],S.T,cmap=cm.plasma,linewidth=0)
-    ax.set_xlabel('$k_x$ [1]',fontsize=24)
-    ax.set_ylabel('$k_y$ [1]',fontsize=24)
-    ax.set_zlabel('Gain $G$ [dB]',fontsize=24)
+    if usetex:
+        ax.set_xlabel('$k_x$ [1]',fontsize=24)
+        ax.set_ylabel('$k_y$ [1]',fontsize=24)
+        ax.set_zlabel('Gain $G$ [dB]',fontsize=24)
+    else:
+        ax.set_xlabel('kx [1]',fontsize=24)
+        ax.set_ylabel('ky [1]',fontsize=24)
+        ax.set_zlabel('Gain [dB]',fontsize=24)
     plt.xticks(fontsize=17)
     plt.yticks(fontsize=17)
-    ax.set_title('Gain pattern ' + beam.beam_name,\
-        fontsize=28)
     plt.show()
 
 
@@ -140,7 +142,7 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
 
 
 
-def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None):
+def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None, usetex=False):
     '''Creates a heatmap of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
     
     :param Beam/Beams beam: Beam pattern to plot.
@@ -153,10 +155,8 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     '''
 
     #turn on TeX interperter
-    try:
+    if usetex:
         plt.rc('text', usetex=True)
-    except:
-        pass
 
     if ax is None:
         fig = plt.figure(figsize=(15,7))
@@ -239,13 +239,19 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     SdB[np.isnan(SdB)] = 0
     SdB[SdB < 0] = 0
     conf = ax.contourf(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), levels=levels)
-    ax.set_xlabel('$k_x$ [1]',fontsize=24)
-    ax.set_ylabel('$k_y$ [1]',fontsize=24)
+    if usetex:
+        ax.set_xlabel('$k_x$ [1]',fontsize=24)
+        ax.set_ylabel('$k_y$ [1]',fontsize=24)
+        ax.set_zlabel('Gain $G$ [dB]',fontsize=24)
+    else:
+        ax.set_xlabel('kx [1]',fontsize=24)
+        ax.set_ylabel('ky [1]',fontsize=24)
+        ax.set_zlabel('Gain [dB]',fontsize=24)
     
     plt.xticks(fontsize=17)
     plt.yticks(fontsize=17)
     cbar = plt.colorbar(conf, ax=ax)
-    cbar.ax.set_ylabel('Gain $G$ [dB]',fontsize=24)
+    cbar.ax.set_ylabel('Gain [dB]',fontsize=24)
     ax.set_title('Gain pattern', fontsize=24)
 
     return fig, ax
