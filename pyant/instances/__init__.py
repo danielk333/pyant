@@ -92,7 +92,7 @@ def __getattr__(name):
         **Reference**: [White paper] McKay, D., Grydeland, T., Vierinen, J., Kastinen, D., Kero, J., Krag, H. (2019) Conversion of the EISCAT VHF antenna into the Tromso Space Debris Radar
         '''
 
-   elif name == 'tsdr_fence':
+    elif name == 'tsdr_fence':
         return [
             FiniteCylindricalParabola(
                 azimuth=az,
