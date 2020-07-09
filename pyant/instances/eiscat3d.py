@@ -5,10 +5,7 @@
 '''
 
 #Python standard import
-try:
-    import importlib.resources as ilibr
-except ImportError:
-    ilibr = None
+import pkg_resources
 
 import numpy as np
 import scipy.constants
@@ -53,20 +50,20 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
     #TODO: Sphinx params doc
     '''
     
-    def _read_e3d_submodule_pos(path):
+    def _read_e3d_submodule_pos(byte_data):
         dat = []
-        with open(path,'r') as file:
-            for line in file:
-                dat.append( list(map(lambda x: float(x),line.split() )) )
+        file = byte_data.decode('utf-8').split('\n')
+        for line in file:
+            if len(line) == 0:
+                continue
+            dat.append( list(map(lambda x: float(x),line.split() )) )
         dat = np.array(dat)
         return dat
 
-
     if fname is None:
-        with ilibr.path('pyant.instances.data', 'e3d_subgroup_positions.txt') as pth:
-            dat = _read_e3d_submodule_pos(pth)
+        dat = _read_e3d_submodule_pos(pkg_resources.resource_string('pyant.instances.data', 'e3d_subgroup_positions.txt'))
     else:
-        dat = _read_e3d_submodule_pos(fname)
+        dat = _read_e3d_submodule_pos(open(fname, 'rb').read())
 
     sx,sy,sz = e3d_subarray(freqeuncy)
 

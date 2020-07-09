@@ -4,7 +4,7 @@
 
 '''
 
-beam_instances = []
+instances = []
 
 from ..gaussian import Gaussian
 from ..array import Array
@@ -15,13 +15,14 @@ from . import tromso_space_debris_radar as tsdr_module
 from .tromso_space_debris_radar import find_normalization_constant as tsdr_calibrate
 from .eiscat_uhf import EISCAT_UHF
 
+__all__ = []
 
-beam_instances += ['e_uhf']
-beam_instances += ['e3d_array_module']
-beam_instances += ['e3d_array_stage1']
-beam_instances += ['e3d_array_stage2']
-beam_instances += ['tsdr']
-beam_instances += ['tsdr_fence']
+instances += ['e_uhf']
+instances += ['e3d_array_module']
+instances += ['e3d_array_stage1']
+instances += ['e3d_array_stage2']
+instances += ['tsdr']
+instances += ['tsdr_fence']
 
 
 def __getattr__(name):

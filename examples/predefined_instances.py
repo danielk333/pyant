@@ -7,7 +7,7 @@ import numpy as np
 import pyant
 import pyant.instances as lib
 
-print(lib.__all__)
+print(lib.instances)
 
 e3d_m = lib.e3d_array_module
 e3d_m_I0 = e3d_m.sph_gain(

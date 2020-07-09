@@ -3,10 +3,7 @@
 '''
 
 '''
-try:
-    import importlib.resources as ilibr
-except ImportError:
-    ilibr = None
+import pkg_resources
 
 import numpy as np
 import scipy.interpolate
@@ -14,10 +11,10 @@ import scipy.interpolate
 from ..beam import Beam
 from .. import coordinates
 
-if ilibr is not None:
-    with ilibr.path('pyant.instances.data', 'eiscat_uhf_bp.txt') as pth:
-        _eiscat_beam_data = np.genfromtxt(pth)
-else:
+try:
+    stream = pkg_resources.resource_stream('pyant.instances.data', 'eiscat_uhf_bp.txt')
+    _eiscat_beam_data = np.genfromtxt(stream)
+except:
     _eiscat_beam_data = None
 
 class EISCAT_UHF(Beam):
@@ -35,7 +32,7 @@ class EISCAT_UHF(Beam):
         self.beam_function = scipy.interpolate.interp1d(np.abs(angle),gain)
 
 
-    def gain(self, k):
+    def gain(self, k, polarization=None, ind=None):
         theta = coordinates.vector_angle(self.pointing, k, radians=True)
 
         sf=self.frequency/930e6 

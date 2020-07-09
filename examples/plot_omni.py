@@ -7,7 +7,7 @@ import pyant
 import numpy as np
 
 class Omni(pyant.Beam):
-    def gain(self,k):
+    def gain(self, k, polarization=None, ind=None):
         if len(k.shape) == 1:
             return 1.0
         else:
