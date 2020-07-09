@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy 
 
 import numpy as np
 
@@ -13,6 +14,18 @@ class PlaneArrayInterp(Interpolation):
     def __init__(self, azimuth, elevation, frequency, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
 
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        bm = PlaneArrayInterp(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            scaling = copy.deepcopy(self.scaling),
+            radians = self.radians,
+        )
+        bm.interpolated = self.interpolated
+        return bm
 
     def pointing_transform(self, k, pointing, polarization=None):
         k_ = k/np.linalg.norm(k, axis=0)

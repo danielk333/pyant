@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import copy
+
 import numpy as np
 import scipy.constants
 import scipy.special
@@ -27,11 +29,23 @@ class Airy(Beam):
         self.I0 = I0
         self.radius = radius
 
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return Airy(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            I0 = copy.deepcopy(self.I0),
+            radius = copy.deepcopy(self.radius),
+            radians = self.radians,
+        )
+
 
     def gain(self, k, polarization=None, ind=None):
         frequency, pointing = self.get_parameters(ind)
         lam = scipy.constants.c/frequency
-        
+
         theta = coordinates.vector_angle(pointing, k, radians=True)
         
         k_n = 2.0*np.pi/lam

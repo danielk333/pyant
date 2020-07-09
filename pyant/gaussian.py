@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 
 import numpy as np
 import scipy.constants
@@ -32,6 +33,20 @@ class Gaussian(Beam):
             radians = self.radians,
         )
 
+
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return FiniteCylindricalParabola(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            I0 = copy.deepcopy(self.I0),
+            radius = copy.deepcopy(self.radius),
+            normal_azimuth = copy.deepcopy(self.normal_azimuth),
+            normal_elevation = copy.deepcopy(self.normal_elevation),
+            radians = self.radians,
+        )
 
     def gain(self, k, polarization=None, ind=None):
         frequency, pointing = self.get_parameters(ind)

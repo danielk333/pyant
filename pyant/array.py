@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 
 import numpy as np
 import scipy.constants
@@ -71,12 +72,12 @@ class Array(Beam):
         '''Return a copy of the current instance.
         '''
         return Array(
-            frequency = self.frequency,
-            azimuth = self.azimuth,
-            elevation = self.elevation,
+            frequency = copy.deepcopy(self.frequency),
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
             radians = self.radians,
             antennas = np.transpose(self.antennas, (1, 0, 2)).copy(),
-            scaling = self.scaling,
+            scaling = copy.deepcopy(self.scaling),
             polarization = self.polarization.copy(),
         )
 
@@ -185,6 +186,20 @@ class DipoleArray(Array):
             **kwargs
         )
         self.antenna_rotation = antenna_rotation
+
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return DipoleArray(
+            frequency = copy.deepcopy(self.frequency),
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            radians = self.radians,
+            antennas = np.transpose(self.antennas, (1, 0, 2)).copy(),
+            scaling = copy.deepcopy(self.scaling),
+            antenna_rotation = copy.deepcopy(self.antenna_rotation),
+            polarization = self.polarization.copy(),
+        )
 
     def antenna_element(self, k, polarization):
         '''Theoretical gain pattern of a single dipole antenna.

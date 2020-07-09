@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 
 import numpy as np
 import scipy.constants
@@ -23,6 +24,19 @@ class FiniteCylindricalParabola(Beam):
         self.I0 = I0
         self.width = width
         self.height = height
+
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return FiniteCylindricalParabola(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            I0 = copy.deepcopy(self.I0),
+            width = copy.deepcopy(self.width),
+            height = copy.deepcopy(self.height),
+            radians = self.radians,
+        )
 
     def local_to_pointing(self, k, ind=None):
         '''Convert from local wave vector direction to bore-sight relative longitudinal and transverse angles.

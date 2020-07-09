@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 
 import numpy as np
 import scipy.special
@@ -24,6 +25,18 @@ class Cassegrain(Beam):
         self.a1 = a1
         self.a0 = a0
 
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return Cassegrain(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            I0 = copy.deepcopy(self.I0),
+            a1 = copy.deepcopy(self.a1),
+            a0 = copy.deepcopy(self.a0),
+            radians = self.radians,
+        )
 
     def gain(self, k, polarization=None, ind=None):
         frequency, pointing = self.get_parameters(ind)

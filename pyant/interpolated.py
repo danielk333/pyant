@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 
 import numpy as np
 import scipy.interpolate
@@ -17,6 +18,20 @@ class Interpolation(Beam):
         super().__init__(azimuth, elevation, frequency, **kwargs)
         self.interpolated = None
         self.scaling = scaling
+
+
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        bm = Interpolation(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            scaling = copy.deepcopy(self.scaling),
+            radians = self.radians,
+        )
+        bm.interpolated = self.interpolated
+        return bm
 
 
     def pointing_transform(self, k, pointing, polarization=None):

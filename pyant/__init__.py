@@ -23,9 +23,6 @@ except ImportError:
     plotting = None
 
 
-from . import instances
+from .instances import BeamInstancesGetter
 
-def __getattr__(name):
-    if name in instances.beam_instances:
-        return getattr(instances, name)
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+instances = BeamInstancesGetter()
