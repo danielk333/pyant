@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import numpy as np
-from tqdm import tqdm
 
 from .interpolated import Interpolation
 from . import coordinates
