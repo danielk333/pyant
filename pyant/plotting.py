@@ -41,9 +41,9 @@ def antenna_configuration(antennas, ax=None, color=None):
         style_
     )
     ax.set_title('Antennas', fontsize=22)
-    ax.set_xlabel('X-position $x$ [m]', fontsize=20)
-    ax.set_ylabel('Y-position $y$ [m]', fontsize=20)
-    ax.set_zlabel('Z-position $z$ [m]', fontsize=20)
+    ax.set_xlabel('X-position [m]', fontsize=20)
+    ax.set_ylabel('Y-position [m]', fontsize=20)
+    ax.set_zlabel('Z-position [m]', fontsize=20)
 
     return fig, ax
 
@@ -55,11 +55,9 @@ def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5, usetex=False)
     :param int resolution: Number of points to divide the set elevation range into.
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`.
     '''
+    #set TeX interperter
+    plt.rc('text', usetex=usetex)
 
-    #turn on TeX interperter
-    if usetex:
-        plt.rc('text', usetex=True)
-    
     fig = plt.figure(figsize=(15,7))
     ax = fig.add_subplot(111)
     
@@ -96,10 +94,8 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0, usetex=False):
     :param int res: Number of points to devide the wave vector x and y component range into, total number of caluclation points is the square of this number.
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     '''
-    #turn on TeX interperter
-    if usetex:
-        plt.rc('text', usetex=True)
-    
+    #set TeX interperter
+    plt.rc('text', usetex=usetex)
 
     
     fig = plt.figure(figsize=(15,7))
@@ -154,9 +150,8 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     :return: matplotlib axis and figure handles
     '''
 
-    #turn on TeX interperter
-    if usetex:
-        plt.rc('text', usetex=True)
+    #set TeX interperter
+    plt.rc('text', usetex=usetex)
 
     if ax is None:
         fig = plt.figure(figsize=(15,7))
