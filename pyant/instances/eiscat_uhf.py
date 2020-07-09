@@ -3,7 +3,10 @@
 '''
 
 '''
-import importlib.resources
+try:
+    import importlib.resources as ilibr
+except ImportError:
+    ilibr = None
 
 import numpy as np
 import scipy.interpolate
@@ -11,10 +14,11 @@ import scipy.interpolate
 from ..beam import Beam
 from .. import coordinates
 
-
-with importlib.resources.path('pyant.instances.data', 'eiscat_uhf_bp.txt') as pth:
-    _eiscat_beam_data = np.genfromtxt(pth)
-
+if ilibr is not None:
+    with ilibr.path('pyant.instances.data', 'eiscat_uhf_bp.txt') as pth:
+        _eiscat_beam_data = np.genfromtxt(pth)
+else:
+    _eiscat_beam_data = None
 
 class EISCAT_UHF(Beam):
     '''Measured gain pattern of the EISCAT UHF radar.

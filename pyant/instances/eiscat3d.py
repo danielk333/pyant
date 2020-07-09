@@ -5,7 +5,10 @@
 '''
 
 #Python standard import
-import importlib.resources
+try:
+    import importlib.resources as ilibr
+except ImportError:
+    ilibr = None
 
 import numpy as np
 import scipy.constants
@@ -60,7 +63,7 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
 
 
     if fname is None:
-        with importlib.resources.path('pyant.instances.data', 'e3d_subgroup_positions.txt') as pth:
+        with ilibr.path('pyant.instances.data', 'e3d_subgroup_positions.txt') as pth:
             dat = _read_e3d_submodule_pos(pth)
     else:
         dat = _read_e3d_submodule_pos(fname)
