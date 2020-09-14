@@ -38,6 +38,7 @@ class PhasedFiniteCylindricalParabola(Beam):
             I0 = copy.deepcopy(self.I0),
             width = copy.deepcopy(self.width),
             height = copy.deepcopy(self.height),
+            depth = copy.deepcopy(self.depth),
             radians = self.radians,
         )
 
