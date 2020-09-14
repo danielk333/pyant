@@ -9,6 +9,7 @@
 from ..gaussian import Gaussian
 from ..array import Array
 from ..finite_cylindrical_parabola import FiniteCylindricalParabola
+from ..phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 
 from . import eiscat3d
 from . import tromso_space_debris_radar as tsdr_module
@@ -137,6 +138,17 @@ class BeamInstancesGetter:
                 height=40.0,
             )
 
+        elif name == 'tsdr_phased':
+            return PhasedFiniteCylindricalParabola(
+                azimuth=0,
+                elevation=90.0,
+                phase_steering = 0.0,
+                depth=18.0,
+                frequency=tsdr_module.tsdr_frequency,
+                I0=tsdr_module.tsdr_default_peak_gain,
+                width=120.0,
+                height=40.0,
+            )
 
         elif name == 'tsdr_fence':
             return [
