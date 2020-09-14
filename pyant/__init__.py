@@ -14,8 +14,10 @@ from .cassegrain import Cassegrain
 from .gaussian import Gaussian
 from .array import Array, DipoleArray
 from .finite_cylindrical_parabola import FiniteCylindricalParabola
+from .phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .interpolated import Interpolation
 from .interpolated_array import PlaneArrayInterp
+
 
 try:
     from . import plotting

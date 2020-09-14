@@ -17,13 +17,13 @@ from .eiscat_uhf import EISCAT_UHF
 
 __all__ = []
 beam_instances = [
-        'e_uhf',
-        'e3d_array_module',
-        'e3d_array_stage1',
-        'e3d_array_stage2',
-        'tsdr',
-        'tsdr_fence',
-    ]
+    'e_uhf',
+    'e3d_array_module',
+    'e3d_array_stage1',
+    'e3d_array_stage2',
+    'tsdr',
+    'tsdr_fence',
+]
 
 class BeamInstancesGetter:
     '''
