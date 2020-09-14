@@ -111,13 +111,13 @@ class PhasedFiniteCylindricalParabola(Beam):
         if not self.radians:
             phase_steering = np.radians(phase_steering)
 
-        width = self.width - self.depth*np.tan(theta) #depth effective area loss
-        height = self.height
+        height = self.height 
+        width = self.width - self.depth*np.tan(phi) #depth effective area loss
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
 
-        x = width/wavelength*np.sin(theta - phase_steering)  # sinc component (longitudinal)
-        y = height/wavelength*np.sin(phi)   # sinc component (transverse)
+        x = height/wavelength*np.sin(theta)  # sinc component (longitudinal)
+        y = width/wavelength*np.sin(phi - phase_steering)   # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*np.cos(phi)*np.cos(phase_steering) # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
