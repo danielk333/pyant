@@ -9,10 +9,8 @@ from matplotlib import pyplot as plt
 import pyant
 from pyant.plotting import gain_heatmap
 
-from pyant.finite_cylindrical_parabola import FiniteCylindricalParabola
-from pyant.phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
-
-from pyant.instances import tromso_space_debris_radar as tsdr_module
+from pyant import FiniteCylindricalParabola
+from pyant import PhasedFiniteCylindricalParabola
 
 def printn(*args, **kw):
     print(*args, end="", flush=True, **kw)
@@ -23,8 +21,8 @@ def get_parc():
         elevation=90.0,
         phase_steering = 0.0,
         depth=18.0,
-        frequency=tsdr_module.tsdr_frequency,
-        I0=tsdr_module.tsdr_default_peak_gain,
+        frequency=224.0e6,
+        I0=None,
         width=120.0,
         height=40.0,
     )
@@ -33,8 +31,8 @@ def get_farc():
     return FiniteCylindricalParabola(
         azimuth=0,
         elevation=90.0, 
-        frequency=tsdr_module.tsdr_frequency,
-        I0=tsdr_module.tsdr_default_peak_gain,
+        frequency=224.0e6,
+        I0=None,
         width=120.0,
         height=40.0,
     )

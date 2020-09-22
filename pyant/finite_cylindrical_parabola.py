@@ -31,13 +31,10 @@ class FiniteCylindricalParabola(Beam):
         self.height = height
         self.rotation = rotation
 
-        if self.I0 is None:
-            self.I0 = self.normalize()
-
-    def normalize(self):
+    def normalize(self, wavelength):
         '''Calculate normalization constant for beam pattern by assuming width and height >> wavelength.
         '''
-        return 4*np.pi*self.width*self.height/self.wavelength**2
+        return 4*np.pi*self.width*self.height/wavelength**2
 
 
     def copy(self):
@@ -78,7 +75,7 @@ class FiniteCylindricalParabola(Beam):
         kb = Rx.dot(Rz.dot(k_))         # Look direction rotated into the radar's boresight system
 
         if self.rotation is not None:
-            Rz_ant = coordinates.rot_mat_z(self.rotation, radians = self.radians)
+            Rz_ant = coordinates.rot_mat_z(-self.rotation, radians = self.radians)
             kb = Rz_ant.dot(kb)
 
         #angle from x;z plane, counter-clock wise ( https://www.cv.nrao.edu/course/astr534/2DApertures.html )
@@ -87,16 +84,19 @@ class FiniteCylindricalParabola(Beam):
         #angle from y;z plane, clock wise ( https://www.cv.nrao.edu/course/astr534/2DApertures.html )
         phi = np.arcsin(kb[0,...])      # Angle of look to left (-) or right (+) of b.s.
 
-
         return theta, phi
 
     def gain(self, k, polarization=None, ind=None):
-        frequency, _ = self.get_parameters(ind)
+        _, frequency = self.get_parameters(ind)
         theta, phi = self.local_to_pointing(k, ind)
 
         wavelength = scipy.constants.c/frequency
 
-        print(f" 1 at {ctime()}")
+        if self.I0 is None:
+            I0 = self.normalize(wavelength)
+        else:
+            I0 = self.I0
+
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
         x = self.width/wavelength*np.sin(phi)     # sinc component (longitudinal)
@@ -104,4 +104,4 @@ class FiniteCylindricalParabola(Beam):
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*G                   # sinc^2 fn. (= power)
 
-        return G*self.I0
+        return G*I0

@@ -15,7 +15,6 @@ beam = pyant.PhasedFiniteCylindricalParabola(
     depth=18,
     phase_steering = [5.0,10.0,25.0,30.0],
     frequency=224.0e6,
-    I0=10**4.81,
     width=120.0,
     height=40.0,
 )
@@ -33,5 +32,31 @@ for i in range(beam.named_shape()['phase_steering']):
         },
     )
     axes[i].set_title(f'{int(beam.phase_steering[i])} deg steering')
+
+
+beam_two = pyant.PhasedFiniteCylindricalParabola(
+    azimuth=0,
+    elevation=[30., 60., 90.], 
+    depth=18,
+    phase_steering = [0,15.0],
+    frequency=224.0e6,
+    width=120.0/4,
+    height=40.0,
+)
+
+fig, axes = plt.subplots(2,3,figsize=(10,6),dpi=80)
+for i in range(beam_two.named_shape()['phase_steering']):
+    for j in range(beam_two.named_shape()['pointing']):
+        pyant.plotting.gain_heatmap(
+            beam_two, 
+            resolution=901, 
+            min_elevation=60.0, 
+            ax=axes[i,j],
+            ind = {
+                "phase_steering":i,
+                "pointing":j,
+            },
+        )
+        axes[i,j].set_title(f'{int(beam_two.phase_steering[i])} ph-st | {int(beam_two.elevation[i])} el')
 
 pyant.plotting.show()

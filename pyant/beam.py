@@ -42,14 +42,35 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         self.frequency = frequency
-        self.azimuth = sph[0,...]
-        self.elevation = sph[1,...]
+        self._azimuth = sph[0,...]
+        self._elevation = sph[1,...]
         self.radians = radians
 
         self.pointing = coordinates.sph_to_cart(sph, radians = radians)
 
         self.register_parameter('pointing', axis=1, default_ind=0)
         self.register_parameter('frequency', axis=0, default_ind=0)
+
+
+    @property
+    def azimuth(self):
+        return self._azimuth
+
+    @azimuth.setter
+    def azimuth(self, val):
+        sph = Beam._azel_to_numpy(val, self._elevation)
+        self._azimuth = sph[0,...]
+        self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
+
+    @property
+    def elevation(self):
+        return self._elevation
+
+    @elevation.setter
+    def elevation(self, val):
+        sph = Beam._azel_to_numpy(self._azimuth, val)
+        self._elevation = sph[1,...]
+        self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
 
 
     def __get_len(self, pind):
