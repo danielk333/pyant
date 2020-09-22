@@ -15,7 +15,10 @@ beam = pyant.Airy(
 )
 
 print(f'Gain will output with additional dimensions: {beam.shape}')
-print(f'Corresponding to the following variables: {beam.variables}')
+print(f'Corresponding to the following parameters: {beam.parameters}')
+print(f'These are the default values:')
+for key, val in zip(beam.parameters, beam.get_parameters(ind=None)):
+    print(f'{key}: {val}')
 
 k = np.array([[0,0,1.0],[0,1,1]]).T
 

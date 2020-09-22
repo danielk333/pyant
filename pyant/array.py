@@ -122,7 +122,7 @@ class Array(Beam):
 
         :return: `(c,2,num_k)` ndarray where `c` is the number of channels requested, `2` are the two polarization axis of the Jones vector and `num_k` is the number of input wave vectors. If `num_k = 1` the returned ndarray is `(c,2)`.
         '''
-        frequency, pointing = self.get_parameters(ind)
+        pointing, frequency = self.get_parameters(ind)
 
         inds = np.arange(self.channels, dtype=np.int)
         if channels is not None:

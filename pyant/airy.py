@@ -28,6 +28,7 @@ class Airy(Beam):
         super().__init__(azimuth, elevation, frequency, **kwargs)
         self.I0 = I0
         self.radius = radius
+        self.register_parameter('radius')
 
     def copy(self):
         '''Return a copy of the current instance.
@@ -43,13 +44,13 @@ class Airy(Beam):
 
 
     def gain(self, k, polarization=None, ind=None):
-        frequency, pointing = self.get_parameters(ind)
+        pointing, frequency, radius = self.get_parameters(ind)
         lam = scipy.constants.c/frequency
 
         theta = coordinates.vector_angle(pointing, k, radians=True)
         
         k_n = 2.0*np.pi/lam
-        alph = k_n*self.radius*np.sin(theta)
+        alph = k_n*radius*np.sin(theta)
         jn_val = scipy.special.jn(1,alph)
 
         if len(k.shape) == 1:
