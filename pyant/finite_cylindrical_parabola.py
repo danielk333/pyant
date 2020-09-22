@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+from time import ctime
 import copy
 
 import numpy as np
@@ -60,10 +62,10 @@ class FiniteCylindricalParabola(Beam):
         Rz = coordinates.rot_mat_z(azimuth, radians = self.radians)
         Rx = coordinates.rot_mat_x(ang_ - elevation, radians = self.radians)
 
-        kb = Rx.dot(Rz.dot(k_))
+        kb = Rx.dot(Rz.dot(k_))         # Look direction rotated into the radar's boresight system
 
-        theta = np.arcsin(kb[1,...])
-        phi = np.arcsin(kb[0,...])
+        theta = np.arcsin(kb[1,...])    # Angle of look above (-) or below (+) boresight
+        phi = np.arcsin(kb[0,...])      # Angle of look to left (-) or right (+) of b.s.
 
         return theta, phi
 
@@ -73,10 +75,11 @@ class FiniteCylindricalParabola(Beam):
 
         wavelength = scipy.constants.c/frequency
 
+        print(f" 1 at {ctime()}")
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
-        x = self.width/wavelength*np.sin(theta)    # sinc component (longitudinal)
-        y = self.height/wavelength*np.sin(phi)      # sinc component (transverse)
+        x = self.width/wavelength*np.sin(phi)     # sinc component (longitudinal)
+        y = self.height/wavelength*np.sin(theta)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*np.cos(phi)         # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
