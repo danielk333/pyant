@@ -60,10 +60,10 @@ class FiniteCylindricalParabola(Beam):
         Rz = coordinates.rot_mat_z(azimuth, radians = self.radians)
         Rx = coordinates.rot_mat_x(ang_ - elevation, radians = self.radians)
 
-        kb = Rx.dot(Rz.dot(k_))
+        kb = Rx.dot(Rz.dot(k_))         # Look direction rotated into the radar's boresight system
 
-        theta = np.arcsin(kb[1,...])
-        phi = np.arcsin(kb[0,...])
+        theta = np.arcsin(kb[1,...])    # Angle of look above (-) or below (+) boresight
+        phi = np.arcsin(kb[0,...])      # Angle of look to left (-) or right (+) of b.s.
 
         return theta, phi
 

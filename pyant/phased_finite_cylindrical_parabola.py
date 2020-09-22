@@ -100,7 +100,7 @@ class PhasedFiniteCylindricalParabola(Beam):
         theta = np.arcsin(kb[1,...])
         phi = np.arcsin(kb[0,...])
 
-        return theta, phi
+        return theta, phi       # y, x
 
     def gain(self, k, polarization=None, ind=None):
         frequency, _, phase_steering = self.get_parameters(ind)
@@ -119,7 +119,7 @@ class PhasedFiniteCylindricalParabola(Beam):
         x = height/wavelength*np.sin(theta)  # sinc component (longitudinal)
         y = width/wavelength*np.sin(phi - phase_steering)   # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
-        G = G*np.cos(phi)*np.cos(phase_steering) # density (from spherical integration)
+        #G = G*np.cos(phi)*np.cos(phase_steering) # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
         # G = np.abs(G)           #amplitude??
 

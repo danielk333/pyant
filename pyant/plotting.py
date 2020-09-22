@@ -154,7 +154,7 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     plt.rc('text', usetex=usetex)
 
     if ax is None:
-        fig = plt.figure(figsize=(15,7))
+        fig = plt.figure() # figsize=(15,7))
         ax = fig.add_subplot(111)
     else:
         fig = None
@@ -233,18 +233,22 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     SdB[np.isinf(SdB)] = 0
     SdB[np.isnan(SdB)] = 0
     SdB[SdB < 0] = 0
-    conf = ax.contourf(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), levels=levels)
+    # conf = ax.contourf(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), levels=levels)
+    conf = ax.pcolormesh(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), shading='giraud')
+
     if usetex:
-        ax.set_xlabel('$k_x$ [1]',fontsize=24)
-        ax.set_ylabel('$k_y$ [1]',fontsize=24)
+        ax.set_xlabel('$k_x$ [1]') #,fontsize=24)
+        ax.set_ylabel('$k_y$ [1]') #,fontsize=24)
     else:
-        ax.set_xlabel('kx [1]',fontsize=24)
-        ax.set_ylabel('ky [1]',fontsize=24)
+        ax.set_xlabel('kx [1]') # ,fontsize=24)
+        ax.set_ylabel('ky [1]') # ,fontsize=24)
     
-    plt.xticks(fontsize=17)
-    plt.yticks(fontsize=17)
+    plt.xticks() # fontsize=17)
+    plt.yticks() # fontsize=17)
     cbar = plt.colorbar(conf, ax=ax)
-    cbar.ax.set_ylabel('Gain [dB]',fontsize=24)
-    ax.set_title('Gain pattern', fontsize=24)
+    cbar.ax.set_ylabel('Gain [dB]') # ,fontsize=24)
+    ax.set_title('Gain pattern') # , fontsize=24)
+    ax.axis('equal')
+    ax.axis('square')
 
     return fig, ax
