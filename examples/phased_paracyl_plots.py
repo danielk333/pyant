@@ -39,6 +39,7 @@ def compare(with_old=False):
 
     if with_old:
         parc = pyant.instances.tsdr
+        parc.width = 120
         parc.frequency = 30e6
         parc.elevation = 60
 
