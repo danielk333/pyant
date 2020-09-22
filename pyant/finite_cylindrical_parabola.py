@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+from time import ctime
 import copy
 
 import numpy as np
@@ -73,10 +75,11 @@ class FiniteCylindricalParabola(Beam):
 
         wavelength = scipy.constants.c/frequency
 
+        print(f" 1 at {ctime()}")
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
-        x = self.width/wavelength*np.sin(theta)    # sinc component (longitudinal)
-        y = self.height/wavelength*np.sin(phi)      # sinc component (transverse)
+        x = self.width/wavelength*np.sin(phi)     # sinc component (longitudinal)
+        y = self.height/wavelength*np.sin(theta)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*np.cos(phi)         # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
