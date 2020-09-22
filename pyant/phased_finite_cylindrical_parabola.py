@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+from time import ctime
 import copy
 
 import numpy as np
@@ -100,26 +102,33 @@ class PhasedFiniteCylindricalParabola(Beam):
         theta = np.arcsin(kb[1,...])
         phi = np.arcsin(kb[0,...])
 
-        return theta, phi
+        return theta, phi       # y, x
 
-    def gain(self, k, polarization=None, ind=None):
-        frequency, _, phase_steering = self.get_parameters(ind)
+    def gain(self, k, ind=None, **kw):
         theta, phi = self.local_to_pointing(k, ind) #rad
 
+        return self.gain_tf(theta, phi, **kw)
+
+    def gain_tf(self, theta, phi, ind=None, polarization=None):
+        frequency, _, phase_steering = self.get_parameters(ind)
         wavelength = scipy.constants.c/frequency
 
         if not self.radians:
             phase_steering = np.radians(phase_steering)
 
+        #print(f"phase steering: {phase_steering}")
+
+        print(f" 3 at {ctime()}")
+
         height = self.height 
-        width = self.width - self.depth*np.tan(phi) #depth effective area loss
+        width = self.width - self.depth*np.tan(np.abs(phi)) #depth effective area loss
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
 
         x = height/wavelength*np.sin(theta)  # sinc component (longitudinal)
         y = width/wavelength*np.sin(phi - phase_steering)   # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
-        G = G*np.cos(phi)*np.cos(phase_steering) # density (from spherical integration)
+        G = G*np.cos(phi)         # density (from spherical integration)
         G = G*G                   # sinc^2 fn. (= power)
         # G = np.abs(G)           #amplitude??
 

@@ -86,6 +86,8 @@ class BeamInstancesGetter:
     __all__ = beam_instances
 
     def __getattr__(self, name):
+
+        print(f'getter looking for {name}')
         if name == 'e3d_array_module':
             return Array(
                 azimuth = 0.0, 
