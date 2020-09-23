@@ -244,8 +244,8 @@ class Beam(ABC):
         azimuth, elevation = self._check_radians(azimuth, elevation, radians)
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
-        self.azimuth = azimuth
-        self.elevation = elevation
+        self._azimuth = azimuth
+        self._elevation = elevation
         self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
 
 
@@ -260,8 +260,8 @@ class Beam(ABC):
             self.pointing,
             radians = self.radians,
         )
-        self.azimuth = sph[0,...]
-        self.elevation = sph[1,...]
+        self._azimuth = sph[0,...]
+        self._elevation = sph[1,...]
         
 
     def sph_angle(self, azimuth, elevation, radians=None):
