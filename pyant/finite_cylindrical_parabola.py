@@ -31,10 +31,10 @@ class FiniteCylindricalParabola(Beam):
         self.height = height
         self.rotation = rotation
 
-    def normalize(self, wavelength):
+    def normalize(self, width, height, wavelength):
         '''Calculate normalization constant for beam pattern by assuming width and height >> wavelength.
         '''
-        return 4*np.pi*self.width*self.height/wavelength**2
+        return 4*np.pi*width*height/wavelength**2
 
 
     def copy(self):
@@ -94,7 +94,7 @@ class FiniteCylindricalParabola(Beam):
         wavelength = scipy.constants.c/frequency
 
         if self.I0 is None:
-            I0 = self.normalize(wavelength)
+            I0 = self.normalize(self.width, self.height, wavelength)
         else:
             I0 = self.I0
 
