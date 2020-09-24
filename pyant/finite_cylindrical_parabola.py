@@ -74,14 +74,15 @@ class FiniteCylindricalParabola(Beam):
 
         kb = Rx.dot(Rz.dot(k_))         # Look direction rotated into the radar's boresight system
 
+        #if the rectangular aperture is rotated, apply a rotation
         if self.rotation is not None:
             Rz_ant = coordinates.rot_mat_z(-self.rotation, radians = self.radians)
             kb = Rz_ant.dot(kb)
 
-        #angle from x;z plane, counter-clock wise ( https://www.cv.nrao.edu/course/astr534/2DApertures.html )
+        #angle of kb from x;z plane, counter-clock wise ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
         theta = np.arcsin(kb[1,...])    # Angle of look above (-) or below (+) boresight
 
-        #angle from y;z plane, clock wise ( https://www.cv.nrao.edu/course/astr534/2DApertures.html )
+        #angle of kb from y;z plane, clock wise ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
         phi = np.arcsin(kb[0,...])      # Angle of look to left (-) or right (+) of b.s.
 
         return theta, phi
@@ -99,6 +100,8 @@ class FiniteCylindricalParabola(Beam):
 
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
+
+        #sinc*sinc is 2D FFT of a rectangular aperture
         x = self.width/wavelength*np.sin(phi)     # sinc component (longitudinal)
         y = self.height/wavelength*np.sin(theta)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
