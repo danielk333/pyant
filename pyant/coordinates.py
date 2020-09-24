@@ -97,7 +97,7 @@ def vector_angle(a, b, radians=False):
 
 
 def rot_mat_z(theta, dtype=np.float, radians=False):
-    '''Generates the 3D transformation matrix for rotation around Z-axis.
+    '''Generates the 3D transformation matrix for rotation counterclockwise around Z-axis.
     
     :param float theta: Angle to rotate.
     :param numpy.dtype dtype: The data-type of the output matrix.
@@ -119,7 +119,7 @@ def rot_mat_z(theta, dtype=np.float, radians=False):
 
 
 def rot_mat_x(theta, dtype=np.float, radians=False):
-    '''Generates the 3D transformation matrix for rotation around X-axis.
+    '''Generates the 3D transformation matrix for counterclockwise rotation around X-axis.
     
     :param float theta: Angle to rotate.
     :param numpy.dtype dtype: The data-type of the output matrix.

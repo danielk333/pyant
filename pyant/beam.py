@@ -32,78 +32,131 @@ class Beam(ABC):
     def __init__(self, azimuth, elevation, frequency, radians=False, **kwargs):
         '''Basic constructor.
         '''
+        self.__parameters = []
+        self.__param_axis = []
+        self.__default_ind = []
+
         if isinstance(frequency, list) or isinstance(frequency, tuple):
             frequency = np.array(frequency, dtype=np.float64)
 
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         self.frequency = frequency
-        self.azimuth = sph[0,...]
-        self.elevation = sph[1,...]
+        self._azimuth = sph[0,...]
+        self._elevation = sph[1,...]
         self.radians = radians
-
 
         self.pointing = coordinates.sph_to_cart(sph, radians = radians)
 
-    @staticmethod
-    def _get_len(obj):
+        self.register_parameter('pointing', axis=1, default_ind=0)
+        self.register_parameter('frequency', axis=0, default_ind=0)
+
+
+    @property
+    def azimuth(self):
+        return self._azimuth
+
+    @azimuth.setter
+    def azimuth(self, val):
+        sph = Beam._azel_to_numpy(val, self._elevation)
+        self._azimuth = sph[0,...]
+        self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
+
+    @property
+    def elevation(self):
+        return self._elevation
+
+    @elevation.setter
+    def elevation(self, val):
+        sph = Beam._azel_to_numpy(self._azimuth, val)
+        self._elevation = sph[1,...]
+        self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
+
+
+    def __get_len(self, pind):
+        obj = getattr(self, self.__parameters[pind])
+
         if isinstance(obj, np.ndarray):
             if len(obj.shape) == 0:
                 return None
+            elif len(obj.shape)-1 < self.__param_axis[pind]:
+                return None
             else:
-                return obj.size
+                return obj.shape[self.__param_axis[pind]]
         elif isinstance(obj, list) or isinstance(obj, tuple):
             return len(obj)
         else:
             return None
 
 
+    def register_parameter(self, name, axis=0, default_ind=0):
+        self.__parameters.append(name)
+        self.__param_axis.append(axis)
+        self.__default_ind.append(default_ind)
+
+
+    def unregister_parameter(self, name):
+        '''Unregister parameters, they can no longer be indexed in gain calls. Can be done for speed to reduce overhead of the gain call.
+        '''
+        pid = self.__parameters.index(name)
+        del self.__parameters[pid]
+        del self.__param_axis[pid]
+        del self.__default_ind[pid]
+
+
     def named_shape(self):
         '''Return the named shape of all variables. This can be overridden to extend the possible variables contained in an instance.
         '''
-        if len(self.pointing.shape) > 1:
-            p_len = self.pointing.shape[1]
-        else:
-            p_len = None
-        f_len = Beam._get_len(self.frequency)
-        return collections.OrderedDict(pointing=p_len, frequency=f_len)
+        kw = {self.__parameters[pind]: self.__get_len(pind) for pind in range(len(self.__parameters))}
+        return collections.OrderedDict(**kw)
 
 
     @property
     def shape(self):
         '''The additional dimensions added to the output Gain.
         '''
-        return tuple([x for x in self.named_shape().values() if x is not None])
+        return tuple(self.__get_len(pind) for pind in range(len(self.__parameters)))
 
 
     @property
-    def variables(self):
-        return tuple([k for k,x in self.named_shape().items() if x is not None])
+    def parameters(self):
+        return tuple(self.__parameters)
 
 
-    def get_parameters(self, ind):
+    def get_parameters(self, ind, named=False):
+        if len(self.__parameters) == 0:
+            return ()
+
         ind, shape = self.default_ind(ind)
         
-        if shape['frequency'] is not None:
-            frequency = self.frequency[ind['frequency']]
-        else:
-            frequency = self.frequency
-
-        if shape['pointing'] is not None:
-            pointing = self.pointing[:,ind['pointing']]
-        else:
-            pointing = self.pointing
-
-        return frequency, pointing
+        params = ()
+        for pind in range(len(self.__parameters)):
+            obj = getattr(self, self.__parameters[pind])
+            if shape[self.__parameters[pind]] is None:
+                params += (obj,)
+            else:
+                if isinstance(obj, np.ndarray):
+                    I = [slice(None)]*obj.ndim
+                    I[self.__param_axis[pind]] = ind[self.__parameters[pind]]
+                    params += (obj[tuple(I)],)
+                else:
+                    if self.__param_axis[pind] == 0:
+                        params += (obj[ind[self.__parameters[pind]]],)
+                    else:
+                        raise TypeError(f'Parameter "{self.__parameters[pind]}" along non-zero axis "{self.__param_axis[pind]}" is "{type(obj)}" and not numpy.ndarray')
+        if named:
+            kw = {self.__parameters[pind]: params[pind] for pind in range(len(self.__parameters))}
+            params = collections.OrderedDict(**kw)
+        return params
 
 
     def default_ind(self, ind):
         if ind is None:
             ind = {}
         shape = self.named_shape()
-        for key in shape:
+        for pind, key in enumerate(shape):
             if key not in ind and shape[key] is not None:
-                ind[key] = 0
+                ind[key] = self.__default_ind[pind]
         return ind, shape
 
 
@@ -121,8 +174,26 @@ class Beam(ABC):
 
     @staticmethod
     def _azel_to_numpy(azimuth, elevation):
-        az_len = Beam._get_len(azimuth)
-        el_len = Beam._get_len(elevation)
+
+        if isinstance(azimuth, np.ndarray):
+            if len(azimuth.shape) == 0:
+                az_len = None
+            else:
+                return azimuth.size
+        elif isinstance(azimuth, list) or isinstance(azimuth, tuple):
+            az_len = len(azimuth)
+        else:
+            az_len = None
+
+        if isinstance(elevation, np.ndarray):
+            if len(elevation.shape) == 0:
+                el_len = None
+            else:
+                return elevation.size
+        elif isinstance(elevation, list) or isinstance(elevation, tuple):
+            el_len = len(elevation)
+        else:
+            el_len = None
 
         if az_len is not None:
             shape = (3,az_len)
@@ -173,8 +244,8 @@ class Beam(ABC):
         azimuth, elevation = self._check_radians(azimuth, elevation, radians)
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
-        self.azimuth = azimuth
-        self.elevation = elevation
+        self._azimuth = azimuth
+        self._elevation = elevation
         self.pointing = coordinates.sph_to_cart(sph, radians = self.radians)
 
 
@@ -189,8 +260,8 @@ class Beam(ABC):
             self.pointing,
             radians = self.radians,
         )
-        self.azimuth = sph[0,...]
-        self.elevation = sph[1,...]
+        self._azimuth = sph[0,...]
+        self._elevation = sph[1,...]
         
 
     def sph_angle(self, azimuth, elevation, radians=None):

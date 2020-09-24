@@ -49,7 +49,7 @@ class Gaussian(Beam):
         )
 
     def gain(self, k, polarization=None, ind=None):
-        frequency, pointing = self.get_parameters(ind)
+        pointing, frequency = self.get_parameters(ind)
         lam = scipy.constants.c/frequency
 
         if np.abs(1-np.dot(pointing,self.normal)) < 1e-6:

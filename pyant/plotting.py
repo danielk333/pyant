@@ -27,9 +27,9 @@ def antenna_configuration(antennas, ax=None, color=None):
     '''
     if ax is None:
         fig = plt.figure(figsize=(15,7))
-        ax = fh.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection='3d')
     else:
-        fh = None
+        fig = None
 
     if color is None:
         style_ = '.'
@@ -47,7 +47,7 @@ def antenna_configuration(antennas, ax=None, color=None):
     ax.set_ylabel('Y-position [m]', fontsize=20)
     ax.set_zlabel('Z-position [m]', fontsize=20)
 
-    return fh, ax
+    return fig, ax
 
 
 def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5, usetex=False):
@@ -122,17 +122,16 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0, usetex=False):
     SdB = n.log10(S)*10.0
     SdB[SdB < 0] = 0
     surf = ax.plot_surface(K[:,:,0],K[:,:,1],SdB,cmap=cm.plasma, linewidth=0, antialiased=False, vmin=0, vmax=n.max(SdB))
-    #surf = ax.plot_surface(K[:,:,0],K[:,:,1],S.T,cmap=cm.plasma,linewidth=0)
     if usetex:
-        ax.set_xlabel('$k_x$ [1]',fontsize=24)
-        ax.set_ylabel('$k_y$ [1]',fontsize=24)
-        ax.set_zlabel('Gain $G$ [dB]',fontsize=24)
+        ax.set_xlabel('$k_x$ [1]')
+        ax.set_ylabel('$k_y$ [1]')
+        ax.set_zlabel('Gain $G$ [dB]')
     else:
-        ax.set_xlabel('kx [1]',fontsize=24)
-        ax.set_ylabel('ky [1]',fontsize=24)
-        ax.set_zlabel('Gain [dB]',fontsize=24)
-    plt.xticks(fontsize=17)
-    plt.yticks(fontsize=17)
+        ax.set_xlabel('kx [1]')
+        ax.set_ylabel('ky [1]')
+        ax.set_zlabel('Gain [dB]')
+    plt.xticks()
+    plt.yticks()
     plt.show()
 
 
@@ -237,21 +236,20 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     SdB[np.isinf(SdB)] = 0
     SdB[np.isnan(SdB)] = 0
     SdB[SdB < 0] = 0
-    # conf = ax.contourf(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), levels=levels)
     conf = ax.pcolormesh(K[:,:,0], K[:,:,1], SdB, cmap=cm.plasma, vmin=0, vmax=np.max(SdB), shading='giraud')
 
     if usetex:
-        ax.set_xlabel('$k_x$ [1]') #,fontsize=24)
-        ax.set_ylabel('$k_y$ [1]') #,fontsize=24)
+        ax.set_xlabel('$k_x$ [1]')
+        ax.set_ylabel('$k_y$ [1]')
     else:
-        ax.set_xlabel('kx [1]') # ,fontsize=24)
-        ax.set_ylabel('ky [1]') # ,fontsize=24)
+        ax.set_xlabel('kx [1]')
+        ax.set_ylabel('ky [1]')
     
-    plt.xticks() # fontsize=17)
-    plt.yticks() # fontsize=17)
+    plt.xticks()
+    plt.yticks()
     cbar = plt.colorbar(conf, ax=ax)
-    cbar.ax.set_ylabel('Gain [dB]') # ,fontsize=24)
-    ax.set_title('Gain pattern') # , fontsize=24)
+    cbar.ax.set_ylabel('Gain [dB]')
+    ax.set_title('Gain pattern')
     ax.axis('equal')
     ax.axis('square')
 
@@ -367,7 +365,7 @@ def hemisphere_plot(func, plotfunc, preproc='dba',
     return fh, ax, hh
 
 
-def new_heatmap(beam, ax=None, **kw):
+def hemisphere_gain_heatmap(beam, ax=None, **kw):
 
     pkw = dict(cmap=cm.plasma, vmin=0, shading='giraud')
 
@@ -376,17 +374,17 @@ def new_heatmap(beam, ax=None, **kw):
     usetex = True
 
     if usetex:
-        ax.set_xlabel('$k_x$ [1]') #,fontsize=24)
-        ax.set_ylabel('$k_y$ [1]') #,fontsize=24)
+        ax.set_xlabel('$k_x$ [1]')
+        ax.set_ylabel('$k_y$ [1]')
     else:
-        ax.set_xlabel('kx [1]') # ,fontsize=24)
-        ax.set_ylabel('ky [1]') # ,fontsize=24)
+        ax.set_xlabel('kx [1]')
+        ax.set_ylabel('ky [1]')
     
     plt.xticks() # fontsize=17)
     plt.yticks() # fontsize=17)
     cbar = plt.colorbar(hh, ax=ax)
-    cbar.ax.set_ylabel('Gain [dB]') # ,fontsize=24)
-    ax.set_title('Gain pattern') # , fontsize=24)
+    cbar.ax.set_ylabel('Gain [dB]')
+    ax.set_title('Gain pattern')
 
     return fh, ax, hh
 
