@@ -143,7 +143,7 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     plt.show()
 
 
-def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None, usetex=False):
+def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None, usetex=False, label=None):
     '''Creates a heatmap of the beam-patterns as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
 
     :param Beam/Beams beam: Beam pattern to plot.
@@ -266,7 +266,10 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     plt.yticks()
     cbar = plt.colorbar(conf, ax=ax)
     cbar.ax.set_ylabel('Gain [dB]')
-    ax.set_title('Gain pattern')
+    tit = 'Gain pattern'
+    if label:
+        tit += ' ' + label
+    ax.set_title(tit)
 
     return fig, ax
 
