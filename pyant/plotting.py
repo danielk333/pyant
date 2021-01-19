@@ -305,7 +305,7 @@ def hemisphere_plot(func, plotfunc, preproc='dba',
 
     if ax is None:
         fh = plt.figure() # figsize=(15,7))
-        ax = fig.add_subplot(111)
+        ax = fh.add_subplot(111)
     else:
         fh = None
 
