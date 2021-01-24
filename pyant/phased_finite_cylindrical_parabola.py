@@ -12,20 +12,28 @@ from . import coordinates
 from .finite_cylindrical_parabola import FiniteCylindricalParabola
 
 class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
-    '''A finite Cylindrical Parabola with a finite receiver line feed in the longitudinal direction, i.e. in the direction of the cylinder.
+    '''A finite Cylindrical Parabola with a phased finite receiver line feed
+        in the longitudinal direction, i.e. in the direction of the cylinder axis.
+
+    Custom (measured or more accurately estimated) peak gain at boresight can
+    be input, otherwise assumes width and height >> wavelength and approximates
+    integral with analytic form.
+
+    :param float rotation: Rotation of the rectangle in the local coordinate system. If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
+    :param float I0: Peak gain (linear scale) in the pointing direction.
+    :param float width:  Reflector width (axial/azimuth dimension) in meters
+    :param float height: Reflector height (perpendicular/elevation dimension) in meters
+    :param float depth: Perpendicular distance from feed to reflector in meters
 
     :param float I0: Peak gain (linear scale) in the pointing direction.
-    :param float width: Panel width in meters
-    :param float height: Panel height in meters
-
-    :ivar float I0: Peak gain (linear scale) in the pointing direction.
-    :ivar float width: Panel width in meters
-    :ivar float height: Panel height in meters
+                    Default use approximate analytical integral of 2D Fourier transform of rectangle.
+    :param float depth: Perpendicular distance from feed to reflector in meters
     '''
     def __init__(self, azimuth, elevation, frequency, phase_steering, width, height, depth, I0=None, rotation=None, **kwargs):
         super().__init__(azimuth, elevation, frequency, width, height, I0=I0, rotation=rotation, **kwargs)
         self.depth = depth
         self.phase_steering = phase_steering
+        self.depth = depth
 
         self.register_parameter('phase_steering', axis=0, default_ind=0)
 
@@ -45,32 +53,39 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             radians = self.radians,
         )
 
-
-    def gain(self, k, polarization=None, ind=None):
-        theta, phi = self.local_to_pointing(k, ind) #rad
-
-        return self.gain_tf(theta, phi, polarization=polarization, ind=ind)
-
+    # interface method `gain()`, inherited from super, defers to `gain_tf(), below`
     def gain_tf(self, theta, phi, polarization=None, ind=None):
+        """
+        theta is below-axis angle (radians).
+        When elevation < 90, positive theta tends towards the horizon,
+        and negative theta towards zenith.
+
+        phi is off-axis angle (radians).
+        When looking out along boresight with the azimuth direction straight
+        ahead, positive phi is to your right, negative phi to your left.
+        """
         _, frequency, phase_steering = self.get_parameters(ind)
         wavelength = scipy.constants.c/frequency
 
         if not self.radians:
             phase_steering = np.radians(phase_steering)
 
-        width = self.width - self.depth*np.tan(np.abs(phi)) #depth effective area loss
-        height = self.height 
+        # Use the phase steering angle for the width,
+        # This implies geometric optics for the feed-to-reflector path
+        w_eff = self.width - np.clip(self.depth*np.tan(np.abs(phase_steering)) - (width-aperture)/2, 0, None) # depth effective area loss
+        height = self.height
 
         if self.I0 is None:
-            I0 = self.normalize(width, height, wavelength)
+            I0 = self.normalize(w_eff, height, wavelength)
         else:
             I0 = self.I0
 
-        # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
-        # y = transverse angle, 0 = boresight, radians
-        x = width/wavelength*np.sin(phi - phase_steering)  # sinc component (longitudinal)
-        y = height/wavelength*np.sin(theta)   # sinc component (transverse)
+        # y = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
+        # x = transverse angle, 0 = boresight, radians
+        x = w_eff/wavelength*(np.sin(phi) - phase_steering)  # sinc component (transverse)
+        y = height/wavelength*np.sin(theta)   # sinc component (longitudinal)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*G                   # sinc^2 fn. (= power)
+        # G *= np.cos(phi)      # Geometric factor (foreshortening)
 
         return G*I0

@@ -11,24 +11,31 @@ from .beam import Beam
 from . import coordinates
 
 class FiniteCylindricalParabola(Beam):
-    '''A finite Cylindrical Parabola with a finite receiver line feed in the longitudinal direction, i.e. in the direction of the cylinder.
-    Custom peak gain can be input, otherwise assumes width and height >> wavelength and approximates integral with analytic form.
+    """
+    A finite Cylindrical Parabola with a finite receiver line feed
+        in the longitudinal direction, i.e. in the direction of the cylinder axis.
 
-    :param float I0: Peak gain (linear scale) in the pointing direction. Default use approximate analytical integral of 2D Fourier transform of rectangle.
-    :param float width: Panel width in meters
-    :param float height: Panel height in meters
-    :param float rotation: Rotation of the rectangle in the local coordinate system. If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
+    Custom (measured or more accurately estimated) peak gain at boresight can
+    be input, otherwise assumes width (aperture) and height >> wavelength and approximates
+    integral with analytic form.
 
-    :ivar float I0: Peak gain (linear scale) in the pointing direction.
-    :ivar float width: Panel width in meters
-    :ivar float height: Panel height in meters
-    :ivar float rotation: Rotation of the rectangle in the local coordinate system. If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
-    '''
-    def __init__(self, azimuth, elevation, frequency, width, height, I0=None, rotation=None, **kwargs):
+    :param float I0: Peak gain (linear scale) in the pointing direction.
+                    Default use approximate analytical integral of 2D Fourier transform of rectangle.
+    :param float width:  Reflector panel width (axial/azimuth dimension) in meters
+    :param float height: Reflector panel height (perpendicular/elevation dimension) in meters
+    :param float aperture: Optional, Length of the feed in meters.  Default is same as reflector width
+    :param float rotation: DISABLED Optional, Rotation of the rectangle in the local coordinate system.
+                    If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
+
+    """
+    def __init__(self, azimuth, elevation, frequency, width, height, aperture=None, I0=None, rotation=None, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
-        self.I0 = I0
         self.width = width
         self.height = height
+        if aperture is None:
+            aperture = width
+        self.aperture = aperture
+        self.I0 = I0
         self.rotation = rotation
 
     def normalize(self, width, height, wavelength):
@@ -47,6 +54,7 @@ class FiniteCylindricalParabola(Beam):
             I0 = copy.deepcopy(self.I0),
             width = copy.deepcopy(self.width),
             height = copy.deepcopy(self.height),
+            aperture = copy.deepcopy(self.aperture),
             radians = self.radians,
         )
 
@@ -69,13 +77,21 @@ class FiniteCylindricalParabola(Beam):
         else:
             ang_ = 90.0
 
-        Rz = coordinates.rot_mat_z(azimuth, radians = self.radians)
-        Rx = coordinates.rot_mat_x(ang_ - elevation, radians = self.radians)
+        def Rz(azimuth):
+            return coordinates.rot_mat_z(azimuth, radians=self.radians)
+        def Rx(elevation):
+            return coordinates.rot_mat_x(ang_ - elevation, radians=self.radians)
 
-        kb = Rx.dot(Rz.dot(k_))         # Look direction rotated into the radar's boresight system
+        # Look direction rotated into the radar's boresight system
+        kb = Rx(elevation) @ Rz(azimuth) @ k_
 
         #if the rectangular aperture is rotated, apply a rotation
+        # DISABLED (TG) -- I don't know what this is supposed to achieve
+        # which isn't already covered by `azimuth`.  But since it is applied
+        # _after_ the `azimuth` and `elevation` rotations, the semantics are
+        # not clear to me.
         if self.rotation is not None:
+            # raise NotImplementedError('Try using `azimuth` instead')
             Rz_ant = coordinates.rot_mat_z(-self.rotation, radians = self.radians)
             kb = Rz_ant.dot(kb)
 
@@ -91,10 +107,22 @@ class FiniteCylindricalParabola(Beam):
         _, frequency = self.get_parameters(ind)
         theta, phi = self.local_to_pointing(k, ind)
 
+        return self.gain_tf(theta, phi, polarization=polarization, ind=ind)
+
+    def gain_tf(self, theta, phi, polarization=None, ind=None):
+        """
+        theta is below-axis angle.
+        When elevation < 90, positive theta tends towards the horizon,
+        and negative theta towards zenith.
+
+        phi is off-axis angle.
+        When looking out along boresight with the azimuth direction straight
+        ahead, positive phi is to your right, negative phi to your left.
+        """
         wavelength = scipy.constants.c/frequency
 
         if self.I0 is None:
-            I0 = self.normalize(self.width, self.height, wavelength)
+            I0 = self.normalize(self.aperture, self.height, wavelength)
         else:
             I0 = self.I0
 
@@ -102,7 +130,7 @@ class FiniteCylindricalParabola(Beam):
         # y = transverse angle, 0 = boresight, radians
 
         #sinc*sinc is 2D FFT of a rectangular aperture
-        x = self.width/wavelength*np.sin(phi)     # sinc component (longitudinal)
+        x = self.aperture/wavelength*np.sin(phi)      # sinc component (longitudinal)
         y = self.height/wavelength*np.sin(theta)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
         G = G*G                   # sinc^2 fn. (= power)
