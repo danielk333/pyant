@@ -17,7 +17,7 @@ from .finite_cylindrical_parabola import FiniteCylindricalParabola
 from .phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .interpolated import Interpolation
 from .interpolated_array import PlaneArrayInterp
-
+from .validate import validate_functionality
 
 try:
     from . import plotting
