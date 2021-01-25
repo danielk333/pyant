@@ -39,7 +39,7 @@ class Cassegrain(Beam):
         )
 
     def gain(self, k, polarization=None, ind=None):
-        pointing, frequency = self.get_parameters(ind)
+        pointing, frequency = self.get_parameters(ind, **kwargs)
 
         theta = coordinates.vector_angle(pointing, k, radians=True)
 

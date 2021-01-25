@@ -58,19 +58,10 @@ class FiniteCylindricalParabola(Beam):
             radians = self.radians,
         )
 
-    def local_to_pointing(self, k, ind=None):
+    def local_to_pointing(self, k, azimuth, elevation):
         '''Convert from local wave vector direction to bore-sight relative longitudinal and transverse angles.
         '''
         k_ = k/np.linalg.norm(k, axis=0)
-
-        ind, shape = self.default_ind(ind)
-        if shape['pointing'] is not None:
-            azimuth = self.azimuth[ind['pointing']]
-            elevation = self.elevation[ind['pointing']]
-        else:
-            azimuth = self.azimuth
-            elevation = self.elevation
-
 
         if self.radians:
             ang_ = np.pi/2
@@ -103,13 +94,16 @@ class FiniteCylindricalParabola(Beam):
 
         return theta, phi
 
-    def gain(self, k, polarization=None, ind=None):
-        _, frequency = self.get_parameters(ind)
-        theta, phi = self.local_to_pointing(k, ind)
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        pointing, frequency = self.get_parameters(ind, **kwargs)
 
-        return self.gain_tf(theta, phi, polarization=polarization, ind=ind)
+        sph = coordinates.cart_to_sph(pointing, radians = self.radians)
 
-    def gain_tf(self, theta, phi, polarization=None, ind=None):
+        theta, phi = self.local_to_pointing(k, sph[0], sph[1])
+
+        return self.gain_tf(theta, phi, frequency=frequency)
+
+    def gain_tf(self, theta, phi, ind=None, **kwargs):
         """
         theta is below-axis angle.
         When elevation < 90, positive theta tends towards the horizon,
@@ -119,6 +113,11 @@ class FiniteCylindricalParabola(Beam):
         When looking out along boresight with the azimuth direction straight
         ahead, positive phi is to your right, negative phi to your left.
         """
+        if 'frequency' not in kwargs:
+            _, frequency = self.get_parameters(ind, **kwargs)
+        else:
+            frequency = kwargs['frequency']
+
         wavelength = scipy.constants.c/frequency
 
         if self.I0 is None:

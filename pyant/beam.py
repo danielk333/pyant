@@ -34,7 +34,6 @@ class Beam(ABC):
         '''
         self.__parameters = []
         self.__param_axis = []
-        self.__default_ind = []
 
         if isinstance(frequency, list) or isinstance(frequency, tuple):
             frequency = np.array(frequency, dtype=np.float64)
@@ -48,8 +47,8 @@ class Beam(ABC):
 
         self.pointing = coordinates.sph_to_cart(sph, radians = radians)
 
-        self.register_parameter('pointing', axis=1, default_ind=0)
-        self.register_parameter('frequency', axis=0, default_ind=0)
+        self.register_parameter('pointing', numpy_parameter_axis=1)
+        self.register_parameter('frequency')
 
 
     @property
@@ -89,12 +88,11 @@ class Beam(ABC):
             return None
 
 
-    def register_parameter(self, name, axis=0, default_ind=0):
+    def register_parameter(self, name, numpy_parameter_axis=0):
         '''Register parameter, it can then be indexed in gain calls.
         '''
         self.__parameters.append(name)
-        self.__param_axis.append(axis)
-        self.__default_ind.append(default_ind)
+        self.__param_axis.append(numpy_parameter_axis)
 
 
     def unregister_parameter(self, name):
@@ -103,7 +101,6 @@ class Beam(ABC):
         pid = self.__parameters.index(name)
         del self.__parameters[pid]
         del self.__param_axis[pid]
-        del self.__default_ind[pid]
 
 
     def named_shape(self):
@@ -125,40 +122,76 @@ class Beam(ABC):
         return tuple(self.__parameters)
 
 
-    def get_parameters(self, ind, named=False):
+    def get_parameters(self, ind, named=False, **kwargs):
         if len(self.__parameters) == 0:
             return ()
 
-        ind, shape = self.default_ind(ind)
+        #only parameter that has two names, handle special case
+        if 'pointing' not in kwargs:
+            if 'azimuth' in kwargs or 'elevation' in kwargs:
+                if not ('azimuth' in kwargs and 'elevation' in kwargs):
+                    raise ValueError('If azimuth and elevation is used instead of pointing both must be supplied.')
+                sph_ = Beam._azel_to_numpy(kwargs['azimuth'], kwargs['elevation'])
+                kwargs['pointing'] = coordinates.sph_to_cart(sph_, radians = self.radians)
+        else:
+            if 'azimuth' in kwargs or 'elevation' in kwargs:
+                raise ValueError('Cannot give pointing vector and angles simultaneously.')
+
+        ind, named_shape = self.convert_ind(ind)
         
         params = ()
         for pind in range(len(self.__parameters)):
-            obj = getattr(self, self.__parameters[pind])
-            if shape[self.__parameters[pind]] is None:
+            key = self.__parameters[pind]
+
+            if key in kwargs:
+                if key in ind:
+                    if ind[key] is not None:
+                        raise ValueError('Cannot both supply keyword argument and index for parameter')
+                params += (kwargs[key],)
+                continue
+
+            obj = getattr(self, key)
+
+            if named_shape[key] is None:
+                if key in ind:
+                    if not (ind[key] is None or ind[key] == 0):
+                        raise ValueError(f'Cannot index scalar parameter "{key}"')
                 params += (obj,)
             else:
+                if key not in ind:
+                    if named_shape[key] == 1:
+                        params += (obj[0],)
+                        continue
+                    else:
+                        raise ValueError(f'Not enough parameter values or indices given')
                 if isinstance(obj, np.ndarray):
                     I = [slice(None)]*obj.ndim
-                    I[self.__param_axis[pind]] = ind[self.__parameters[pind]]
+                    I[self.__param_axis[pind]] = ind[key]
                     params += (obj[tuple(I)],)
                 else:
-                    if self.__param_axis[pind] == 0:
-                        params += (obj[ind[self.__parameters[pind]]],)
-                    else:
-                        raise TypeError(f'Parameter "{self.__parameters[pind]}" along non-zero axis "{self.__param_axis[pind]}" is "{type(obj)}" and not numpy.ndarray')
+                    params += (obj[ind[key]],)
+
         if named:
             kw = {self.__parameters[pind]: params[pind] for pind in range(len(self.__parameters))}
             params = collections.OrderedDict(**kw)
         return params
 
 
-    def default_ind(self, ind):
+    def convert_ind(self, ind):
+        shape = self.named_shape()
+        parameters = self.parameters
+
         if ind is None:
             ind = {}
-        shape = self.named_shape()
-        for pind, key in enumerate(shape):
-            if key not in ind and shape[key] is not None:
-                ind[key] = self.__default_ind[pind]
+        elif isinstance(ind, tuple) or isinstance(ind, list):
+            if len(ind) != len(parameters):
+                raise ValueError(f'Not enough incidences ({len(ind)}) given to choose ({len(parameters)}) parameters')
+            ind = {key:i for key,i in zip(parameters, ind)}
+        elif isinstance(ind, dict):
+            pass
+        else:
+            raise ValueError(f'Indexing of type "{type(ind)}" not supported')
+        
         return ind, shape
 
 
@@ -228,7 +261,7 @@ class Beam(ABC):
         raise NotImplementedError('')
 
 
-    def complex(self, k, polarization=None, ind=None):
+    def complex(self, k, ind=None, polarization=None, **kwargs):
         '''The complex voltage output can be implemented as a middle step in gain calculation. Can include polarization channels.
         '''
         raise NotImplementedError('')
@@ -310,12 +343,14 @@ class Beam(ABC):
 
 
     @abstractmethod
-    def gain(self, k, polarization=None, ind=None):
-        '''Return the gain in the given direction. This method should be vectorized.
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        '''Return the gain in the given direction. This method should be vectorized in the `k` variable.
+
+        If e.g. pointing is the only parameter with 5 directions, :code:`ind=(2,)` would evaluate the gain using the third pointing direction.
 
         :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.
+        :param tuple ind: The incidences of the available parameters. If the parameters have a size of `1`, no index is needed. 
         :param numpy.ndarray polarization: The Jones vector of the incoming plane waves, if applicable for the beam in question.
-        :param dict ind: The incidences of the parameters that are variables. Defaults to the first element of each parameter. If e.g. pointing is a variable with 5 values, :code:`ind={'pointing':2}` would evaluate the gain using the third pointing direction.
 
         :return: Radar gain in the given direction. If input is a `(3,)` vector, output is a float. If input is a `(3,n)` matrix output is a `(n,)` vector of gains.
         :rtype: float/numpy.ndarray
@@ -323,7 +358,7 @@ class Beam(ABC):
         pass
 
     
-    def sph_gain(self, azimuth, elevation, polarization=None, radians=None, ind=None):
+    def sph_gain(self, azimuth, elevation, ind=None, polarization=None, radians=None, **kwargs):
         '''Return the gain in the given direction.
 
         :param float azimuth: Azimuth east of north to evaluate gain in.
@@ -339,4 +374,4 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         k = coordinates.sph_to_cart(sph, radians=radians)
-        return self.gain(k, polarization=polarization, ind = ind)
+        return self.gain(k, polarization=polarization, ind = ind, **kwargs)

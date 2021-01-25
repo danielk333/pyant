@@ -94,8 +94,9 @@ class Array(Beam):
         ret = np.ones(polarization.shape, dtype=k.dtype)
         return ret[:,None]*k[2,:]*self.scaling
 
+        
 
-    def gain(self, k, polarization=None, ind=None):
+    def gain(self, k, ind=None, polarization=None, **kwargs):
         '''Gain of the antenna array.
         '''
         if polarization is None:
@@ -103,7 +104,7 @@ class Array(Beam):
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        G = self.complex(k, polarization, channels=None, ind=ind)
+        G = self.complex(k, polarization, channels=None, ind=ind, **kwargs)
 
         lin_pol_check = np.abs(self.polarization) < 1e-6
         if not np.any(lin_pol_check):
@@ -117,12 +118,12 @@ class Array(Beam):
         return np.abs(G)
 
 
-    def complex(self, k, polarization, channels=None, ind=None):
+    def complex(self, k, polarization, ind=None, channels=None, **kwargs):
         '''Complex voltage output signal after summation of antennas.
 
         :return: `(c,2,num_k)` ndarray where `c` is the number of channels requested, `2` are the two polarization axis of the Jones vector and `num_k` is the number of input wave vectors. If `num_k = 1` the returned ndarray is `(c,2)`.
         '''
-        pointing, frequency = self.get_parameters(ind)
+        pointing, frequency = self.get_parameters(ind, **kwargs)
 
         inds = np.arange(self.channels, dtype=np.int)
         if channels is not None:
