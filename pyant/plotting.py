@@ -144,7 +144,7 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     plt.show()
 
 
-def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None, usetex=False, label=None):
+def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, levels=20, ax=None, vectorized=True, ind=None, usetex=False, label=None, **kwargs):
     '''Creates a heatmap of the beam-patterns as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
 
     :param Beam/Beams beam: Beam pattern to plot.
@@ -166,15 +166,10 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
         fig = None
 
     if isinstance(beam, Beam):
-        ind_, shape_ = beam.default_ind(ind)
-        if shape_['pointing'] is not None:
-            pointing = beam.pointing[:,ind_['pointing']]
-        else:
-            pointing = beam.pointing
-    elif isinstance(beam, list):
-        pointing = np.array([0,0,1])
+        params = beam.get_parameters(ind, named=True, **kwargs)
+        pointing = params['pointing']
     else:
-        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+        raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
@@ -435,17 +430,6 @@ def gain_heatmap_movie(beam, iterable, beam_update, plt_kwargs = {}, plot_update
 
     fig, ax, mesh = gain_heatmap(beam, **plt_kwargs)
     titl = fig.text(0.5,0.94,'',horizontalalignment='center')
-
-    if isinstance(beam, Beam):
-        ind_, shape_ = beam.default_ind(plt_kwargs.get('ind', None))
-        if shape_['pointing'] is not None:
-            pointing = beam.pointing[:,ind_['pointing']]
-        else:       
-            pointing = beam.pointing
-    elif isinstance(beam, list):
-        pointing = np.array([0,0,1])
-    else:
-        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
 
     resolution = plt_kwargs.get('resolution', 201)
 

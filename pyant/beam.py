@@ -132,7 +132,7 @@ class Beam(ABC):
                 if not ('azimuth' in kwargs and 'elevation' in kwargs):
                     raise ValueError('If azimuth and elevation is used instead of pointing both must be supplied.')
                 sph_ = Beam._azel_to_numpy(kwargs['azimuth'], kwargs['elevation'])
-                kwargs['pointing'] = sph_
+                kwargs['pointing'] = coordinates.sph_to_cart(sph_, radians = self.radians)
         else:
             if 'azimuth' in kwargs or 'elevation' in kwargs:
                 raise ValueError('Cannot give pointing vector and angles simultaneously.')
@@ -261,7 +261,7 @@ class Beam(ABC):
         raise NotImplementedError('')
 
 
-    def complex(self, k, polarization=None, ind=None):
+    def complex(self, k, ind=None, polarization=None, **kwargs):
         '''The complex voltage output can be implemented as a middle step in gain calculation. Can include polarization channels.
         '''
         raise NotImplementedError('')

@@ -35,7 +35,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         self.phase_steering = phase_steering
         self.depth = depth
 
-        self.register_parameter('phase_steering', axis=0, default_ind=0)
+        self.register_parameter('phase_steering')
 
     def copy(self):
         '''Return a copy of the current instance.
@@ -53,8 +53,17 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             radians = self.radians,
         )
 
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        params = self.get_parameters(ind, named=True, **kwargs)
+
+        sph = coordinates.cart_to_sph(params['pointing'], radians = self.radians)
+
+        theta, phi = self.local_to_pointing(k, sph[0], sph[1])
+
+        return self.gain_tf(theta, phi, called_from_gain = True, **params)
+
     # interface method `gain()`, inherited from super, defers to `gain_tf(), below`
-    def gain_tf(self, theta, phi, polarization=None, ind=None):
+    def gain_tf(self, theta, phi, ind=None, **kwargs):
         """
         theta is below-axis angle (radians).
         When elevation < 90, positive theta tends towards the horizon,
@@ -64,7 +73,14 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         When looking out along boresight with the azimuth direction straight
         ahead, positive phi is to your right, negative phi to your left.
         """
-        _, frequency, phase_steering = self.get_parameters(ind)
+
+        #small efficiency fix to skip unnecessary calls of get_parameters
+        if 'called_from_gain' in kwargs:
+            frequency = kwargs['frequency']
+            phase_steering = kwargs['phase_steering']
+        else:
+            _, frequency, phase_steering = self.get_parameters(ind, **kwargs)
+
         wavelength = scipy.constants.c/frequency
 
         if not self.radians:
@@ -72,7 +88,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
         # Use the phase steering angle for the width,
         # This implies geometric optics for the feed-to-reflector path
-        w_eff = self.width - np.clip(self.depth*np.tan(np.abs(phase_steering)) - (width-aperture)/2, 0, None) # depth effective area loss
+        w_eff = self.width - np.clip(self.depth*np.tan(np.abs(phase_steering)) - (self.width - self.depth)/2, 0, None) # depth effective area loss
         height = self.height
 
         if self.I0 is None:

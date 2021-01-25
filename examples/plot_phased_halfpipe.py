@@ -60,21 +60,17 @@ beam_two = pyant.PhasedFiniteCylindricalParabola(
 fig, axes = plt.subplots(2,3,figsize=(10,6),dpi=80)
 for i in range(beam_two.named_shape()['phase_steering']):
     for j in range(beam_two.named_shape()['pointing']):
-        ind = {
-            "phase_steering":i,
-            "pointing":j,
-        }
 
         pyant.plotting.gain_heatmap(
             beam_two, 
             resolution=901, 
             min_elevation=20.0, 
             ax=axes[i,j],
-            ind = ind,
+            ind=(j,None,i),
         )
 
         #the boresight relative pointing is always in radians
-        G0 = beam_two.gain_tf(theta=0, phi=np.radians(beam_two.phase_steering[i]), ind=ind)
+        G0 = beam_two.gain_tf(theta=0, phi=np.radians(beam_two.phase_steering[i]), ind=(j,None,i))
         print(f'Pointing: az={beam_two.azimuth[j]} deg, el={beam_two.elevation[j]} deg, ' + \
               f'phase steering={beam_two.phase_steering[i]} deg ' + \
               f'-> Peak gain = {np.log10(G0)*10:8.3f} dB')
