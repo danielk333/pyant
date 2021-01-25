@@ -18,6 +18,7 @@ from .phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .interpolated import Interpolation
 from .interpolated_array import PlaneArrayInterp
 from .validate import validate_functionality
+from .functions import monte_carlo_sample_gain, monte_carlo_integrate_gain_hemisphere
 
 try:
     from . import plotting
