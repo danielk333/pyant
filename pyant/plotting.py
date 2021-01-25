@@ -11,6 +11,7 @@ from .beam import Beam
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import animation
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
@@ -152,7 +153,7 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     :param int levels: Number of levels in the contour plot.
     :param bool vectorized: Use vectorized gain functionality to calculate gain-map.
-    :return: matplotlib axis and figure handles
+    :return: matplotlib figure handle, axis and QuadMesh instance
     '''
 
     #set TeX interperter
@@ -271,7 +272,7 @@ def gain_heatmap(beam, polarization=None, resolution=201, min_elevation=0.0, lev
         tit += ' ' + label
     ax.set_title(tit)
 
-    return fig, ax
+    return fig, ax, conf
 
 
 def hemisphere_plot(func, plotfunc, preproc='dba',
@@ -398,3 +399,92 @@ def new_heatmap(beam, ax=None, **kw):
     ax.set_title('Gain pattern')
 
     return fh, ax, hh
+
+
+def gain_heatmap_movie(beam, iterable, beam_update, plt_kwargs = {}, plot_update = None, fps=20, **kwargs):
+    '''WORK IN PROGRESS!
+    '''
+
+    def run(it, fig, ax, mesh, size, beam, k, inds_, resolution):
+
+        beam = beam_update(beam, it)
+
+        S = np.ones((1,size))
+        if isinstance(beam, Beam):
+            S[0,inds_] = beam.gain(k[:,inds_])
+        elif isinstance(beam, list):
+            S[0,inds_] = functools.reduce(operator.add, [b.gain(k[:,inds_]) for b in beam])
+        else:
+            raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
+        
+        SdB = np.log10(S)*10.0
+        SdB[np.isinf(SdB)] = 0
+        SdB[np.isnan(SdB)] = 0
+        # SdB[SdB < 0] = 0
+        S = SdB
+
+        S = S.reshape(resolution,resolution)
+        mesh.update({'array': S.ravel()})
+
+        if plot_update is not None:
+            fig, ax, mesh = plot_update(fig, ax, mesh)
+
+        # fig.canvas.draw()
+
+        return ax, mesh, 
+
+    fig, ax, mesh = gain_heatmap(beam, **plt_kwargs)
+    titl = fig.text(0.5,0.94,'',horizontalalignment='center')
+
+    if isinstance(beam, Beam):
+        ind_, shape_ = beam.default_ind(plt_kwargs.get('ind', None))
+        if shape_['pointing'] is not None:
+            pointing = beam.pointing[:,ind_['pointing']]
+        else:       
+            pointing = beam.pointing
+    elif isinstance(beam, list):
+        pointing = np.array([0,0,1])
+    else:
+        raise TypeError(f'Can only plot Beam or Beams, not "{type(beam)}"')
+
+    resolution = plt_kwargs.get('resolution', 201)
+
+    # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
+    # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
+    min_elevation = plt_kwargs.get('min_elevation', 0)
+    kx=np.linspace(
+        pointing[0] - np.cos(min_elevation*np.pi/180.0),
+        pointing[0] + np.cos(min_elevation*np.pi/180.0),
+        num=resolution,
+    )
+    ky=np.linspace(
+        pointing[1] - np.cos(min_elevation*np.pi/180.0),
+        pointing[1] + np.cos(min_elevation*np.pi/180.0),
+        num=resolution,
+    )
+
+    K=np.zeros((resolution,resolution,2))
+
+    K[:,:,0], K[:,:,1] = np.meshgrid(kx, ky, sparse=False, indexing='ij')
+    size = len(kx)**2
+    k = np.empty((3,size), dtype=np.float64)
+    k[0,:] = K[:,:,0].reshape(1,size)
+    k[1,:] = K[:,:,1].reshape(1,size)
+
+    z2 = k[0,:]**2 + k[1,:]**2
+    z2_c = (pointing[0] - k[0,:])**2 + (pointing[1] - k[1,:])**2
+
+    inds_ = np.logical_and(z2_c < np.cos(min_elevation*np.pi/180.0)**2, z2 <= 1.0)
+    not_inds_ = np.logical_not(inds_)
+
+    k[2,inds_] = np.sqrt(1.0 - z2[inds_])
+    k[2,not_inds_] = 0
+    
+    ani = animation.FuncAnimation(fig, run, iterable,
+        blit=kwargs.get('blit', True),
+        interval=1.0e3/float(fps),
+        repeat=True,
+        fargs=(fig, ax, mesh, size, beam, k, inds_, resolution,)
+    )
+
+    return fig, ax, mesh, ani

@@ -90,13 +90,15 @@ class Beam(ABC):
 
 
     def register_parameter(self, name, axis=0, default_ind=0):
+        '''Register parameter, it can then be indexed in gain calls.
+        '''
         self.__parameters.append(name)
         self.__param_axis.append(axis)
         self.__default_ind.append(default_ind)
 
 
     def unregister_parameter(self, name):
-        '''Unregister parameters, they can no longer be indexed in gain calls. Can be done for speed to reduce overhead of the gain call.
+        '''Unregister parameter, they can no longer be indexed in gain calls. Can be done for speed to reduce overhead of the gain call.
         '''
         pid = self.__parameters.index(name)
         del self.__parameters[pid]
@@ -223,13 +225,13 @@ class Beam(ABC):
     def copy(self):
         '''Return a copy of the current instance.
         '''
-        return NotImplementedError('')
+        raise NotImplementedError('')
 
 
-    def complex(self, k, polarization, ind):
+    def complex(self, k, polarization=None, ind=None):
         '''The complex voltage output can be implemented as a middle step in gain calculation. Can include polarization channels.
         '''
-        return NotImplementedError('')
+        raise NotImplementedError('')
 
 
     def sph_point(self, azimuth, elevation, radians=None):
