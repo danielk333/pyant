@@ -147,7 +147,7 @@ class Beam(ABC):
                 if key in ind:
                     if ind[key] is not None:
                         raise ValueError('Cannot both supply keyword argument and index for parameter')
-                params += (kwargs[key],)
+                params = params + (kwargs[key],)
                 continue
 
             obj = getattr(self, key)
@@ -156,20 +156,20 @@ class Beam(ABC):
                 if key in ind:
                     if not (ind[key] is None or ind[key] == 0):
                         raise ValueError(f'Cannot index scalar parameter "{key}"')
-                params += (obj,)
+                params = params + (obj,)
             else:
                 if key not in ind:
                     if named_shape[key] == 1:
-                        params += (obj[0],)
+                        params = params + (obj[0],)
                         continue
                     else:
                         raise ValueError(f'Not enough parameter values or indices given')
                 if isinstance(obj, np.ndarray):
                     I = [slice(None)]*obj.ndim
                     I[self.__param_axis[pind]] = ind[key]
-                    params += (obj[tuple(I)],)
+                    params = params + (obj[tuple(I)],)
                 else:
-                    params += (obj[ind[key]],)
+                    params = params + (obj[ind[key]],)
 
         if named:
             kw = {self.__parameters[pind]: params[pind] for pind in range(len(self.__parameters))}
