@@ -93,7 +93,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         w_loss = np.clip(self.depth*np.tan(np.abs(phase_steering)) - (self.width - self.aperture)/2, 0, None)
 
         # This implies geometric optics for the feed-to-reflector path
-        w_eff = self.aperture - w_loss
+        w_eff = np.clip(self.aperture - w_loss, 0, None)
         height = self.height
 
         if self.I0 is None:
@@ -105,7 +105,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         # x = transverse angle, 0 = boresight, radians
         x = w_eff/wavelength*(np.sin(phi) - phase_steering)  # sinc component (transverse)
         y = height/wavelength*np.sin(theta)   # sinc component (longitudinal)
-        G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
+        G = np.sinc(x)*np.sinc(y)*(w_eff/self.aperture) # sinc fn. (= field), NB: np.sinc includes pi !!
 
         # NB! This factor of cos(phi) is NOT geometric foreshortening --
         # It is instead a crude model for element (i.e., dipole) gain!
