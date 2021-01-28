@@ -39,7 +39,7 @@ class Beam(ABC):
     :param float azimuth: Azimuth of pointing direction.
     :param float elevation: Elevation of pointing direction.
     :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
-    
+
     :ivar float frequency: Frequency of radiation pattern.
     :ivar float azimuth: Azimuth of pointing direction.
     :ivar float elevation: Elevation of pointing direction.
@@ -157,7 +157,7 @@ class Beam(ABC):
                 raise ValueError('Cannot give pointing vector and angles simultaneously.')
 
         ind, named_shape = self.convert_ind(ind)
-        
+
         params = ()
         for pind in range(len(self.__parameters)):
             key = self.__parameters[pind]
@@ -166,7 +166,7 @@ class Beam(ABC):
                 if key in ind:
                     if ind[key] is not None:
                         raise ValueError('Cannot both supply keyword argument and index for parameter')
-                params += (kwargs[key],)
+                params = params + (kwargs[key],)
                 continue
 
             obj = getattr(self, key)
@@ -175,20 +175,20 @@ class Beam(ABC):
                 if key in ind:
                     if not (ind[key] is None or ind[key] == 0):
                         raise ValueError(f'Cannot index scalar parameter "{key}"')
-                params += (obj,)
+                params = params + (obj,)
             else:
                 if key not in ind:
                     if named_shape[key] == 1:
-                        params += (obj[0],)
+                        params = params + (obj[0],)
                         continue
                     else:
                         raise ValueError(f'Not enough parameter values or indices given')
                 if isinstance(obj, np.ndarray):
                     I = [slice(None)]*obj.ndim
                     I[self.__param_axis[pind]] = ind[key]
-                    params += (obj[tuple(I)],)
+                    params = params + (obj[tuple(I)],)
                 else:
-                    params += (obj[ind[key]],)
+                    params = params + (obj[ind[key]],)
 
         if named:
             kw = {self.__parameters[pind]: params[pind] for pind in range(len(self.__parameters))}
@@ -210,7 +210,7 @@ class Beam(ABC):
             pass
         else:
             raise ValueError(f'Indexing of type "{type(ind)}" not supported')
-        
+
         return ind, shape
 
 
@@ -271,7 +271,7 @@ class Beam(ABC):
 
     @wavelength.setter
     def wavelength(self, val):
-        self.frequency = scipy.constants.c/val 
+        self.frequency = scipy.constants.c/val
 
 
     def copy(self):
@@ -288,7 +288,7 @@ class Beam(ABC):
 
     def sph_point(self, azimuth, elevation, radians=None):
         '''Point beam towards azimuth and elevation coordinate.
-        
+
         :param float azimuth: Azimuth east of north of pointing direction.
         :param float elevation: Elevation from horizon of pointing direction.
         :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
@@ -305,7 +305,7 @@ class Beam(ABC):
 
     def point(self, k):
         '''Point beam in local cartesian direction.
-        
+
         :param numpy.ndarray k: Pointing direction in local coordinates.
         :return: :code:`None`
         '''
@@ -316,11 +316,11 @@ class Beam(ABC):
         )
         self._azimuth = sph[0,...]
         self._elevation = sph[1,...]
-        
+
 
     def sph_angle(self, azimuth, elevation, radians=None):
         '''Get angle between azimuth and elevation and pointing direction.
-    
+
         :param float azimuth: Azimuth east of north to measure from.
         :param float elevation: Elevation from horizon to measure from.
         :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
@@ -337,7 +337,7 @@ class Beam(ABC):
 
     def angle(self, k, radians=None):
         '''Get angle between local direction and pointing direction.
-        
+
         :param numpy.ndarray k: Direction to evaluate angle to.
         :param bool radians: If :code:`True` all input/output angles are in radians, if False degrees are used. Defaults to instance settings :code:`self.radians`.
 
@@ -368,7 +368,7 @@ class Beam(ABC):
         If e.g. pointing is the only parameter with 5 directions, :code:`ind=(2,)` would evaluate the gain using the third pointing direction.
 
         :param numpy.ndarray k: Direction in local coordinates to evaluate gain in. Must be a `(3,)` vector or a `(3,n)` matrix.
-        :param tuple ind: The incidences of the available parameters. If the parameters have a size of `1`, no index is needed. 
+        :param tuple ind: The incidences of the available parameters. If the parameters have a size of `1`, no index is needed.
         :param numpy.ndarray polarization: The Jones vector of the incoming plane waves, if applicable for the beam in question.
 
         :return: Radar gain in the given direction. If input is a `(3,)` vector, output is a float. If input is a `(3,n)` matrix output is a `(n,)` vector of gains.
@@ -376,7 +376,7 @@ class Beam(ABC):
         '''
         pass
 
-    
+
     def sph_gain(self, azimuth, elevation, ind=None, polarization=None, radians=None, **kwargs):
         '''Return the gain in the given direction.
 
@@ -394,3 +394,4 @@ class Beam(ABC):
 
         k = coordinates.sph_to_cart(sph, radians=radians)
         return self.gain(k, polarization=polarization, ind = ind, **kwargs)
+

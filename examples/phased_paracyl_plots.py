@@ -53,7 +53,17 @@ def get_farc():
     )
 
 
-def l2p_hemiplots(azim, elev):
+def l2p_hemiplots(azim, elev, check=False):
+    """
+    Plot the results of local_to_pointing() for the hemisphere
+
+    left panel(s) show phi, the off-axis angle in the azimuth direction
+    right panel(s) show theta, the below-axis angle in the elevation
+
+    Set check=1 to compare with a different (wrong!) local to pointing computation
+    Set check=2 to compare angles computed using  M.dot(v) to M @ v
+    """
+
 
     cmap = plt.cm.RdBu_r
 
@@ -62,38 +72,41 @@ def l2p_hemiplots(azim, elev):
     Az = pyant.coordinates.rot_mat_z
     def El(t): return pyant.coordinates.rot_mat_x(90-t)
 
-    def uphi(v): return np.degrees(np.arcsin(El(elev).dot(Az(azim).dot(uvec(v)))[0]))
-    def uthe(v): return np.degrees(np.arcsin(El(elev).dot(Az(azim).dot(uvec(v)))[1]))
+    def nphi(v): return np.degrees(np.arcsin((El(elev) @ Az(azim) @ uvec(v))[0]))
+    def nthe(v): return np.degrees(np.arcsin((El(elev) @ Az(azim) @ uvec(v))[1]))
 
     # # What happens if we normalize the projection of the rotated pointing vector before
     # # taking the sine of the x/y components?
     # # A: That is wrong. Don't do that!
-    # def uvx(v): return v[0]/np.linalg.norm(v[[0,2]], axis=0)
-    # def uvy(v): return v[1]/np.linalg.norm(v[[1,2]], axis=0)
-    #
-    # def nphi(v): return np.degrees(np.arcsin(uvx(El(elev).dot(Az(azim).dot(v)))))
-    # def nthe(v): return np.degrees(np.arcsin(uvy(El(elev).dot(Az(azim).dot(v)))))
+    if check == 1:
+        def uvx(v): return v[0]/np.linalg.norm(v[[0,2]], axis=0)
+        def uvy(v): return v[1]/np.linalg.norm(v[[1,2]], axis=0)
+
+        def uphi(v): return np.degrees(np.arcsin(uvx(El(elev).dot(Az(azim).dot(v)))))
+        def uthe(v): return np.degrees(np.arcsin(uvy(El(elev).dot(Az(azim).dot(v)))))
 
     # Check instead if numpy matrix-vector product operator lets us prettify this:
-
-    def nphi(v): return np.degrees(np.arcsin((El(elev) @ Az(azim) @ uvec(v))[0]))
-    def nthe(v): return np.degrees(np.arcsin((El(elev) @ Az(azim) @ uvec(v))[1]))
+    if check == 2:
+        def uphi(v): return np.degrees(np.arcsin(El(elev).dot(Az(azim).dot(uvec(v)))[0]))
+        def uthe(v): return np.degrees(np.arcsin(El(elev).dot(Az(azim).dot(uvec(v)))[1]))
 
     levels = np.r_[-90:100:15]
-    fh, ah = plt.subplots(2, 2, sharex='all', sharey='all')
+    fh, ah = plt.subplots(1 + (check != False), 2, sharex='all', sharey='all', squeeze=False)
 
-    _, aa, ph = hemisphere_plot(uphi, 'contourf', ax=ah[0,0], preproc=None,
+    _, aa, ph = hemisphere_plot(nphi, 'contourf', ax=ah[0,0], preproc=None,
                                vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
     plt.colorbar(ph, ax=aa)
-    _, aa, ph = hemisphere_plot(uthe, 'contourf', ax=ah[0,1], preproc=None,
+    _, aa, ph = hemisphere_plot(nthe, 'contourf', ax=ah[0,1], preproc=None,
                                 vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
     plt.colorbar(ph, ax=aa)
-    _, aa, ph = hemisphere_plot(nphi, 'contourf', ax=ah[1,0], preproc=None,
-                                vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
-    plt.colorbar(ph, ax=aa)
-    _, aa, ph = hemisphere_plot(nthe, 'contourf', ax=ah[1,1], preproc=None,
-                                vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
-    plt.colorbar(ph, ax=aa)
+
+    if check:
+        _, aa, ph = hemisphere_plot(uphi, 'contourf', ax=ah[1,0], preproc=None,
+                                    vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
+        plt.colorbar(ph, ax=aa)
+        _, aa, ph = hemisphere_plot(uthe, 'contourf', ax=ah[1,1], preproc=None,
+                                    vectorized=True, p_kw=dict(levels=levels, cmap=cmap))
+        plt.colorbar(ph, ax=aa)
 
     ce = np.cos(np.radians(elev))
     ca, sa = np.cos(np.radians(90-azim)), np.sin(np.radians(90-azim))
@@ -101,17 +114,26 @@ def l2p_hemiplots(azim, elev):
     for ax in ah.flat:
         ax.plot(ce*ca, ce*sa, 'ko')
 
-    ah[0,0].set_title(f'off-axis ({phit()}) M.dot(v)')
-    ah[1,0].set_title(f'off-axis ({phit()}) M @ v')
-
-    ah[0,1].set_title(f'below-axis ({thet()}) M.dot(v)')
-    ah[1,1].set_title(f'below-axis ({thet()}) M @ v')
-
+    ah[0,0].set_title(f'off-axis ({phit()}) M @ v')
+    ah[0,1].set_title(f'below-axis ({thet()}) M @ v')
     ah[0,0].set_ylabel(f'{mth_("k_y")}')
-    ah[1,0].set_ylabel(f'{mth_("k_y")}')
 
-    ah[1,0].set_xlabel(f'{mth_("k_x")}')
-    ah[1,1].set_xlabel(f'{mth_("k_x")}')
+    if check == False:
+        ah[0,0].set_xlabel(f'{mth_("k_x")}')
+        ah[0,1].set_xlabel(f'{mth_("k_x")}')
+
+    else:
+        ah[1,0].set_ylabel(f'{mth_("k_y")}')
+        ah[1,0].set_xlabel(f'{mth_("k_x")}')
+        ah[1,1].set_xlabel(f'{mth_("k_x")}')
+
+        if check == 1:
+            ah[1,0].set_title(f'off-axis ({phit()}) renormalized')
+            ah[1,1].set_title(f'below-axis ({thet()}) renormalized')
+        elif check == 2:
+            ah[1,0].set_title(f'off-axis ({phit()}) M.dot(v)')
+            ah[1,1].set_title(f'below-axis ({thet()}) M.dot(v)')
+
 
     fh.suptitle(f'Azimuth {azim} Elev {elev}')
 
@@ -156,7 +178,7 @@ def test_local_to_pointing():
 
 
 
-def compare(az=30, el=60, frq=60e6, with_old=False):
+def compare(az=30, el=60, frq=60e6, with_old=False, **kw):
 
     parc = get_parc()
 
@@ -168,20 +190,20 @@ def compare(az=30, el=60, frq=60e6, with_old=False):
 
 
     parc.phase_steering = -az
-    gain_heatmap(parc, ax=ah[0,0])
+    gain_heatmap(parc, ax=ah[0,0], **kw)
     ah[0,0].set_title(f'ph = {-az}')
 
     parc.phase_steering = az
-    gain_heatmap(parc, ax=ah[0,1])
+    gain_heatmap(parc, ax=ah[0,1], **kw)
     ah[0,1].set_title(f'ph = {az}')
 
     parc.phase_steering = 0
 
-    parc.azimuth = -30
-    gain_heatmap(parc, ax=ah[1,0])
+    parc.azimuth = -az
+    gain_heatmap(parc, ax=ah[1,0], **kw)
     ah[1,0].set_title(f'az = {-az}')
 
-    parc.azimuth = 30
+    parc.azimuth = az
     gain_heatmap(parc, ax=ah[1,1])
     ah[1,1].set_title(f'az = {az}')
 
@@ -193,13 +215,13 @@ def compare(az=30, el=60, frq=60e6, with_old=False):
         farc.frequency = 30e6
         farc.elevation = 60
 
-        farc.azimuth = -30
+        farc.azimuth = -az
         gain_heatmap(farc, ax=ah[2,0])
-        ah[2,0].set_title('(unphaseable) az = -30')
+        ah[2,0].set_title(f'(unphaseable) az = {-az}')
 
-        farc.azimuth = 30
+        farc.azimuth = az
         gain_heatmap(farc, ax=ah[2,1])
-        ah[2,1].set_title('(unphaseable) az = 30')
+        ah[2,1].set_title(f'(unphaseable) az = {az}')
 
         # ah[2,0].set_xlim([-0.2, 0.8])
 
@@ -212,4 +234,10 @@ def compare(az=30, el=60, frq=60e6, with_old=False):
     plt.show()
 
 
+if __name__ == '__main__':
+    az, el = 15., 70.
+    l2p_hemiplots(azim=az, elev=el)
+    l2p_hemiplots(azim=az, elev=el, check=1)
+    l2p_hemiplots(azim=az, elev=el, check=2)
+    compare(az=az, el=el, frq=120e6, resolution=401)
 
