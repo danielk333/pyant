@@ -132,6 +132,7 @@ class FiniteCylindricalParabola(Beam):
         x = self.aperture/wavelength*np.sin(phi)      # sinc component (longitudinal)
         y = self.height/wavelength*np.sin(theta)      # sinc component (transverse)
         G = np.sinc(x)*np.sinc(y) # sinc fn. (= field), NB: np.sinc includes pi !!
+        G *= np.cos(phi)          # Element gain
         G = G*G                   # sinc^2 fn. (= power)
 
         return G*I0
