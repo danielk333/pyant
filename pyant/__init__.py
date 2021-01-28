@@ -25,6 +25,7 @@ try:
 except ImportError:
     plotting = None
 
+from .beam import class_inherit_doc
 
 from .instances import BeamInstancesGetter
 

@@ -13,6 +13,25 @@ import scipy.constants
 
 from . import coordinates
 
+
+
+def class_inherit_doc(cls):
+    '''Iterates trough the base classes of the input class and adds their docstrings to the input class.
+    '''
+
+    if cls.__doc__ is None:
+        cls.__doc__ = ''
+    else:
+        cls.__doc__ += '\n'
+
+    for base in cls.__bases__:
+        if base.__doc__ is not None:
+            cls.__doc__ += f'**{base.__name__} doc:**\n' + base.__doc__
+    return cls
+
+
+
+
 class Beam(ABC):
     '''Defines the radiation pattern, i.e gain, of a radar. Gain here means amplification of the electromagnetic wave amplitude when transfered to a complex voltage amplitude.
 
