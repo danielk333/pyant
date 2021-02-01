@@ -131,7 +131,7 @@ class BeamInstancesGetter:
             return FiniteCylindricalParabola(
                 azimuth=0,
                 elevation=90.0, 
-                frequency=224.0e6,
+                frequency=1.8e9,
                 I0=None,
                 width=120.0,
                 height=40.0,
@@ -143,24 +143,11 @@ class BeamInstancesGetter:
                 elevation=90.0,
                 phase_steering = 0.0,
                 depth=18.0,
-                frequency=224.0e6,
+                frequency=1.8e9,
                 I0=None,
                 width=120.0,
                 height=40.0,
             )
-
-        elif name == 'tsdr_fence':
-            return [
-                FiniteCylindricalParabola(
-                    azimuth=az,
-                    elevation=el, 
-                    frequency=224.0e6,
-                    I0=None,
-                    width=30.0,
-                    height=40.0,
-                )
-                for az, el in zip([0.0, 0.0, 0.0, 180.0], [30.0, 60.0, 90.0, 60.0])
-            ]
 
 
         elif name == 'e_uhf':
