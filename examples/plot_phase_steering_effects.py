@@ -53,8 +53,6 @@ def make_steering_plot(k, phi0, G, levels=14, corrected=True, ax=None):
 
     ax.plot([min(kx), max(kx)], [min(phi0), max(phi0)], 'w--')
 
-    # plt.show()
-
 
 def steering_plot(beam, num_ph=301, num_az=501, levels=14, symmetric=True, corrected=True, ax=None):
 
@@ -85,3 +83,5 @@ if __name__ == '__main__':
 
     ax[0].set_title('Phase steering (nominal)')
     ax[1].set_title('Phase steering (corrected)')
+
+    plt.show()
