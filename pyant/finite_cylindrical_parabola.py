@@ -94,6 +94,45 @@ class FiniteCylindricalParabola(Beam):
 
         return theta, phi
 
+
+
+    def pointing_to_local(self, theta, phi, azimuth, elevation):
+        '''Convert from bore-sight relative longitudinal and transverse angles to local wave vector direction.
+        '''
+        sz = (3,)
+        if isinstance(theta, np.ndarray):
+            sz = sz + (len(theta),)
+        elif isinstance(phi, np.ndarray):
+            sz = sz + (len(phi),)
+
+        if not self.radians:
+            theta = np.degrees(theta)
+            phi = np.degrees(phi)
+
+        kb = np.zeros(sz, dtype=np.float64)
+        kb[1,...] = np.sin(theta)
+        kb[0,...] = np.sin(phi)
+        kb[2,...] = np.sqrt(1 - kb[0,...]**2 - kb[1,...]**2)
+
+        if self.radians:
+            ang_ = np.pi/2
+        else:
+            ang_ = 90.0
+
+        def Rz(azimuth):
+            return coordinates.rot_mat_z(azimuth, radians=self.radians)
+        def Rx(elevation):
+            return coordinates.rot_mat_x(ang_ - elevation, radians=self.radians)
+
+        # Look direction rotated from the radar's boresight system
+        k =  Rz(azimuth).T @ Rx(elevation).T @ kb
+
+        return k
+
+
+
+
+
     def gain(self, k, ind=None, polarization=None, **kwargs):
         pointing, frequency = self.get_parameters(ind, **kwargs)
 
