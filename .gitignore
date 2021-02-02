@@ -7,6 +7,10 @@
 #Sublime
 *.sublime*
 
+# Vi/vim editor backup files
+*~
+.*.sw[op]
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -83,3 +87,4 @@ dmypy.json
 logfile
 cache_error*
 *.log
+
