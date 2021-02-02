@@ -114,3 +114,43 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         G = G*G                   # sinc^2 fn. (= power)
 
         return G*I0
+
+
+    def _nominal_phase_steering(self, phi):
+        """
+        For a given desired pointing `phi`, compute the nominal phase
+        steering angle that gives a pattern that peaks at `phi`.
+
+        We know the azimuthal gain pattern `G(phi)` for a nominal phase
+        steering angle `phi0`; it is given by
+
+            G(phi) = sinc(w_eff / lambda * (sin(phi) - phi0))
+
+        So the pattern has a peak when the argument to `sinc` is zero, ie., at
+
+            phi0 = sin(phi)
+
+        or
+
+            phi = arcsin(phi0)
+
+        This also means that steering past phi = 1, or 57.3°, is not possible.
+
+        """
+
+        if not self.radians:
+            phi = np.radians(phi)
+
+        assert np.abs(phi) <= np.pi/2, 'cannot steer past the horizon'
+
+        phi0 = np.sin(phi)
+
+        if not self.radians:
+            phi0 = np.degrees(phi0)
+
+        return phi0
+
+
+
+
+        
