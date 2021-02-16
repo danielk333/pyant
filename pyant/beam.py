@@ -233,7 +233,7 @@ class Beam(ABC):
             if len(azimuth.shape) == 0:
                 az_len = None
             else:
-                return azimuth.size
+                az_len = azimuth.size
         elif isinstance(azimuth, list) or isinstance(azimuth, tuple):
             az_len = len(azimuth)
         else:
@@ -243,7 +243,7 @@ class Beam(ABC):
             if len(elevation.shape) == 0:
                 el_len = None
             else:
-                return elevation.size
+                el_len = elevation.size
         elif isinstance(elevation, list) or isinstance(elevation, tuple):
             el_len = len(elevation)
         else:
