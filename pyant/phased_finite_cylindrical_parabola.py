@@ -142,7 +142,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         if not self.radians:
             phi = np.radians(phi)
 
-        assert np.abs(phi) <= np.pi/2, 'cannot steer past the horizon'
+        assert np.abs(phi) <= np.pi/2, f'cannot steer past the horizon {np.abs(phi)}'
 
         phi0 = np.sin(phi)
 
