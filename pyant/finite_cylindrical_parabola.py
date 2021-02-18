@@ -92,6 +92,10 @@ class FiniteCylindricalParabola(Beam):
         #angle of kb from y;z plane, clock wise ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
         phi = np.arcsin(kb[0,...])      # Angle of look to left (-) or right (+) of b.s.
 
+        if not self.radians:
+            theta = np.degrees(theta)
+            phi = np.degrees(phi)
+
         return theta, phi
 
 
@@ -106,8 +110,8 @@ class FiniteCylindricalParabola(Beam):
             sz = sz + (len(phi),)
 
         if not self.radians:
-            theta = np.degrees(theta)
-            phi = np.degrees(phi)
+            theta = np.radians(theta)
+            phi = np.radians(phi)
 
         kb = np.zeros(sz, dtype=np.float64)
         kb[1,...] = np.sin(theta)
@@ -163,6 +167,10 @@ class FiniteCylindricalParabola(Beam):
             I0 = self.normalize(self.aperture, self.height, wavelength)
         else:
             I0 = self.I0
+
+        if not self.radians:
+            theta = np.radians(theta)
+            phi = np.radians(phi)
 
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians

@@ -87,7 +87,8 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
         if not self.radians:
             phase_steering = np.radians(phase_steering)
-
+            theta = np.radians(theta)
+            phi = np.radians(phi)
 
         # Compute effective area loss due to spillover when phase-steering past edge of reflector.
         w_loss = np.clip(self.depth*np.tan(np.abs(phase_steering)) - (self.width - self.aperture)/2, 0, None)
@@ -141,7 +142,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         if not self.radians:
             phi = np.radians(phi)
 
-        assert np.abs(phi) <= np.pi/2, 'cannot steer past the horizon'
+        assert np.abs(phi) <= np.pi/2, f'cannot steer past the horizon {np.abs(phi)}'
 
         phi0 = np.sin(phi)
 
