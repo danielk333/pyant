@@ -43,8 +43,9 @@ class Airy(Beam):
         )
 
 
-    def gain(self, k, polarization=None, ind=None):
-        pointing, frequency, radius = self.get_parameters(ind)
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        pointing, frequency, radius = self.get_parameters(ind, **kwargs)
+        
         lam = scipy.constants.c/frequency
 
         theta = coordinates.vector_angle(pointing, k, radians=True)

@@ -97,7 +97,8 @@ def vector_angle(a, b, radians=False):
 
 
 def rot_mat_z(theta, dtype=np.float, radians=False):
-    '''Generates the 3D transformation matrix for rotation counterclockwise around Z-axis.
+    '''Compute matrix for rotation of R3 vector through angle theta
+    around the Z-axis.  For frame rotation, use the transpose.
     
     :param float theta: Angle to rotate.
     :param numpy.dtype dtype: The data-type of the output matrix.
@@ -109,17 +110,16 @@ def rot_mat_z(theta, dtype=np.float, radians=False):
     if not radians:
         theta = np.radians(theta)
 
-    R = np.zeros((3,3), dtype=dtype)
-    R[0,0] = np.cos(theta)
-    R[0,1] = -np.sin(theta)
-    R[1,0] = np.sin(theta)
-    R[1,1] = np.cos(theta)
-    R[2,2] = 1.0
-    return R
+    ca, sa = np.cos(theta), np.sin(theta)
+    return np.array([[ca, -sa, 0.],
+                     [sa,  ca, 0.],
+                     [0.,  0., 1.]], dtype=dtype)
 
 
 def rot_mat_x(theta, dtype=np.float, radians=False):
-    '''Generates the 3D transformation matrix for counterclockwise rotation around X-axis.
+    '''Compute matrix for rotation of R3 vector through angle theta
+    around the X-axis.  For frame rotation, use the transpose.
+
     
     :param float theta: Angle to rotate.
     :param numpy.dtype dtype: The data-type of the output matrix.
@@ -131,17 +131,15 @@ def rot_mat_x(theta, dtype=np.float, radians=False):
     if not radians:
         theta = np.radians(theta)
 
-    R = np.zeros((3,3), dtype=dtype)
-    R[1,1] = np.cos(theta)
-    R[1,2] = -np.sin(theta)
-    R[2,1] = np.sin(theta)
-    R[2,2] = np.cos(theta)
-    R[0,0] = 1.0
-    return R
+    ca, sa = np.cos(theta), np.sin(theta)
+    return np.array([[1., 0.,  0.],
+                     [0., ca, -sa],
+                     [0., sa,  ca]], dtype=dtype)
 
 
 def rot_mat_y(theta, dtype=np.float, radians=False):
-    '''Generates the 3D transformation matrix for rotation around Y-axis.
+    '''Compute matrix for rotation of R3 vector through angle theta
+    around the Y-axis.  For frame rotation, use the transpose.
     
     :param float theta: Angle to rotate.
     :param numpy.dtype dtype: The data-type of the output matrix.
@@ -153,25 +151,30 @@ def rot_mat_y(theta, dtype=np.float, radians=False):
     if not radians:
         theta = np.radians(theta)
 
-    R = np.zeros((3,3), dtype=dtype)
-    R[0,0] = np.cos(theta)
-    R[0,2] = np.sin(theta)
-    R[2,0] = -np.sin(theta)
-    R[2,2] = np.cos(theta)
-    R[1,1] = 1.0
-    return R
+    ca, sa = np.cos(theta), np.sin(theta)
+    return np.array([[ ca, 0., sa],
+                     [ 0., 1., 0.],
+                     [-sa, 0., ca]], dtype=dtype)
 
-def rot2d(theta):
-    '''Matrix for rotation in the plane
 
-    #TODO docstring
+def rot2d(theta, dtype=np.float, radians=True):
+    '''Matrix for rotation of R2 vector in the plane through angle theta
+    For frame rotation, use the transpose.
+
+    :param float theta: Angle to rotate.
+    :param numpy.dtype dtype: The data-type of the output matrix.
+    :param bool radians: Uses radians unless set to :code:`False`.
+
+    :return: Rotation matrix
+    :rtype: (2,2) numpy.ndarray
     '''
-    M_rot = np.empty((2,2), dtype=np.float)
-    M_rot[0,0] = np.cos(theta)
-    M_rot[1,0] = np.sin(theta)
-    M_rot[0,1] = -np.sin(theta)
-    M_rot[1,1] = np.cos(theta)
-    return M_rot
+    if not radians:
+        theta = np.radians(theta)
+
+    ca, sa = np.cos(theta), np.sin(theta)
+    return np.array([[ca, -sa],
+                     [sa,  ca]], dtype=dtype)
+
 
 def scale2d(x,y):
     '''Matrix for scaling in the plane

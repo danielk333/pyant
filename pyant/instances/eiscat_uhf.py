@@ -4,6 +4,7 @@
 
 '''
 import pkg_resources
+import copy
 
 import numpy as np
 import scipy.interpolate
@@ -31,6 +32,15 @@ class EISCAT_UHF(Beam):
 
         self.beam_function = scipy.interpolate.interp1d(np.abs(angle),gain)
 
+    def copy(self):
+        '''Return a copy of the current instance.
+        '''
+        return EISCAT_UHF(
+            azimuth = copy.deepcopy(self.azimuth),
+            elevation = copy.deepcopy(self.elevation),
+            frequency = copy.deepcopy(self.frequency),
+            radians = self.radians,
+        )
 
     def gain(self, k, polarization=None, ind=None):
         theta = coordinates.vector_angle(self.pointing, k, radians=True)

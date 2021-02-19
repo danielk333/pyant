@@ -74,8 +74,8 @@ class Interpolation(Beam):
         self.interpolated = f_obj.item()
     
 
-    def gain(self, k, polarization=None, ind=None):
-        pointing, frequency = self.get_parameters(ind)
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        pointing, frequency = self.get_parameters(ind, **kwargs)
         k_trans = self.pointing_transform(k, pointing)
 
         interp_gain = self.interpolated(k_trans[0,...], k_trans[1,...], grid=False)

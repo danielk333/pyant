@@ -14,13 +14,15 @@ beam = pyant.Airy(
     radius=23.0,
 )
 
-print(f'Gain will output with additional dimensions: {beam.shape}')
+print(f'Gain can be calculated with the following parameter sizes: {beam.shape}')
 print(f'Corresponding to the following parameters: {beam.parameters}')
 print(f'These are the default values:')
 for key, val in zip(beam.parameters, beam.get_parameters(ind=None)):
     print(f'{key}: {val}')
 
 k = np.array([[0,0,1.0],[0,1,1]]).T
+
+print(f'Gain for {k[:,0]} and without giving parameter index: {beam.gain(k[:,0])}')
 
 for pi in range(len(beam.azimuth)):
     print(f'Gain for {k[:,0]} and pointing {pi} (freq = 0 by default): {beam.gain(k[:,0], ind={"pointing":pi})}')
