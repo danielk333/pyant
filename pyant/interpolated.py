@@ -74,8 +74,11 @@ class Interpolation(Beam):
         self.interpolated = f_obj.item()
     
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        pointing, frequency = self.get_parameters(ind, **kwargs)
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+        if vectorized_parameters:
+            raise NotImplementedError('vectorized_parameters is not supported by Interpolation')
+
+        pointing, frequency = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
         k_trans = self.pointing_transform(k, pointing)
 
         interp_gain = self.interpolated(k_trans[0,...], k_trans[1,...], grid=False)

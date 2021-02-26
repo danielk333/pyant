@@ -24,11 +24,9 @@ class FiniteCylindricalParabola(Beam):
     :param float width:  Reflector panel width (axial/azimuth dimension) in meters
     :param float height: Reflector panel height (perpendicular/elevation dimension) in meters
     :param float aperture: Optional, Length of the feed in meters.  Default is same as reflector width
-    :param float rotation: DISABLED Optional, Rotation of the rectangle in the local coordinate system.
-                    If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
 
     """
-    def __init__(self, azimuth, elevation, frequency, width, height, aperture=None, I0=None, rotation=None, **kwargs):
+    def __init__(self, azimuth, elevation, frequency, width, height, aperture=None, I0=None, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
         self.width = width
         self.height = height
@@ -36,7 +34,7 @@ class FiniteCylindricalParabola(Beam):
             aperture = width
         self.aperture = aperture
         self.I0 = I0
-        self.rotation = rotation
+
 
     def normalize(self, width, height, wavelength):
         '''Calculate normalization constant for beam pattern by assuming width and height >> wavelength.
@@ -75,16 +73,6 @@ class FiniteCylindricalParabola(Beam):
 
         # Look direction rotated into the radar's boresight system
         kb = Rx(elevation) @ Rz(azimuth) @ k_
-
-        #if the rectangular aperture is rotated, apply a rotation
-        # DISABLED (TG) -- I don't know what this is supposed to achieve
-        # which isn't already covered by `azimuth`.  But since it is applied
-        # _after_ the `azimuth` and `elevation` rotations, the semantics are
-        # not clear to me.
-        if self.rotation is not None:
-            # raise NotImplementedError('Try using `azimuth` instead')
-            Rz_ant = coordinates.rot_mat_z(-self.rotation, radians = self.radians)
-            kb = Rz_ant.dot(kb)
 
         #angle of kb from x;z plane, counter-clock wise ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
         theta = np.arcsin(kb[1,...])    # Angle of look above (-) or below (+) boresight
@@ -137,16 +125,20 @@ class FiniteCylindricalParabola(Beam):
 
 
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        pointing, frequency = self.get_parameters(ind, **kwargs)
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+        if vectorized_parameters:
+            if 'frequency' in kwargs:
+                raise NotImplementedError('Cannot vectorize pointing yet, self.local_to_pointing rotation matrices not vectorized.')
+
+        pointing, frequency = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
 
         sph = coordinates.cart_to_sph(pointing, radians = self.radians)
 
         theta, phi = self.local_to_pointing(k, sph[0], sph[1])
 
-        return self.gain_tf(theta, phi, frequency=frequency)
+        return self.gain_tf(theta, phi, frequency=frequency, vectorized_parameters=vectorized_parameters)
 
-    def gain_tf(self, theta, phi, ind=None, **kwargs):
+    def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
         """
         theta is below-axis angle.
         When elevation < 90, positive theta tends towards the horizon,

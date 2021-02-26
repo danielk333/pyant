@@ -141,7 +141,7 @@ class Beam(ABC):
         return tuple(self.__parameters)
 
 
-    def get_parameters(self, ind, named=False, **kwargs):
+    def get_parameters(self, ind, named=False, vectorized_parameters=False, **kwargs):
         if len(self.__parameters) == 0:
             return ()
 
@@ -180,6 +180,9 @@ class Beam(ABC):
                 if key not in ind:
                     if named_shape[key] == 1:
                         params = params + (obj[0],)
+                        continue
+                    elif vectorized_parameters:
+                        params = params + (obj,)
                         continue
                     else:
                         raise ValueError(f'Not enough parameter values or indices given')
@@ -362,7 +365,7 @@ class Beam(ABC):
 
 
     @abstractmethod
-    def gain(self, k, ind=None, polarization=None, **kwargs):
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
         '''Return the gain in the given direction. This method should be vectorized in the `k` variable.
 
         If e.g. pointing is the only parameter with 5 directions, :code:`ind=(2,)` would evaluate the gain using the third pointing direction.
@@ -377,7 +380,7 @@ class Beam(ABC):
         pass
 
 
-    def sph_gain(self, azimuth, elevation, ind=None, polarization=None, radians=None, **kwargs):
+    def sph_gain(self, azimuth, elevation, ind=None, polarization=None, radians=None, vectorized_parameters=False, **kwargs):
         '''Return the gain in the given direction.
 
         :param float azimuth: Azimuth east of north to evaluate gain in.
@@ -393,5 +396,5 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         k = coordinates.sph_to_cart(sph, radians=radians)
-        return self.gain(k, polarization=polarization, ind = ind, **kwargs)
+        return self.gain(k, polarization=polarization, ind=ind, vectorized_parameters=vectorized_parameters, **kwargs)
 

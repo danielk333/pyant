@@ -96,9 +96,12 @@ class Array(Beam):
 
         
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
         '''Gain of the antenna array.
         '''
+        if vectorized_parameters:
+            raise NotImplementedError('vectorized_parameters is not supported by Array')
+
         if polarization is None:
             polarization = self.polarization
         elif not np.all(np.iscomplex(polarization)):
@@ -177,6 +180,8 @@ class DipoleArray(Array):
             antenna_rotation = 0.0,
             **kwargs
         ):
+        raise NotImplementedError('DipoleArray not finished')
+
         super().__init__(
             azimuth, 
             elevation, 
