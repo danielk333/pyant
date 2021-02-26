@@ -55,17 +55,21 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             radians = self.radians,
         )
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        params = self.get_parameters(ind, named=True, **kwargs)
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+        if vectorized_parameters:
+            if 'frequency' in kwargs:
+                raise NotImplementedError('Cannot vectorize pointing yet, self.local_to_pointing rotation matrices not vectorized.')
+
+        params = self.get_parameters(ind, named=True, vectorized_parameters=vectorized_parameters, **kwargs)
 
         sph = coordinates.cart_to_sph(params['pointing'], radians = self.radians)
 
         theta, phi = self.local_to_pointing(k, sph[0], sph[1])
 
-        return self.gain_tf(theta, phi, called_from_gain = True, **params)
+        return self.gain_tf(theta, phi, called_from_gain = True, vectorized_parameters=vectorized_parameters, **params)
 
     # interface method `gain()`, inherited from super, defers to `gain_tf(), below`
-    def gain_tf(self, theta, phi, ind=None, **kwargs):
+    def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
         """
         theta is below-axis angle (radians).
         When elevation < 90, positive theta tends towards the horizon,
@@ -81,7 +85,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             frequency = kwargs['frequency']
             phase_steering = kwargs['phase_steering']
         else:
-            _, frequency, phase_steering = self.get_parameters(ind, **kwargs)
+            _, frequency, phase_steering = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
 
         wavelength = scipy.constants.c/frequency
 

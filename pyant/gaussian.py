@@ -48,8 +48,11 @@ class Gaussian(Beam):
             radians = self.radians,
         )
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        pointing, frequency = self.get_parameters(ind, **kwargs)
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+        if vectorized_parameters:
+            raise NotImplementedError('vectorized_parameters is not supported by Gaussian')
+
+        pointing, frequency = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
 
         lam = scipy.constants.c/frequency
 

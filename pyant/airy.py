@@ -43,8 +43,8 @@ class Airy(Beam):
         )
 
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        pointing, frequency, radius = self.get_parameters(ind, **kwargs)
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+        pointing, frequency, radius = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
         
         lam = scipy.constants.c/frequency
 
@@ -54,7 +54,7 @@ class Airy(Beam):
         alph = k_n*radius*np.sin(theta)
         jn_val = scipy.special.jn(1,alph)
 
-        if len(k.shape) == 1:
+        if len(k.shape) == 1 and not vectorized_parameters:
             #lim_(alph->0) (J_1(alph))/alph = 1/2
             if alph < 1e-9:
                 G = self.I0

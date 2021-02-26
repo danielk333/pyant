@@ -38,8 +38,11 @@ class Cassegrain(Beam):
             radians = self.radians,
         )
 
-    def gain(self, k, polarization=None, ind=None):
-        pointing, frequency = self.get_parameters(ind, **kwargs)
+    def gain(self, k, polarization=None, ind=None, vectorized_parameters=False, **kwargs):
+        if vectorized_parameters:
+            raise NotImplementedError('vectorized_parameters is not supported by Cassegrain')
+
+        pointing, frequency = self.get_parameters(ind, vectorized_parameters=vectorized_parameters, **kwargs)
 
         theta = coordinates.vector_angle(pointing, k, radians=True)
 
