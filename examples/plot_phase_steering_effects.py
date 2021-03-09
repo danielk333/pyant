@@ -15,7 +15,7 @@ import pyant
 #num_ph = 300
 
 
-def steering_gain(beam, num_ph=301, num_az=501, symmetric=True, corrected=True):
+def steering_gain(beam, num_ph=701, num_az=901, symmetric=True, corrected=True):
     #phase steering
 
     G = np.zeros((num_ph,num_az), dtype=np.float64)
@@ -23,7 +23,7 @@ def steering_gain(beam, num_ph=301, num_az=501, symmetric=True, corrected=True):
     k = np.zeros((3,num_az), dtype=np.float64)
     #all "along feed bridge K vectors"
     phi0 = np.linspace(-90*symmetric, 90, num_ph)
-    k[0,:] = np.linspace(-1*symmetric, 1, num_az)
+    k[0,:] = np.linspace(-1, 1, num_az)
     k[2,:] = np.sqrt(1 - k[0,:]**2 - k[1,:]**2)
 
     for i in range(num_ph):
@@ -37,7 +37,10 @@ def steering_gain(beam, num_ph=301, num_az=501, symmetric=True, corrected=True):
     return k, phi0, G
 
 
-def make_steering_plot(k, phi0, G, levels=14, corrected=True, ax=None):
+def make_steering_plot(k, phi0, G, levels=14, symmetric=None, corrected=True, ax=None):
+    # Symmetric=None for no 'true k' dashed line
+    # Symmetric=True plots from min(kx) to max(kx)
+    # Symmetric=False plots from 0 to max(kx)
     SdB = np.log10(G)*10.0
 
     if ax is None:
@@ -48,17 +51,19 @@ def make_steering_plot(k, phi0, G, levels=14, corrected=True, ax=None):
     norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
     kx = np.degrees(np.arcsin(k[0]))
 
-    conf = ax.pcolormesh(kx, phi0, SdB, cmap=cmap, norm=norm) #, vmin=0, vmax=np.nanmax(SdB)
+    conf = ax.pcolormesh(kx, phi0, SdB, cmap=cmap, norm=norm, shading='auto') #, vmin=0, vmax=np.nanmax(SdB)
     plt.colorbar(conf, ax=ax, fraction=0.04, pad=0.01)
 
-    ax.plot([min(kx), max(kx)], [min(phi0), max(phi0)], 'w--')
+    if symmetric is not None:
+        k_true = [min(kx)*symmetric, max(kx)]
+        ax.plot(k_true, [min(phi0), max(phi0)], 'w--')
 
 
 def steering_plot(beam, num_ph=301, num_az=501, levels=14, symmetric=True, corrected=True, ax=None):
 
     k, phi0, G = steering_gain(beam, num_ph=num_ph, num_az=num_az, symmetric=symmetric, corrected=corrected)
 
-    make_steering_plot(k, phi0, G, levels=levels, corrected=corrected, ax=ax)
+    make_steering_plot(k, phi0, G, levels=levels, symmetric=symmetric, corrected=corrected, ax=ax)
 
 
 
