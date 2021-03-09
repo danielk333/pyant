@@ -27,11 +27,9 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
     :param float I0: Peak gain (linear scale) in the pointing direction.
                     Default use approximate analytical integral of 2D Fourier transform of rectangle.
-    :param float rotation: DISABLED Optional, Rotation of the rectangle in the local coordinate system.
-                    If no rotation angle is given, the width is along the `y` (north-south) axis in local coordinates.
     '''
-    def __init__(self, azimuth, elevation, frequency, phase_steering, width, height, depth, aperture=None, I0=None, rotation=None, **kwargs):
-        super().__init__(azimuth, elevation, frequency, width, height, aperture, I0=I0, rotation=rotation, **kwargs)
+    def __init__(self, azimuth, elevation, frequency, phase_steering, width, height, depth, aperture=None, I0=None, **kwargs):
+        super().__init__(azimuth, elevation, frequency, width, height, aperture, I0=I0, **kwargs)
         self.depth = depth
         self.phase_steering = phase_steering
         self.depth = depth
@@ -51,7 +49,6 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             depth = copy.deepcopy(self.depth),
             aperture = copy.deepcopy(self.aperture),
             I0 = copy.deepcopy(self.I0),
-            rotation = copy.deepcopy(self.rotation),
             radians = self.radians,
         )
 
@@ -146,7 +143,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         if not self.radians:
             phi = np.radians(phi)
 
-        assert np.abs(phi) <= np.pi/2, f'cannot steer past the horizon {np.abs(phi)}'
+        assert np.all(np.abs(phi) <= np.pi/2), f'cannot steer past the horizon {np.abs(phi)}'
 
         phi0 = np.sin(phi)
 
