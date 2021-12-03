@@ -10,18 +10,21 @@ from ..gaussian import Gaussian
 from ..array import Array
 from ..finite_cylindrical_parabola import FiniteCylindricalParabola
 from ..phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
+from ..cassegrain import Cassegrain
 
 from . import eiscat3d
 from .eiscat_uhf import EISCAT_UHF
 
 __all__ = []
 beam_instances = [
-    'e_uhf',
     'e3d_array_module',
     'e3d_array_stage1',
     'e3d_array_stage2',
     'tsdr',
-    'tsdr_fence',
+    'tsdr_phased',
+    'e_uhf',
+    'esr_32',
+    'esr_42',
 ]
 
 class BeamInstancesGetter:
@@ -156,5 +159,25 @@ class BeamInstancesGetter:
                 elevation=90.0,
             )
 
+        elif name == 'esr_32' :
+            return Cassegrain(
+                0.0,              # azimuth
+                90.0,             # elevation
+                500e6,            # frequency
+                10**(42.5 / 10),  # Linear gain (42.5 dB)
+                16.0,             # radius longitudinal direction
+                16.0,             # radius latitudinal direction
+            )
 
-        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+        elif name == 'esr_42' :
+            return Cassegrain(
+                181.6,            # azimuth
+                82.1,             # elevation
+                500e6,            # frequency
+                10**(45.0 / 10),  # Linear gain (42.5 dB)
+                21.0,             # radius longitudinal direction
+                21.0,             # radius latitudinal direction
+            )
+
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'\n(valid names are {beam_instances})")
+
