@@ -165,8 +165,8 @@ class BeamInstancesGetter:
                 90.0,             # elevation
                 500e6,            # frequency
                 10**(42.5 / 10),  # Linear gain (42.5 dB)
-                16.0,             # radius longitudinal direction
-                16.0,             # radius latitudinal direction
+                16.0,             # radius main reflector
+                1.73,             # radius subreflector (eyeballed from photo)
             )
 
         elif name == 'esr_42' :
@@ -175,8 +175,8 @@ class BeamInstancesGetter:
                 82.1,             # elevation   (since 2019)
                 500e6,            # frequency
                 10**(45.0 / 10),  # Linear gain (42.5 dB)
-                21.0,             # radius longitudinal direction
-                21.0,             # radius latitudinal direction
+                21.0,             # radius main reflector
+                3.3,              # radius subreflector (eyeballed from photo)
             )
 
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'\n(valid names are {beam_instances})")
