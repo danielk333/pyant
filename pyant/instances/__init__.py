@@ -171,8 +171,8 @@ class BeamInstancesGetter:
 
         elif name == 'esr_42' :
             return Cassegrain(
-                181.6,            # azimuth
-                82.1,             # elevation
+                185.5,            # azimuth     (since 2019)
+                82.1,             # elevation   (since 2019)
                 500e6,            # frequency
                 10**(45.0 / 10),  # Linear gain (42.5 dB)
                 21.0,             # radius longitudinal direction
