@@ -18,6 +18,7 @@ try:
 except:
     _eiscat_beam_data = None
 
+
 class EISCAT_UHF(Beam):
     '''Measured gain pattern of the EISCAT UHF radar.
 
@@ -27,10 +28,10 @@ class EISCAT_UHF(Beam):
     def __init__(self, azimuth, elevation, frequency = 930e6, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
 
-        angle = _eiscat_beam_data[:,0]
-        gain = 10**(_eiscat_beam_data[:,1]/10.0)
+        angle = _eiscat_beam_data[:, 0]
+        gain = 10**(_eiscat_beam_data[:, 1]/10.0)
 
-        self.beam_function = scipy.interpolate.interp1d(np.abs(angle),gain)
+        self.beam_function = scipy.interpolate.interp1d(np.abs(angle), gain)
 
     def copy(self):
         '''Return a copy of the current instance.
@@ -43,9 +44,9 @@ class EISCAT_UHF(Beam):
         )
 
     def gain(self, k, polarization=None, ind=None):
-        theta = coordinates.vector_angle(self.pointing, k, radians=True)
+        theta = coordinates.vector_angle(self.pointing, k, radians=False)
 
-        sf=self.frequency/930e6 
+        sf = self.frequency/930e6 
         G = 10**4.81*self.beam_function(sf*np.abs(theta))
 
         return G
