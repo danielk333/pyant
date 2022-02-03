@@ -8,6 +8,7 @@ TODO: Create a copyright statement which all are happy with
 '''
 
 from .beam import Beam
+from . import coordinates as coord
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,13 +24,16 @@ def show():
     '''Shorthand for matplotlib :code:`show` function.'''
     plt.show()
 
+
 def _clint(p, c, lim=1):
     '''clip interval [p-c, p+c] to [-lim, lim] (lim=1 by default) '''
     return np.clip([p-c, p+c], -lim, lim)
 
+
 def add_circle(ax, c, r, fmt='k--', *args, **kw):
     th = np.linspace(0, 2*np.pi, 180)
     ax.plot(c[0] + np.cos(th), c[1]+np.sin(th), fmt, *args, **kw)
+
 
 def antenna_configuration(antennas, ax=None, color=None):
     '''Plot the 3d antenna positions
@@ -59,7 +63,7 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
+def gains(beams, resolution=1000, min_elevation = 0.0, alpha = 1, usetex=False):
     '''Plot the gain of a list of beam patterns as a function of elevation at :math:`0^\circ` degrees azimuth.
 
     :param beam: Beam or list of beams.
@@ -67,37 +71,39 @@ def gains(beam, resolution=1000, min_elevation = 0.0, alpha = 0.5):
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`.
     '''
 
-    # is TeX interpreter available?
-    usetex = plt.rcParam['text.usetex']
+    # set TeX interperter
+    plt.rc('text', usetex=usetex)
+    if not isinstance(beams, list):
+        beams = [beams]
 
-    fig = plt.figure(figsize=(15,7))
+    fig = plt.figure(figsize=(15, 7))
     ax = fig.add_subplot(111)
 
-    theta=np.linspace(min_elevation,90.0,num=resolution)
+    theta = np.linspace(min_elevation, 90.0, num=resolution)
 
-    S=np.zeros((resolution,len(beams)))
-    for b,beam in enumerate(beams):
-        for i,th in enumerate(theta):
-            k=coord.azel_to_cart(0.0, th, 1.0)
-            S[i,b]=beam.gain(k)
+    S = np.zeros((resolution, len(beams)))
+    for b, beam in enumerate(beams):
+        for i, th in enumerate(theta):
+            k = coord.sph_to_cart(np.array([0.0, th, 1.0]), radians=False)
+            S[i, b] = beam.gain(k)
     for b in range(len(beams)):
-        ax.plot(90-theta,np.log10(S[:,b])*10.0,label="Gain " + beams[b].beam_name, alpha=alpha)
+        ax.plot(90-theta, np.log10(S[:, b])*10.0, alpha=alpha)
     ax.legend()
     bottom, top = plt.ylim()
-    plt.ylim((0,top))
-    ax.set_xlabel('Zenith angle [deg]',fontsize=24)
+    plt.ylim((0, top))
+    ax.set_xlabel('Zenith angle [deg]', fontsize=24)
     plt.xticks(fontsize=17)
     plt.yticks(fontsize=17)
     if usetex:
-        ax.set_ylabel('Gain $G$ [dB]',fontsize=24)
+        ax.set_ylabel('Gain $G$ [dB]', fontsize=24)
     else:
-        ax.set_ylabel('Gain [dB]',fontsize=24)
-    ax.set_title('Gain patterns',fontsize=28)
+        ax.set_ylabel('Gain [dB]', fontsize=24)
+    ax.set_title('Gain patterns', fontsize=28)
 
     return fig, ax
 
 
-def gain_surface(beam, resolution=200, min_elevation = 0.0):
+def gain_surface(beam, resolution=200, min_elevation = 0.0, usetex=False):
     '''Creates a 3d plot of the beam-patters as a function of azimuth and elevation in terms of wave vector ground projection coordinates.
 
     :param BeamPattern beam: Beam pattern to plot.
@@ -105,32 +111,38 @@ def gain_surface(beam, resolution=200, min_elevation = 0.0):
     :param float min_elevation: Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`. This number defines the half the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     '''
 
-    # is TeX interpreter available?
-    usetex = plt.rcParam['text.usetex']
+    #set TeX interperter
+    plt.rc('text', usetex=usetex)
 
-    fig = plt.figure(figsize=(15,7))
+    fig = plt.figure(figsize=(15, 7))
     ax = fig.add_subplot(111, projection='3d')
 
     cmin = np.cos(np.radians(min_elevation))
-    kx = np.linspace(*_clint(0, cmin), num=res)
-    ky = np.linspace(*_clint(0, cmin), num=res)
+    kx = np.linspace(*_clint(0, cmin), num=resolution)
+    ky = np.linspace(*_clint(0, cmin), num=resolution)
 
-    S=np.zeros((res,res))
-    K=np.zeros((res,res,2))
-    for i,x in enumerate(kx):
-        for j,y in enumerate(ky):
+    S = np.zeros((resolution, resolution))
+    K = np.zeros((resolution, resolution, 2))
+    for i, x in enumerate(kx):
+        for j, y in enumerate(ky):
             z2 = x**2 + y**2
             if z2 < cmin**2:
-                k=np.array([x, y, np.sqrt(1.0 - z2)])
-                S[i,j]=beam.gain(k)
+                k = np.array([x, y, np.sqrt(1.0 - z2)])
+                S[i, j] = beam.gain(k)
             else:
-                S[i,j] = 0;
-            K[i,j,0]=x
-            K[i,j,1]=y
+                S[i, j] = 0
+            K[i, j, 0] = x
+            K[i, j, 1] = y
     SdB = np.log10(S)*10.0
     SdB[SdB < 0] = 0
-    surf = ax.plot_surface(K[:,:,0],K[:,:,1],SdB,cmap=cm.plasma, linewidth=0, antialiased=False, vmin=0, vmax=np.max(SdB))
-    #surf = ax.plot_surface(K[:,:,0],K[:,:,1],S.T,cmap=cm.plasma,linewidth=0)
+    surf = ax.plot_surface(
+        K[:, :, 0], K[:, :, 1], SdB,
+        cmap=cm.plasma, 
+        linewidth=0, 
+        antialiased=False, 
+        vmin=0, 
+        vmax=np.max(SdB),
+    )
     if usetex:
         ax.set_xlabel('$k_x$ [1]')
         ax.set_ylabel('$k_y$ [1]')
