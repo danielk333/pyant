@@ -9,20 +9,24 @@ import copy
 import numpy as np
 import scipy.interpolate
 
-from ..beam import Beam
+from .. import Beam
 from .. import coordinates
+from .beams import radar_beam_generator
 
 try:
-    stream = pkg_resources.resource_stream('pyant.instances.data', 'eiscat_uhf_bp.txt')
+    stream = pkg_resources.resource_stream(
+        'pyant.beams.data', 
+        'eiscat_uhf_bp.txt',
+    )
     _eiscat_beam_data = np.genfromtxt(stream)
-except:
+except FileNotFoundError:
     _eiscat_beam_data = None
 
 
 class EISCAT_UHF(Beam):
     '''Measured gain pattern of the EISCAT UHF radar.
 
-    **Reference:** ???
+    **Reference:** [Personal communication] Vierinen, J.
     '''
 
     def __init__(self, azimuth, elevation, frequency = 930e6, **kwargs):
@@ -51,3 +55,10 @@ class EISCAT_UHF(Beam):
 
         return G
 
+
+@radar_beam_generator('eiscat_uhf', 'measured')
+def generate_eiscat_uhf_measured():
+    return EISCAT_UHF(
+        azimuth=0,
+        elevation=90.0,
+    )

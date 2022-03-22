@@ -6,9 +6,13 @@
 
 from .version import __version__
 
-from .beam import Beam
+# Modules
+from . import plotting
 from . import coordinates
+from . import beams
 
+# Classes
+from .beam import Beam
 from .airy import Airy
 from .cassegrain import Cassegrain
 from .gaussian import Gaussian
@@ -17,16 +21,8 @@ from .finite_cylindrical_parabola import FiniteCylindricalParabola
 from .phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .interpolated import Interpolation
 from .interpolated_array import PlaneArrayInterp
-from .validate import validate_functionality
+
+# Functions
 from .functions import monte_carlo_sample_gain, monte_carlo_integrate_gain_hemisphere
-
-try:
-    from . import plotting
-except ImportError:
-    plotting = None
-
 from .beam import class_inherit_doc
-
-from .instances import BeamInstancesGetter
-
-instances = BeamInstancesGetter()
+from .beams import beam_of_radar
