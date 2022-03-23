@@ -50,17 +50,17 @@ class Beam(ABC):
         describing pointing direction.
     '''
 
-    # def __init_subclass__(cls, **kwargs):
-    #     super().__init_subclass__(**kwargs)
-    #     try:
-    #         model = Models[cls.__name__]
-    #     except KeyError:
-    #         raise KeyError(
-    #             f'This beam subclass {cls.__name__} has not been '
-    #             + 'declared in Models, see avalible Models:\n'
-    #             + ', '.join([str(x) for x in Models])
-    #         )
-    #     cls.model = model
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        try:
+            model = Models[cls.__name__]
+        except KeyError:
+            raise KeyError(
+                f'This beam subclass {cls.__name__} has not been '
+                + 'declared in Models, see avalible Models:\n'
+                + ', '.join([str(x) for x in Models])
+            )
+        cls.model = model
 
     def __init__(self, azimuth, elevation, frequency, radians=False, **kwargs):
         '''Basic constructor.
