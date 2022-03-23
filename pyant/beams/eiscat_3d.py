@@ -10,7 +10,7 @@ import pkg_resources
 import numpy as np
 import scipy.constants
 
-from .. import Array
+from ..array import Array
 from .beams import radar_beam_generator
 
 e3d_frequency = 233e6

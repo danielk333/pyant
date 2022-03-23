@@ -5,7 +5,7 @@ Handler for specific radar beam instances
 RADAR_BEAMS = dict()
 
 
-def list_beams():
+def avalible_beams():
     '''Returns a dict listing all avalible radars and their models
     '''
     return {key: list(val.keys()) for key, val in RADAR_BEAMS.items()}

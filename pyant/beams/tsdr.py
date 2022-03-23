@@ -4,8 +4,8 @@
 
 '''
 
-from .. import FiniteCylindricalParabola
-from .. import PhasedFiniteCylindricalParabola
+from ..finite_cylindrical_parabola import FiniteCylindricalParabola
+from ..phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .beams import radar_beam_generator
 
 

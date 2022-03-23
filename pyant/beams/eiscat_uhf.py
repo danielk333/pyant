@@ -9,7 +9,7 @@ import copy
 import numpy as np
 import scipy.interpolate
 
-from .. import Beam
+from ..beam import Beam
 from .. import coordinates
 from .beams import radar_beam_generator
 

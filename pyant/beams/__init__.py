@@ -12,5 +12,12 @@ function.
 
 '''
 
+# Top level exposed interface
+from .beams import beam_of_radar, avalible_beams
 
-from .beams import beam_of_radar
+# Remember to always import the modules here so that they are executed
+# on load of pyant
+from . import eiscat_3d
+from . import eiscat_uhf
+from . import esr
+from . import tsdr
