@@ -7,9 +7,10 @@
 from ..finite_cylindrical_parabola import FiniteCylindricalParabola
 from ..phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
 from .beams import radar_beam_generator
+from ..registry import Radars, Models
 
 
-@radar_beam_generator('tsdr', 'monochannel')
+@radar_beam_generator(Radars.TSDR, Models.FiniteCylindricalParabola)
 def generate_tsdr():
     '''Tromso Space Debris Radar system with all panels moving as a whole.
 
@@ -31,7 +32,7 @@ def generate_tsdr():
     )
 
 
-@radar_beam_generator('tsdr', 'phased')
+@radar_beam_generator(Radars.TSDR, Models.PhasedFiniteCylindricalParabola)
 def generate_tsdr_phased():
     '''Tromso Space Debris Radar system with panels moving independently.
 

@@ -2,11 +2,13 @@
 Handler for specific radar beam instances
 
 '''
+from ..registry import Radars, Models
+
 RADAR_BEAMS = dict()
 
 
 def avalible_beams():
-    '''Returns a dict listing all avalible radars and their models
+    '''Returns a dict listing all avalible Radars and their Models
     '''
     return {key: list(val.keys()) for key, val in RADAR_BEAMS.items()}
 
@@ -32,21 +34,57 @@ def radar_beam_generator(name, model, override_ok=False):
     return registrator_wrapper
 
 
-def beam_of_radar(name, model, **kwargs):
+def beam_of_radar(radar, model, **kwargs):
     '''Get a predefined radar beam instance from the avalible library of beams.
+
+    
+    Parameters
+    ----------
+    radar : str or pyant.Radars
+        Name or enumertation of the radar system
+    model : str or pyant.Models
+        Name or enumeration of the beam model
+    **kwargs : optional
+        Additional arguments supplied to the specific beam instance.
+
+    Returns
+    -------
+    pyant.Beam
+        A specific beam model (subclass of `Beam`) configured for the given
+        radar system.
+
     '''
-    if name not in RADAR_BEAMS:
+    try:
+        radar_item = Radars(radar)
+    except ValueError:
         raise ValueError(
-            f'"{name}" beam not found. See avalible beams:\n'
-            + ', '.join(RADAR_BEAMS.keys())
+            f'"{radar}" radar not found. See avalible Radars:\n'
+            + ', '.join([str(x) for x in Radars])
         )
-    radar = RADAR_BEAMS[name]
-    if model not in radar:
+
+    if radar_item not in RADAR_BEAMS:
         raise ValueError(
-            f'"{model}" model for {name} not found. See avalible models:\n'
-            + ', '.join(radar.keys())
+            f'No implemented beams for radar "{radar_item}" found. See avalible Radars:\n'
+            + ', '.join([str(x) for x in RADAR_BEAMS])
         )
-    generator = RADAR_BEAMS[name][model]
+
+    radar_models = RADAR_BEAMS[radar_item]  
+
+    try:
+        model_item = Models(model)
+    except ValueError:
+        raise ValueError(
+            f'"{model}" model not found. See avalible Models:\n'
+            + ', '.join([str(x) for x in Models])
+        )
+    
+    if model_item not in radar_models:
+        raise ValueError(
+            f'Model "{model_item}" not implemented radar "{radar_item}" found. See avalible Models:\n'
+            + ', '.join([str(x) for x in radar_models])
+        )
+
+    generator = radar_models[model_item]
     beam = generator(**kwargs)
 
     return beam

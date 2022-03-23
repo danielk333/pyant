@@ -7,9 +7,10 @@
 
 from ..cassegrain import Cassegrain
 from .beams import radar_beam_generator
+from ..registry import Radars, Models
 
 
-@radar_beam_generator('esr_32m', 'cassegrain')
+@radar_beam_generator(Radars.ESR_32m, Models.Cassegrain)
 def generate_esr_32m():
     '''ESR
 
@@ -24,7 +25,7 @@ def generate_esr_32m():
     )
 
 
-@radar_beam_generator('esr_42m', 'cassegrain')
+@radar_beam_generator(Radars.ESR_42m, Models.Cassegrain)
 def generate_esr_42m():
     '''ESR
 

@@ -12,7 +12,7 @@ import collections
 import scipy.constants
 
 from . import coordinates
-
+from .registry import Models
 
 
 def class_inherit_doc(cls):
@@ -30,23 +30,37 @@ def class_inherit_doc(cls):
     return cls
 
 
-
-
 class Beam(ABC):
-    '''Defines the radiation pattern, i.e gain, of a radar. Gain here means amplification of the electromagnetic wave amplitude when transfered to a complex voltage amplitude.
+    '''Defines the radiation pattern, i.e gain, of a radar. Gain here means 
+    amplification of the electromagnetic wave amplitude when transfered to a 
+    complex voltage amplitude.
 
     :param float frequency: Frequency of radiation pattern.
     :param float azimuth: Azimuth of pointing direction.
     :param float elevation: Elevation of pointing direction.
-    :param bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
+    :param bool radians: If :code:`True` all input/output angles are in 
+        radians, else they are in degrees
 
     :ivar float frequency: Frequency of radiation pattern.
     :ivar float azimuth: Azimuth of pointing direction.
     :ivar float elevation: Elevation of pointing direction.
-    :ivar bool radians: If :code:`True` all input/output angles are in radians, else they are in degrees
-    :ivar numpy.ndarray pointing: Cartesian vector in local coordinates describing pointing direction.
+    :ivar bool radians: If :code:`True` all input/output angles are in 
+        radians, else they are in degrees
+    :ivar numpy.ndarray pointing: Cartesian vector in local coordinates 
+        describing pointing direction.
     '''
 
+    # def __init_subclass__(cls, **kwargs):
+    #     super().__init_subclass__(**kwargs)
+    #     try:
+    #         model = Models[cls.__name__]
+    #     except KeyError:
+    #         raise KeyError(
+    #             f'This beam subclass {cls.__name__} has not been '
+    #             + 'declared in Models, see avalible Models:\n'
+    #             + ', '.join([str(x) for x in Models])
+    #         )
+    #     cls.model = model
 
     def __init__(self, azimuth, elevation, frequency, radians=False, **kwargs):
         '''Basic constructor.

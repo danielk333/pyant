@@ -12,6 +12,7 @@ import scipy.constants
 
 from ..array import Array
 from .beams import radar_beam_generator
+from ..registry import Radars, Models
 
 e3d_frequency = 233e6
 e3d_antenna_gain = 10.0**0.3  # 3 dB peak antenna gain?
@@ -105,7 +106,7 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
     return antennas
 
 
-@radar_beam_generator('eiscat_3d', 'array_module')
+@radar_beam_generator(Radars.EISCAT_3D_module, Models.Array)
 def generate_eiscat_3d_module():
     '''EISCAT 3D Gain pattern for single antenna sub-array.
 
@@ -127,7 +128,7 @@ def generate_eiscat_3d_module():
     )
 
 
-@radar_beam_generator('eiscat_3d', 'array_stage1')
+@radar_beam_generator(Radars.EISCAT_3D_stage1, Models.Array)
 def generate_eiscat_3d_stage1(configuration='dense'):
     '''EISCAT 3D Gain pattern for a dense core of active sub-arrays, 
     i.e stage 1 of development.
@@ -155,7 +156,7 @@ def generate_eiscat_3d_stage1(configuration='dense'):
     )
 
 
-@radar_beam_generator('eiscat_3d', 'array_stage2')
+@radar_beam_generator(Radars.EISCAT_3D_stage2, Models.Array)
 def generate_eiscat_3d_stage2():
     '''EISCAT 3D Gain pattern for a full site of active sub-arrays, 
     i.e stage 2 of development.

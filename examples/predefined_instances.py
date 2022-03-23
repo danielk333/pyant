@@ -9,15 +9,15 @@ import pyant
 
 pprint(pyant.avalible_beams())
 
-e3d_m = pyant.beam_of_radar('eiscat_3d', 'array_module')
+e3d_m = pyant.beam_of_radar('e3d_module', 'array')
 e3d_m_I0 = e3d_m.sph_gain(
     azimuth=e3d_m.azimuth, 
     elevation=e3d_m.elevation,
 )
 print(f'EISCAT 3D Module peak gain: {10*np.log10(e3d_m_I0)}')
 
-e3d = pyant.beam_of_radar('eiscat_3d', 'array_stage1')
-e3d_sparse = pyant.beam_of_radar('eiscat_3d', 'array_stage1', configuration='sparse')
+e3d = pyant.beam_of_radar('e3d_stage1', 'array')
+e3d_sparse = pyant.beam_of_radar('e3d_stage1', 'array', configuration='sparse')
 
 e3d_I0 = e3d.sph_gain(
     azimuth=e3d.azimuth, 
@@ -30,7 +30,7 @@ e3d_sparse_I0 = e3d_sparse.sph_gain(
 print(f'EISCAT 3D Stage 1 peak gain (dense core): {10*np.log10(e3d_I0)}')
 print(f'EISCAT 3D Stage 1 peak gain (sparse core): {10*np.log10(e3d_sparse_I0)}')
 
-e3d_s2 = pyant.beam_of_radar('eiscat_3d', 'array_stage2')
+e3d_s2 = pyant.beam_of_radar('e3d_stage2', 'array')
 
 e3d_s2_I0 = e3d_s2.sph_gain(
     azimuth = e3d_s2.azimuth, 

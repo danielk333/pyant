@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Collection of pre-defined radar beams of different models.
+Collection of pre-defined radar beams of different Models.
 
 These instances usually correspond to a real physical system.
 
@@ -14,6 +14,7 @@ function.
 
 # Top level exposed interface
 from .beams import beam_of_radar, avalible_beams
+from ..registry import Radars, Models
 
 # Remember to always import the modules here so that they are executed
 # on load of pyant
