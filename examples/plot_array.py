@@ -7,10 +7,11 @@ import numpy as np
 
 import pyant
 
-xv, yv = np.meshgrid(np.linspace(-50,50, num=22), np.linspace(-50,50, num=22))
+xv, yv = np.meshgrid(np.linspace(-50, 50, num=22),
+                     np.linspace(-50, 50, num=22))
 antennas = np.zeros((3, 22**2))
-antennas[0,:] = xv.flatten()
-antennas[1,:] = yv.flatten()
+antennas[0, :] = xv.flatten()
+antennas[1, :] = yv.flatten()
 
 beam = pyant.Array(
     azimuth=0,
@@ -19,7 +20,7 @@ beam = pyant.Array(
     antennas=antennas,
 )
 
-## Uncomment these to try the speed up for more complex gain calculations
+# Uncomment these to try the speed up for more complex gain calculations
 
 # start_time = time.time()
 # pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=False)

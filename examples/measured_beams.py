@@ -1,10 +1,11 @@
 '''
-Omni-directional antenna
-========================
+Measured beam pattern
+======================
 '''
 
 import pyant
-import pyant.instances as lib
 
-pyant.plotting.gain_heatmap(lib.e_uhf)
+beam = pyant.beam_of_radar('eiscat_uhf', 'measured')
+
+pyant.plotting.gain_heatmap(beam, min_elevation=80)
 pyant.plotting.show()

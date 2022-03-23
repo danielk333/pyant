@@ -10,25 +10,26 @@ import timeit
 number = 1000
 size = 100
 
+
 def coordinates_vector_angle():
-    a = np.array([1,0,0])
-    b = np.array([0,1,0])
-    c = np.array([1,1,0])
-    bc = np.append(b.reshape(3,1),c.reshape(3,1),axis=1)
+    a = np.array([1, 0, 0])
+    b = np.array([0, 1, 0])
+    c = np.array([1, 1, 0])
+    bc = np.append(b.reshape(3, 1), c.reshape(3, 1), axis=1)
     print(bc)
 
-    th_ab = pyant.coordinates.vector_angle(a,b)
+    th_ab = pyant.coordinates.vector_angle(a, b)
     print(th_ab)
 
-    th_ac = pyant.coordinates.vector_angle(a,c)
+    th_ac = pyant.coordinates.vector_angle(a, c)
     print(th_ac)
 
-    th_abc = pyant.coordinates.vector_angle(a,bc)
+    th_abc = pyant.coordinates.vector_angle(a, bc)
     print(th_abc)
 
-    x = np.random.randn(3,100)
+    x = np.random.randn(3, 100)
 
-    th_ax = pyant.coordinates.vector_angle(a,x)
+    th_ax = pyant.coordinates.vector_angle(a, x)
     print(th_ax)
     # As opposed to
     #
@@ -53,7 +54,7 @@ x = np.random.randn(3,{size})
     dt_v = timeit.timeit(
         'pyant.coordinates.vector_angle(a,x)', 
         setup=
-    f'''
+        f'''
 import pyant
 import numpy as np
 a = np.array([1,0,0])
@@ -61,15 +62,14 @@ x = np.random.randn(3,{size})
     ''', 
         number = number,
     )
-    print(f'"vector_angle" ({size}) loop       performance: {dt_l:.1e} seconds')
-    print(f'"vector_angle" ({size}) vectorized performance: {dt_v:.1e} seconds')
-
+    print(f'"vector_angle"({size}) loop       performance: {dt_l:.1e} seconds')
+    print(f'"vector_angle"({size}) vectorized performance: {dt_v:.1e} seconds')
 
 
 def coordinates_sph_to_cart():
-    a = np.array([0,45,1], dtype=np.float64)
-    b = np.array([120,85,1], dtype=np.float64)
-    ab = np.append(a.reshape(3,1),b.reshape(3,1),axis=1)
+    a = np.array([0, 45, 1], dtype=np.float64)
+    b = np.array([120, 85, 1], dtype=np.float64)
+    ab = np.append(a.reshape(3, 1), b.reshape(3, 1), axis=1)
     print(ab)
 
     sph_a = pyant.coordinates.sph_to_cart(a)
@@ -81,8 +81,8 @@ def coordinates_sph_to_cart():
     sph_ab = pyant.coordinates.sph_to_cart(ab)
     print(sph_ab)
 
-    x = np.random.randn(3,10)
-    x[2,:] = 1.0
+    x = np.random.randn(3, 10)
+    x[2, :] = 1.0
 
     sph_x = pyant.coordinates.sph_to_cart(x)
     print(sph_x)
@@ -99,7 +99,7 @@ x[2,:] = 1.0
 '''
 
     dt_l = timeit.timeit(
-    '''
+        '''
 for y in x.T:
     pyant.coordinates.sph_to_cart(y)
     ''', 
@@ -116,11 +116,10 @@ for y in x.T:
     print(f'"sph_to_cart" ({size}) vectorized performance: {dt_v:.1e} seconds')
 
 
-
 def coordinates_cart_to_sph():
-    a = np.array([1,1,1], dtype=np.float64)
-    b = np.array([0,0,1], dtype=np.float64)
-    ab = np.append(a.reshape(3,1),b.reshape(3,1),axis=1)
+    a = np.array([1, 1, 1], dtype=np.float64)
+    b = np.array([0, 0, 1], dtype=np.float64)
+    ab = np.append(a.reshape(3, 1), b.reshape(3, 1), axis=1)
     print(ab)
 
     sph_a = pyant.coordinates.cart_to_sph(a)
@@ -132,7 +131,7 @@ def coordinates_cart_to_sph():
     sph_ab = pyant.coordinates.cart_to_sph(ab)
     print(sph_ab)
 
-    x = np.random.randn(3,10)
+    x = np.random.randn(3, 10)
 
     sph_x = pyant.coordinates.cart_to_sph(x)
     print(sph_x)
@@ -148,7 +147,7 @@ x = np.random.randn(3,{size})
 '''
 
     dt_l = timeit.timeit(
-    '''
+        '''
 for y in x.T:
     pyant.coordinates.cart_to_sph(y)
     ''', 
@@ -163,7 +162,6 @@ for y in x.T:
     )
     print(f'"cart_to_sph" ({size}) loop       performance: {dt_l:.1e} seconds')
     print(f'"cart_to_sph" ({size}) vectorized performance: {dt_v:.1e} seconds')
-
 
 
 coordinates_vector_angle()

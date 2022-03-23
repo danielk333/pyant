@@ -11,12 +11,12 @@ ant_n = 55
 dr = 2.0
 
 xv, yv = np.meshgrid(
-    np.arange(-ant_n//2,ant_n//2)*dr, 
-    np.arange(-ant_n//2,ant_n//2)*dr, 
+    np.arange(-ant_n//2, ant_n//2)*dr, 
+    np.arange(-ant_n//2, ant_n//2)*dr, 
 )
 antennas = np.zeros((3, ant_n**2))
-antennas[0,:] = xv.flatten()
-antennas[1,:] = yv.flatten()
+antennas[0, :] = xv.flatten()
+antennas[1, :] = yv.flatten()
 
 beam = pyant.Array(
     azimuth=0,
@@ -29,12 +29,12 @@ beam_linp = pyant.Array(
     azimuth=0,
     elevation=90.0, 
     frequency=46.5e6,
-    polarization=np.array([1,0]),
+    polarization=np.array([1, 0]),
     antennas=antennas,
 )
 
-k = np.array([0,0,1])
-km = np.array([[0,0,1],[0,0.1,0.9],[0,0.1,0.8]]).T
+k = np.array([0, 0, 1])
+km = np.array([[0, 0, 1], [0, 0.1, 0.9], [0, 0.1, 0.8]]).T
 
 
 print(f'Gain LHCP: {beam.gain(k)}')

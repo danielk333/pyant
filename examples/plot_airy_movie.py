@@ -13,10 +13,13 @@ beam = pyant.Airy(
     radius=10.0,
 )
 
+
 def update(beam, item):
     beam.radius = item
     beam.elevation += 0.25
     return beam
 
-pyant.plotting.gain_heatmap_movie(beam, iterable=np.linspace(10,23,num=100), beam_update=update)
+
+pyant.plotting.gain_heatmap_movie(
+    beam, iterable=np.linspace(10, 23, num=100), beam_update=update)
 pyant.plotting.show()

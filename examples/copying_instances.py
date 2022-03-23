@@ -27,10 +27,11 @@ pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0)
 pyant.plotting.gain_heatmap(beam_2, resolution=301, min_elevation=80.0)
 pyant.plotting.show()
 
-xv, yv = np.meshgrid(np.linspace(-50,50, num=22), np.linspace(-50,50, num=22))
-antennas = np.zeros((3,22**2))
-antennas[0,:] = xv.flatten()
-antennas[1,:] = yv.flatten()
+xv, yv = np.meshgrid(np.linspace(-50, 50, num=22),
+                     np.linspace(-50, 50, num=22))
+antennas = np.zeros((3, 22**2))
+antennas[0, :] = xv.flatten()
+antennas[1, :] = yv.flatten()
 
 arr = pyant.Array(
     azimuth=0,
@@ -40,8 +41,8 @@ arr = pyant.Array(
 )
 
 arr2 = arr.copy()
-arr2.antennas[:100,1] += 25
-arr2.antennas[:100,0] -= 25
+arr2.antennas[:100, 1] += 25
+arr2.antennas[:100, 0] -= 25
 
 arr.sph_point(
     azimuth=0,

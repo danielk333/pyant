@@ -22,5 +22,4 @@ start_time = time.time()
 pyant.plotting.gain_heatmap(ant, resolution=300, min_elevation=80.0, vectorized=True)
 print(f'"gain_heatmap" ({300**2}) vectorized performance: {time.time() - start_time:.1e} seconds')
 
-
 pyant.plotting.show()

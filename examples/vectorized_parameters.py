@@ -10,8 +10,8 @@ import numpy as np
 num = 10000
 
 ks = np.zeros((3, num), dtype=np.float64)
-ks[0,:] = np.linspace(-0.5, 0.5, num=num)
-ks[2,:] = np.sqrt(1 - ks[0,:]**2 - ks[1,:]**2)
+ks[0, :] = np.linspace(-0.5, 0.5, num=num)
+ks[2, :] = np.sqrt(1 - ks[0, :]**2 - ks[1, :]**2)
 fs = np.linspace(200e6, 930e6, num=num)
 
 
@@ -44,7 +44,7 @@ print(f'g.shape={g.shape}')
 execution_time_vectorized = time.time() - start_time
 print(f'"gain calculations" ({num}) vectorized performance: {execution_time_vectorized:.1e} seconds')
 
-#This way also works
+# This way also works
 start_time = time.time()
 
 ant.frequency = fs

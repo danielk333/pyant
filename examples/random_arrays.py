@@ -11,7 +11,7 @@ np.random.seed(1234)
 ant_n = 300
 
 antennas = np.zeros((3, ant_n))
-antennas[:2,:] = np.random.rand(2,ant_n)*50-25
+antennas[:2, :] = np.random.rand(2, ant_n)*50-25
 
 beam = pyant.Array(
     azimuth=0,
