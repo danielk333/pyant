@@ -63,7 +63,7 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gains(beams, resolution=1000, min_elevation = 0.0, alpha = 1, usetex=False):
+def gains(beams, resolution=1000, min_elevation = 0.0, alpha = 1, usetex=False, ax=None):
     '''Plot the gain of a list of beam patterns as a function of elevation at :math:`0^\circ` degrees azimuth.
 
     :param beam: Beam or list of beams.
@@ -76,8 +76,11 @@ def gains(beams, resolution=1000, min_elevation = 0.0, alpha = 1, usetex=False):
     if not isinstance(beams, list):
         beams = [beams]
 
-    fig = plt.figure(figsize=(15, 7))
-    ax = fig.add_subplot(111)
+    if ax is None:
+        fig = plt.figure(figsize=(15, 7))
+        ax = fig.add_subplot(111)
+    else:
+        fig = None
 
     theta = np.linspace(min_elevation, 90.0, num=resolution)
 
