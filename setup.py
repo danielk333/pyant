@@ -3,7 +3,10 @@ from distutils.core import Extension
 
 libbeam = Extension(
     name='pyant.libbeam',
-    sources=['src/libbeam/libarray.c'],
+    sources=[
+        'src/libbeam/libarray.c',
+        'src/libbeam/libbeam.c',
+    ],
     include_dirs=['src/libbeam/'],
 )
 

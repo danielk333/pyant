@@ -1,9 +1,10 @@
 CC=gcc
 CFLAGS=
 LIBS=-lm
+SOURCES:=$(wildcard *.c)
 
-build: libbeam.c
-	gcc $(LIBS) -o libbeam.so libbeam.c $(CFLAGS)
+build: $(SOURCES)
+	gcc $(LIBS) -o libbeam.so $(SOURCES) $(CFLAGS)
 
 .PHONY: clean
 
