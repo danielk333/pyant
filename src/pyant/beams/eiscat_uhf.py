@@ -48,7 +48,7 @@ class EISCAT_UHF(Measured):
             radians = self.radians,
         )
 
-    def gain(self, k, polarization=None, ind=None):
+    def gain(self, k, polarization=None, ind=None, **kwargs):
         theta = coordinates.vector_angle(self.pointing, k, radians=False)
 
         sf = self.frequency/930e6 
