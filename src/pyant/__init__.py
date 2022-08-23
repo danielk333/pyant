@@ -19,8 +19,8 @@ from .gaussian import Gaussian
 from .array import Array, DipoleArray
 from .finite_cylindrical_parabola import FiniteCylindricalParabola
 from .phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
-from .interpolated import Interpolation
-from .interpolated_array import PlaneArrayInterp
+from .interpolated import Interpolated
+from .interpolated_array import InterpolatedArray
 from .beams import Radars, Models
 from .measured import Measured
 

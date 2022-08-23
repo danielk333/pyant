@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 import copy 
 
-import numpy as np
-
-from .interpolated import Interpolation
-from . import coordinates
+from .interpolated import Interpolated
 
 
-class PlaneArrayInterp(Interpolation):
+class InterpolatedArray(Interpolated):
     '''Interpolated gain pattern of an planar antenna array. Translates and scales the interpolated gain pattern to the pointing direction.
 
     '''
@@ -17,7 +14,7 @@ class PlaneArrayInterp(Interpolation):
     def copy(self):
         '''Return a copy of the current instance.
         '''
-        bm = PlaneArrayInterp(
+        bm = InterpolatedArray(
             azimuth = copy.deepcopy(self.azimuth),
             elevation = copy.deepcopy(self.elevation),
             frequency = copy.deepcopy(self.frequency),
@@ -28,23 +25,7 @@ class PlaneArrayInterp(Interpolation):
         return bm
 
     def pointing_transform(self, k, pointing, polarization=None):
-        k_ = k/np.linalg.norm(k, axis=0)
+        return k - pointing[:, None]
 
-        theta = -np.arctan2(pointing[1], pointing[0])
-        
-        M_rot = coordinates.rot2d(theta)
-        M_scale = coordinates.scale2d(pointing[2], 1)
-        M_rot_inv = coordinates.rot2d(-theta)
-
-        M = M_rot_inv.dot(M_scale.dot(M_rot))
-        
-        k_trans = np.empty(k_.shape, dtype = np.float)
-        k_[0,...] -= pointing[0]
-        k_[1,...] -= pointing[1]
-        k_trans[:2,...] = M.dot(k_[:2,...])
-        k_trans[2,...] = k_[2,...]
-        return k_trans
-
-
-    def pointing_scale(self, G, pointing):
-        return G*pointing[2]
+    def pointing_scale(self, k, pointing, G):
+        return G*k[2]

@@ -8,6 +8,7 @@ class Models(Enum):
     Cassegrain = 'cassegrain'
     Gaussian = 'gaussian'
     Interpolated = 'interpolated'
+    InterpolatedArray = 'interpolated_array'
     FiniteCylindricalParabola = 'fcp'
     PhasedFiniteCylindricalParabola = 'phased_fcp'
     Measured = 'measured'

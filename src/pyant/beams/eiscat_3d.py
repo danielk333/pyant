@@ -6,11 +6,13 @@
 
 # Python standard import
 import pkg_resources
+import pathlib
 
 import numpy as np
 import scipy.constants
 
 from ..array import Array
+from ..interpolated_array import InterpolatedArray
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 
@@ -177,3 +179,37 @@ def generate_eiscat_3d_stage2():
         scaling = e3d_antenna_gain,
         radians = False,
     )
+
+
+@radar_beam_generator(Radars.EISCAT_3D_stage1, Models.InterpolatedArray)
+def generate_eiscat_3d_stage1_interp(path, configuration='dense', resolution=1000):
+    '''EISCAT 3D Gain pattern for a dense core of active sub-arrays, 
+    i.e stage 1 of development.
+
+    Parameters
+    ----------
+    configuration : {'dense', 'sparse'}, optional
+        Chooses how the stage1 antennas are distributed in the full array.
+
+    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J., 
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., & 
+    Krag, H. (2019). EISCAT 3D Performance Analysis
+
+    '''
+    beam = InterpolatedArray(
+        azimuth = 0.0, 
+        elevation = 90.0, 
+        frequency = e3d_frequency, 
+        scaling = e3d_antenna_gain,
+        radians = False,
+    )
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
+    if path.is_file():
+        beam.load(path)
+    else:
+        array = generate_eiscat_3d_stage1(configuration=configuration)
+        beam.generate_interpolation(array, resolution=resolution)
+        beam.save(path)
+    return beam
