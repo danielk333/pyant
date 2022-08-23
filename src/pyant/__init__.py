@@ -27,4 +27,4 @@ from .measured import Measured
 # Functions
 from .functions import monte_carlo_sample_gain, monte_carlo_integrate_gain_hemisphere
 from .beam import class_inherit_doc
-from .beams import beam_of_radar, avalible_beams
+from .beams import beam_of_radar, avalible_beams, parameters_of_radar

@@ -14,6 +14,7 @@ function.
 
 # Top level exposed interface
 from .beams import beam_of_radar, avalible_beams
+from .radar_parameters import parameters_of_radar
 from ..registry import Radars, Models
 
 # Remember to always import the modules here so that they are executed
