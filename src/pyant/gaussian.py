@@ -37,7 +37,7 @@ class Gaussian(Beam):
     def copy(self):
         '''Return a copy of the current instance.
         '''
-        return FiniteCylindricalParabola(
+        return Gaussian(
             azimuth = copy.deepcopy(self.azimuth),
             elevation = copy.deepcopy(self.elevation),
             frequency = copy.deepcopy(self.frequency),

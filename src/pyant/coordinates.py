@@ -96,7 +96,7 @@ def vector_angle(a, b, radians=False):
     return theta
 
 
-def rot_mat_z(theta, dtype=np.float, radians=False):
+def rot_mat_z(theta, dtype=np.float64, radians=False):
     '''Compute matrix for rotation of R3 vector through angle theta
     around the Z-axis.  For frame rotation, use the transpose.
     
@@ -116,7 +116,7 @@ def rot_mat_z(theta, dtype=np.float, radians=False):
                      [0.,  0., 1.]], dtype=dtype)
 
 
-def rot_mat_x(theta, dtype=np.float, radians=False):
+def rot_mat_x(theta, dtype=np.float64, radians=False):
     '''Compute matrix for rotation of R3 vector through angle theta
     around the X-axis.  For frame rotation, use the transpose.
 
@@ -137,7 +137,7 @@ def rot_mat_x(theta, dtype=np.float, radians=False):
                      [0., sa,  ca]], dtype=dtype)
 
 
-def rot_mat_y(theta, dtype=np.float, radians=False):
+def rot_mat_y(theta, dtype=np.float64, radians=False):
     '''Compute matrix for rotation of R3 vector through angle theta
     around the Y-axis.  For frame rotation, use the transpose.
     
@@ -157,7 +157,7 @@ def rot_mat_y(theta, dtype=np.float, radians=False):
                      [-sa, 0., ca]], dtype=dtype)
 
 
-def rot2d(theta, dtype=np.float, radians=True):
+def rot2d(theta, dtype=np.float64, radians=True):
     '''Matrix for rotation of R2 vector in the plane through angle theta
     For frame rotation, use the transpose.
 
@@ -181,7 +181,7 @@ def scale2d(x,y):
 
     #TODO docstring
     '''
-    M_rot = np.zeros((2,2), dtype=np.float)
+    M_rot = np.zeros((2,2), dtype=np.float64)
     M_rot[0,0] = x
     M_rot[1,1] = y
     return M_rot
