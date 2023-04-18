@@ -148,7 +148,7 @@ class Array(Beam):
         '''
         pointing, frequency = self.get_parameters(ind, **kwargs)
 
-        inds = np.arange(self.channels, dtype=np.int)
+        inds = np.arange(self.channels, dtype=np.int64)
         if channels is not None:
             inds = inds[channels]
 
