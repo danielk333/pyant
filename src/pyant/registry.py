@@ -22,3 +22,6 @@ class Radars(Enum):
     ESR_32m = 'esr_32m'
     ESR_42m = 'esr_42m'
     TSDR = 'tsdr'
+    MU = 'mu'
+    PANSY = 'pansy'
+    MAARSY = 'maarsy'

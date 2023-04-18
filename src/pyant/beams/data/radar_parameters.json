@@ -1,5 +1,46 @@
 {
+    "mu": {
+        "frequency": 46.5e6,
+        "power_per_element": 2105.2631578947367,
+        "power": 1e6
+    },
     "eiscat_uhf": {
-        "frequency": 930000000.0
+        "frequency": 930.0e6,
+        "power": 1.6e6
+    },
+    "e3d_module": {
+        "frequency": 233e6,
+        "power_per_element": 1e3,
+        "power": 91e3
+    },
+    "e3d_stage1": {
+        "frequency": 233e6,
+        "power_per_element": 1e3,
+        "power": 3.276e6
+    },
+    "e3d_stage2": {
+        "frequency": 233e6,
+        "power": 10e6
+    },
+    "esr_32m": {
+        "frequency": 500e6,
+        "power": 1e6
+    },
+    "esr_42m": {
+        "frequency": 500e6,
+        "power": 1e6
+    },
+    "tsdr": {
+        "frequency": 1.8e9,
+        "power": 0.5e6
+    },
+    "maarsy": {
+        "frequency": 53.5e6,
+        "power": 0.8e6
+    },
+    "pansy": {
+        "frequency": 47e6,
+        "power_per_element": 500.0,
+        "power": 0.5e6
     }
 }
