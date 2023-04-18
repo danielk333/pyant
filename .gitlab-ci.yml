@@ -1,0 +1,106 @@
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: python:3.8.10
+
+stages:
+  - test
+  - release
+
+# Runners need the IRF tag
+default:
+  tags:
+    - IRF
+
+# Prepare the development enviornment
+.devsetup:
+  before_script:
+    - python -V
+    # Prepare and activate virtualenv
+    - pip install -U pip
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    # install the package and develop dependancies
+    - pip install .[develop]
+    - apt update
+    - apt install -y pandoc
+
+# Prepare the nominal usage enviornment
+.setup:
+  before_script:
+    - python -V
+    # Prepare and activate virtualenv
+    - pip install -U pip
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    # install the package
+    - pip install .
+
+
+#######################
+## Platforms testing ##
+
+#Template for testing on python images,
+# extend this for each python-platform
+# the package is intended to work on
+.pytest:
+  stage: test
+  extends: .setup
+  allow_failure: true
+  script:
+    - pip install pytest
+    - pytest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+python:
+  extends: .pytest
+
+python3.10:
+  extends: .pytest
+  image: python:3.10
+
+###############
+## Releasing ##
+
+# Compile documentation for publication
+pages:
+  stage: release
+  extends: .devsetup
+  script:
+    - coverage run -m pytest > pytest_report
+    - coverage report -m > coverage_report
+    - radon cc -a pyorb/ > radon_cc_report
+    - radon raw -s pyorb/ > radon_raw_report
+    - radon mi -s pyorb/ > radon_mi_report
+    - radon hal pyorb/ > radon_hal_report
+    - cd docs
+    - make html
+    - mv build ../public
+  artifacts:
+    paths:
+      - public
+  only:
+    - tags
+
+# Build and check integrity of distribution
+# Then publish package on public PyPI
+pypi:
+  stage: release
+  extends: .devsetup
+  variables:
+    #Use a gitlab variable to securly store the token
+    PYPI_TOKEN: $PYPI_TOKEN
+  script:
+    - python -m build
+    - python -m twine check dist/*
+    - >
+      TWINE_USERNAME=__token__
+      TWINE_PASSWORD=$PYPI_TOKEN
+      python -m twine upload dist/*
+  artifacts:
+    paths:
+      - dist/*
+  only:
+    - tags
