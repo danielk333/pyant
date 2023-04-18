@@ -8,7 +8,7 @@ main(int argc, char *argv[])
 {
     double kvec[3];
     size_t channels = 1;
-    precision complex G[channels];
+    double complex G[channels];
     kvec[0] = 0.0;
     kvec[1] = 0.0;
     kvec[2] = 1.0;
