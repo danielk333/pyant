@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 '''Useful coordinate related functions.
-
-(c) 2020 Daniel Kastinen
-
-TODO: Create a copyright statement which all are happy with
 '''
 
 from .beam import Beam

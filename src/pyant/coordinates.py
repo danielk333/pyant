@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 '''Useful coordinate related functions.
-
-(c) 2020 Daniel Kastinen
 '''
 
 import numpy as np

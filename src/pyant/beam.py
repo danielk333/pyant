@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 '''Defines an antenna's or entire radar system's radiation pattern
-
-(c) 2020 Daniel Kastinen
 '''
 import numpy as np
 from abc import ABC, abstractmethod
