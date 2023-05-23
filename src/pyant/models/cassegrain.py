@@ -35,7 +35,7 @@ class Cassegrain(Beam):
             I0=copy.deepcopy(self.I0),
             a1=copy.deepcopy(self.a1),
             a0=copy.deepcopy(self.a0),
-            radians=self.radians,
+            degrees=self.degrees,
         )
 
     def gain(
@@ -50,7 +50,7 @@ class Cassegrain(Beam):
             ind, vectorized_parameters=vectorized_parameters, **kwargs
         )
 
-        theta = coordinates.vector_angle(pointing, k, radians=True)
+        theta = coordinates.vector_angle(pointing, k, degrees=False)
 
         lam = scipy.constants.c / frequency
 
