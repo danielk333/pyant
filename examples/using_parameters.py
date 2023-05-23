@@ -5,7 +5,7 @@ Using parameters
 import numpy as np
 import pyant
 
-beam = pyant.Airy(
+beam = pyant.models.Airy(
     azimuth=[0, 45.0, 0],
     elevation=[89.0, 80.0, 60.0],
     frequency=[930e6, 230e6],
@@ -26,7 +26,7 @@ print(f'beam.radius = {beam.radius}')
 
 # Either trough direct input into beam.gain
 print(f'G = {beam.gain(k, pointing=k, frequency=314e6, radius=20.0)} ')
-# pointing is the only parameter that supports also input by 
+# pointing is the only parameter that supports also input by
 # azimuth and elevation
 G = beam.gain(k, azimuth=20.2, elevation=89.1, frequency=314e6, radius=20.0)
 print(f'G = {G} ')

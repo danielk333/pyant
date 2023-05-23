@@ -5,17 +5,17 @@ Airy disk antenna gain
 
 import pyant
 
-beam = pyant.Airy(
+beam = pyant.models.Airy(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=930e6,
     I0=10**4.81,
     radius=23.0,
 )
 
-beam_c = pyant.Cassegrain(
+beam_c = pyant.models.Cassegrain(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=930e6,
     I0=10**4.81,
     a0=23.0,

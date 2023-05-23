@@ -5,7 +5,7 @@
 '''
 
 
-from ..cassegrain import Cassegrain
+from ..models import Cassegrain
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 

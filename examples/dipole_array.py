@@ -13,9 +13,9 @@ antennas = np.zeros((3, 22**2))
 antennas[0, :] = xv.flatten()
 antennas[1, :] = yv.flatten()
 
-beam = pyant.DipoleArray(
+beam = pyant.models.DipoleArray(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     antennas=antennas,
     antenna_rotation=45.0,
@@ -33,6 +33,7 @@ for pol, ax in zip(pols, axes.flatten()):
         beam, polarization = jones, ax=ax, min_elevation=80)
     ax.set_title(f'Incoming Jones={name}', fontsize=22)
 
-plt.suptitle(f'Square single-dipole antenna array @ {beam.antenna_rotation} degrees', fontsize=18)
+plt.suptitle(f'Square single-dipole antenna array @ \
+    {beam.antenna_rotation} degrees', fontsize=18)
 
 pyant.plotting.show()

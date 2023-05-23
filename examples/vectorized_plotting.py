@@ -5,14 +5,13 @@ Vectorized plotting
 import time
 import pyant
 
-ant = pyant.Airy(
+ant = pyant.models.Airy(
     azimuth=45,
-    elevation=75.0, 
+    elevation=75.0,
     frequency=930e6,
     I0=10**4.81,
     radius=23.0,
 )
-
 
 start_time = time.time()
 pyant.plotting.gain_heatmap(ant, resolution=300, min_elevation=80.0, vectorized=False)

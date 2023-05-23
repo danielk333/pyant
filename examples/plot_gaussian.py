@@ -5,9 +5,9 @@ Gaussian planar array gain
 
 import pyant
 
-beam = pyant.Gaussian(
+beam = pyant.models.Gaussian(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     I0=10**4.81,
     radius=100.0,

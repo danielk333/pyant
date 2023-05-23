@@ -9,14 +9,14 @@ import copy
 import numpy as np
 import scipy.interpolate
 
-from ..measured import Measured
+from ..models import Measured
 from .. import coordinates
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 
 try:
     stream = pkg_resources.resource_stream(
-        'pyant.beams.data', 
+        'pyant.beams.data',
         'eiscat_uhf_bp.txt',
     )
     _eiscat_beam_data = np.genfromtxt(stream)
@@ -51,7 +51,7 @@ class EISCAT_UHF(Measured):
     def gain(self, k, polarization=None, ind=None, **kwargs):
         theta = coordinates.vector_angle(self.pointing, k, radians=False)
 
-        sf = self.frequency/930e6 
+        sf = self.frequency/930e6
         G = 10**4.81*self.beam_function(sf*np.abs(theta))
 
         return G

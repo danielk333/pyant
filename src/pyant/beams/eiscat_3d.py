@@ -11,8 +11,7 @@ import pathlib
 import numpy as np
 import scipy.constants
 
-from ..array import Array
-from ..interpolated_array import InterpolatedArray
+from ..models import Array, InterpolatedArray
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 
@@ -21,7 +20,7 @@ e3d_antenna_gain = 10.0**0.3  # 3 dB peak antenna gain?
 
 
 def e3d_subarray(freqeuncy):
-    '''Generate cartesian positions `x,y,z` in meters of antenna elements in 
+    '''Generate cartesian positions `x,y,z` in meters of antenna elements in
     one standard EISCAT 3D subarray.
     '''
     l0 = scipy.constants.c/freqeuncy
@@ -52,7 +51,7 @@ def e3d_subarray(freqeuncy):
 
 
 def e3d_array(freqeuncy, fname=None, configuration='full'):
-    '''Generate the antenna positions for a EISCAT 3D Site based on submodule 
+    '''Generate the antenna positions for a EISCAT 3D Site based on submodule
     positions of a file.
     '''
 
@@ -83,11 +82,11 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
             np.logical_or(
                 np.logical_or(
                     np.logical_and(
-                        np.sum(dat**2, axis=1) < 10**2, 
+                        np.sum(dat**2, axis=1) < 10**2,
                         np.sum(dat**2, axis=1) > 7**2
                     ),
                     np.logical_and(
-                        np.sum(dat**2, axis=1) < 22**2, 
+                        np.sum(dat**2, axis=1) < 22**2,
                         np.sum(dat**2, axis=1) > 17**2
                     )
                 ),
@@ -112,19 +111,19 @@ def e3d_array(freqeuncy, fname=None, configuration='full'):
 def generate_eiscat_3d_module():
     '''EISCAT 3D Gain pattern for single antenna sub-array.
 
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J., 
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., & 
+    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
     Krag, H. (2019). EISCAT 3D Performance Analysis
 
     '''
     return Array(
-        azimuth = 0.0, 
-        elevation = 90.0, 
-        frequency = e3d_frequency, 
+        azimuth = 0.0,
+        elevation = 90.0,
+        frequency = e3d_frequency,
         antennas = e3d_array(
             e3d_frequency,
             configuration='module',
-        ), 
+        ),
         scaling = e3d_antenna_gain,
         radians = False,
     )
@@ -132,7 +131,7 @@ def generate_eiscat_3d_module():
 
 @radar_beam_generator(Radars.EISCAT_3D_stage1, Models.Array)
 def generate_eiscat_3d_stage1(configuration='dense'):
-    '''EISCAT 3D Gain pattern for a dense core of active sub-arrays, 
+    '''EISCAT 3D Gain pattern for a dense core of active sub-arrays,
     i.e stage 1 of development.
 
     Parameters
@@ -140,19 +139,19 @@ def generate_eiscat_3d_stage1(configuration='dense'):
     configuration : {'dense', 'sparse'}, optional
         Chooses how the stage1 antennas are distributed in the full array.
 
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J., 
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., & 
+    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
     Krag, H. (2019). EISCAT 3D Performance Analysis
 
     '''
     return Array(
-        azimuth = 0.0, 
-        elevation = 90.0, 
-        frequency = e3d_frequency, 
+        azimuth = 0.0,
+        elevation = 90.0,
+        frequency = e3d_frequency,
         antennas = e3d_array(
             e3d_frequency,
             configuration='half-' + configuration,
-        ), 
+        ),
         scaling = e3d_antenna_gain,
         radians = False,
     )
@@ -160,22 +159,22 @@ def generate_eiscat_3d_stage1(configuration='dense'):
 
 @radar_beam_generator(Radars.EISCAT_3D_stage2, Models.Array)
 def generate_eiscat_3d_stage2():
-    '''EISCAT 3D Gain pattern for a full site of active sub-arrays, 
+    '''EISCAT 3D Gain pattern for a full site of active sub-arrays,
     i.e stage 2 of development.
 
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J., 
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., & 
+    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
     Krag, H. (2019). EISCAT 3D Performance Analysis
 
     '''
     return Array(
-        azimuth = 0.0, 
-        elevation = 90.0, 
-        frequency = e3d_frequency, 
+        azimuth = 0.0,
+        elevation = 90.0,
+        frequency = e3d_frequency,
         antennas = e3d_array(
             e3d_frequency,
             configuration='full',
-        ), 
+        ),
         scaling = e3d_antenna_gain,
         radians = False,
     )
@@ -183,7 +182,7 @@ def generate_eiscat_3d_stage2():
 
 @radar_beam_generator(Radars.EISCAT_3D_stage1, Models.InterpolatedArray)
 def generate_eiscat_3d_stage1_interp(path, configuration='dense', resolution=1000):
-    '''EISCAT 3D Gain pattern for a dense core of active sub-arrays, 
+    '''EISCAT 3D Gain pattern for a dense core of active sub-arrays,
     i.e stage 1 of development.
 
     Parameters
@@ -191,15 +190,15 @@ def generate_eiscat_3d_stage1_interp(path, configuration='dense', resolution=100
     configuration : {'dense', 'sparse'}, optional
         Chooses how the stage1 antennas are distributed in the full array.
 
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J., 
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., & 
+    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
     Krag, H. (2019). EISCAT 3D Performance Analysis
 
     '''
     beam = InterpolatedArray(
-        azimuth = 0.0, 
-        elevation = 90.0, 
-        frequency = e3d_frequency, 
+        azimuth = 0.0,
+        elevation = 90.0,
+        frequency = e3d_frequency,
         scaling = e3d_antenna_gain,
         radians = False,
     )

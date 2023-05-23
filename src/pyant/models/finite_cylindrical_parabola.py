@@ -1,0 +1,206 @@
+#!/usr/bin/env python
+
+import copy
+
+import numpy as np
+import scipy.constants
+import scipy.special
+
+from ..beam import Beam
+from .. import coordinates
+
+
+class FiniteCylindricalParabola(Beam):
+    """A finite Cylindrical Parabola with a finite receiver line feed in the
+    longitudinal direction, i.e. in the direction of the cylinder axis.
+
+    Custom (measured or more accurately estimated) peak gain at boresight can
+    be input, otherwise assumes width (aperture) and height >> wavelength and
+    approximates integral with analytic form.
+
+    Parameters
+    ----------
+    I0 : float
+        Peak gain (linear scale) in the pointing direction. Default use
+        approximate analytical integral of 2D Fourier transform of rectangle.
+    width : float
+        Reflector panel width (axial/azimuth dimension) in meters.
+    height : float
+        Reflector panel height (perpendicular/elevation dimension) in meters.
+    aperture : float
+        Optional, Length of the feed in meters.
+        Default is same as reflector width.
+
+    """
+
+    def __init__(
+        self,
+        azimuth,
+        elevation,
+        frequency,
+        width,
+        height,
+        aperture=None,
+        I0=None,
+        **kwargs,
+    ):
+        super().__init__(azimuth, elevation, frequency, **kwargs)
+        self.width = width
+        self.height = height
+        if aperture is None:
+            aperture = width
+        self.aperture = aperture
+        self.I0 = I0
+
+    def normalize(self, width, height, wavelength):
+        """Calculate normalization constant for beam pattern by assuming
+        width and height >> wavelength.
+        """
+        return 4 * np.pi * width * height / wavelength**2
+
+    def copy(self):
+        """Return a copy of the current instance."""
+        return FiniteCylindricalParabola(
+            azimuth=copy.deepcopy(self.azimuth),
+            elevation=copy.deepcopy(self.elevation),
+            frequency=copy.deepcopy(self.frequency),
+            I0=copy.deepcopy(self.I0),
+            width=copy.deepcopy(self.width),
+            height=copy.deepcopy(self.height),
+            aperture=copy.deepcopy(self.aperture),
+            degrees=self.degrees,
+        )
+
+    def local_to_pointing(self, k, azimuth, elevation):
+        """Convert from local wave vector direction to bore-sight relative
+        longitudinal and transverse angles.
+        """
+        k_ = k / np.linalg.norm(k, axis=0)
+
+        if self.degrees:
+            ang_ = 90.0
+        else:
+            ang_ = np.pi / 2
+
+        def Rz(azimuth):
+            return coordinates.rot_mat_z(azimuth, degrees=self.degrees)
+
+        def Rx(elevation):
+            return coordinates.rot_mat_x(ang_ - elevation, degrees=self.degrees)
+
+        # Look direction rotated into the radar's boresight system
+        kb = Rx(elevation) @ Rz(azimuth) @ k_
+
+        # angle of kb from x;z plane, counter-clock wise
+        # ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
+        theta = np.arcsin(kb[1, ...])  # Angle of look above (-) or below (+) boresight
+
+        # angle of kb from y;z plane, clock wise
+        # ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
+        phi = np.arcsin(kb[0, ...])  # Angle of look to left (-) or right (+) of b.s.
+
+        if self.degrees:
+            theta = np.degrees(theta)
+            phi = np.degrees(phi)
+
+        return theta, phi
+
+    def pointing_to_local(self, theta, phi, azimuth, elevation):
+        """Convert from bore-sight relative longitudinal and transverse angles
+        to local wave vector direction.
+        """
+        sz = (3,)
+        if isinstance(theta, np.ndarray):
+            sz = sz + (len(theta),)
+        elif isinstance(phi, np.ndarray):
+            sz = sz + (len(phi),)
+
+        if self.degrees:
+            theta = np.radians(theta)
+            phi = np.radians(phi)
+
+        kb = np.zeros(sz, dtype=np.float64)
+        kb[1, ...] = np.sin(theta)
+        kb[0, ...] = np.sin(phi)
+        kb[2, ...] = np.sqrt(1 - kb[0, ...] ** 2 - kb[1, ...] ** 2)
+
+        if self.radians:
+            ang_ = np.pi / 2
+        else:
+            ang_ = 90.0
+
+        def Rz(azimuth):
+            return coordinates.rot_mat_z(azimuth, degrees=self.degrees)
+
+        def Rx(elevation):
+            return coordinates.rot_mat_x(ang_ - elevation, degrees=self.degrees)
+
+        # Look direction rotated from the radar's boresight system
+        k = Rz(azimuth).T @ Rx(elevation).T @ kb
+
+        return k
+
+    def gain(
+        self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs
+    ):
+        if vectorized_parameters:
+            if "frequency" in kwargs:
+                raise NotImplementedError(
+                    "Cannot vectorize pointing yet, \
+                    self.local_to_pointing rotation matrices not vectorized."
+                )
+
+        pointing, frequency = self.get_parameters(
+            ind,
+            vectorized_parameters=vectorized_parameters,
+            **kwargs,
+        )
+
+        sph = coordinates.cart_to_sph(pointing, radians=self.radians)
+
+        theta, phi = self.local_to_pointing(k, sph[0], sph[1])
+
+        return self.gain_tf(
+            theta,
+            phi,
+            frequency=frequency,
+            vectorized_parameters=vectorized_parameters,
+        )
+
+    def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
+        """
+        theta is below-axis angle.
+        When elevation < 90, positive theta tends towards the horizon,
+        and negative theta towards zenith.
+
+        phi is off-axis angle.
+        When looking out along boresight with the azimuth direction straight
+        ahead, positive phi is to your right, negative phi to your left.
+        """
+        if "frequency" not in kwargs:
+            _, frequency = self.get_parameters(ind, **kwargs)
+        else:
+            frequency = kwargs["frequency"]
+
+        wavelength = scipy.constants.c / frequency
+
+        if self.I0 is None:
+            I0 = self.normalize(self.aperture, self.height, wavelength)
+        else:
+            I0 = self.I0
+
+        if not self.radians:
+            theta = np.radians(theta)
+            phi = np.radians(phi)
+
+        # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
+        # y = transverse angle, 0 = boresight, radians
+
+        # sinc*sinc is 2D FFT of a rectangular aperture
+        x = self.aperture / wavelength * np.sin(phi)  # sinc component (longitudinal)
+        y = self.height / wavelength * np.sin(theta)  # sinc component (transverse)
+        G = np.sinc(x) * np.sinc(y)  # sinc fn. (= field), NB: np.sinc includes pi !!
+        G *= np.cos(phi)  # Element gain
+        G = G * G  # sinc^2 fn. (= power)
+
+        return G * I0

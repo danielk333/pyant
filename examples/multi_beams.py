@@ -2,9 +2,9 @@
 Collection of beams
 ===================
 
-This assumes that the raw voltage data from the beams are analyzed in such a 
-way that the complex voltages have the same direction in complex space upon 
-summation. 
+This assumes that the raw voltage data from the beams are analyzed in such a
+way that the complex voltages have the same direction in complex space upon
+summation.
 '''
 
 import functools
@@ -16,9 +16,9 @@ import matplotlib.pyplot as plt
 
 
 beams = [
-    pyant.FiniteCylindricalParabola(
+    pyant.models.FiniteCylindricalParabola(
         azimuth=0,
-        elevation=el, 
+        elevation=el,
         frequency=224.0e6,
         I0=10**4.81,
         width=30.0,

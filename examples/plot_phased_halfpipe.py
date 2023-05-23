@@ -1,7 +1,7 @@
-'''
+"""
 Phase steerable Half-pipe
 ============================
-'''
+"""
 
 import itertools as it
 
@@ -15,18 +15,18 @@ def flatten(Lst):
     return list(it.chain(*Lst))
 
 
-phi = np.linspace(0, 2*np.pi, 100)
+phi = np.linspace(0, 2 * np.pi, 100)
 cosp = np.cos(phi)
 sinp = np.sin(phi)
-aa = np.cos(np.radians(90-np.array([75, 60, 45, 30])))
+aa = np.cos(np.radians(90 - np.array([75, 60, 45, 30])))
 
-pa = flatten([(a*cosp, a*sinp, 'w-') for a in aa])
+pa = flatten([(a * cosp, a * sinp, "w-") for a in aa])
 
 beam = pyant.PhasedFiniteCylindricalParabola(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     depth=18,
-    phase_steering = [0.0, 7.0, 14.0, 21.0],
+    phase_steering=[0.0, 7.0, 14.0, 21.0],
     frequency=30e6,
     width=120.0,
     height=40.0,
@@ -34,53 +34,57 @@ beam = pyant.PhasedFiniteCylindricalParabola(
 
 fig, axes = plt.subplots(2, 2, figsize=(10, 6), dpi=80)
 axes = axes.flatten()
-for i in range(beam.named_shape()['phase_steering']):
+for i in range(beam.named_shape()["phase_steering"]):
     pyant.plotting.gain_heatmap(
-        beam, 
-        resolution=901, 
-        min_elevation=30.0, 
+        beam,
+        resolution=901,
+        min_elevation=30.0,
         ax=axes[i],
-        ind = {
+        ind={
             "phase_steering": i,
         },
     )
     axes[i].plot(*pa)
     # axes[i].axis('scaled')
-    axes[i].set_title(f'{int(beam.phase_steering[i])} deg steering')
+    axes[i].set_title(f"{int(beam.phase_steering[i])} deg steering")
 
-beam_two = pyant.PhasedFiniteCylindricalParabola(
+beam_two = pyant.models.PhasedFiniteCylindricalParabola(
     azimuth=0,
-    elevation=[90., 60., 30.], 
+    elevation=[90.0, 60.0, 30.0],
     depth=18,
-    phase_steering = [0, 25.0],
+    phase_steering=[0, 25.0],
     frequency=224.0e6,
-    width=120.0/4,
+    width=120.0 / 4,
     height=40.0,
 )
 
 
 fig, axes = plt.subplots(2, 3, figsize=(10, 6), dpi=80)
-for i in range(beam_two.named_shape()['phase_steering']):
-    for j in range(beam_two.named_shape()['pointing']):
-
+for i in range(beam_two.named_shape()["phase_steering"]):
+    for j in range(beam_two.named_shape()["pointing"]):
         pyant.plotting.gain_heatmap(
-            beam_two, 
-            resolution=901, 
-            min_elevation=20.0, 
+            beam_two,
+            resolution=901,
+            min_elevation=20.0,
             ax=axes[i, j],
             ind=(j, None, i),
         )
 
         # the boresight relative pointing is always in radians
-        G0 = beam_two.gain_tf(theta=0, phi=np.radians(
-            beam_two.phase_steering[i]), ind=(j, None, i))
-        print(f'Pointing: az={beam_two.azimuth[j]} deg, el={beam_two.elevation[j]} deg, ' +
-              f'phase steering={beam_two.phase_steering[i]} deg ' +
-              f'-> Peak gain = {np.log10(G0)*10:8.3f} dB')
+        G0 = beam_two.gain_tf(
+            theta=0, phi=np.radians(beam_two.phase_steering[i]), ind=(j, None, i)
+        )
+        print(
+            f"Pointing: az={beam_two.azimuth[j]} deg, el={beam_two.elevation[j]} deg, "
+            + f"phase steering={beam_two.phase_steering[i]} deg "
+            + f"-> Peak gain = {np.log10(G0)*10:8.3f} dB"
+        )
 
         axes[i, j].plot(*pa)
         # axes[i,j].axis('scaled')
-        axes[i, j].set_title(f'{int(beam_two.phase_steering[i])} ph-st \
-| {int(beam_two.elevation[j])} el')
+        axes[i, j].set_title(
+            f"{int(beam_two.phase_steering[i])} ph-st \
+| {int(beam_two.elevation[j])} el"
+        )
 
 pyant.plotting.show()

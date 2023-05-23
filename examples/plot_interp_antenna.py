@@ -17,14 +17,14 @@ antennas[1, :] = yv.flatten()
 
 beam = pyant.Array(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     antennas=antennas,
 )
 
-interp_beam = pyant.InterpolatedArray(
+interp_beam = pyant.models.InterpolatedArray(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
 )
 

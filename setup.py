@@ -28,9 +28,5 @@ libbeam = Extension(
 
 setuptools.setup(
     version=get_version(HERE / 'src' / 'pyant' / 'version.py'),
-    package_dir={
-        "": "src"
-    },
-    packages=setuptools.find_packages(where="src"),
     ext_modules=[libbeam],
 )

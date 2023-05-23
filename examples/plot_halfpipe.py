@@ -1,13 +1,13 @@
-'''
+"""
 Halfpipe radar
 ===========================
-'''
+"""
 
 import pyant
 
 el = 50
 
-beam = pyant.FiniteCylindricalParabola(
+beam = pyant.models.FiniteCylindricalParabola(
     azimuth=0,
     elevation=el,
     frequency=224.0e6,
@@ -16,7 +16,7 @@ beam = pyant.FiniteCylindricalParabola(
 )
 
 # DON'T use this form!  Use azimuth instead
-rotated_beam = pyant.FiniteCylindricalParabola(
+rotated_beam = pyant.models.FiniteCylindricalParabola(
     azimuth=0,
     elevation=el,
     frequency=224.0e6,
@@ -26,7 +26,7 @@ rotated_beam = pyant.FiniteCylindricalParabola(
 )
 
 # Azimuth is angle (in degrees) clockwise
-azimuthal_beam = pyant.FiniteCylindricalParabola(
+azimuthal_beam = pyant.models.FiniteCylindricalParabola(
     azimuth=30,
     elevation=el,
     frequency=224.0e6,
@@ -36,10 +36,11 @@ azimuthal_beam = pyant.FiniteCylindricalParabola(
 )
 
 
+pyant.plotting.gain_heatmap(beam, resolution=300, min_elevation=80.0, label="plain")
 pyant.plotting.gain_heatmap(
-    beam, resolution=300, min_elevation=80.0, label='plain')
+    rotated_beam, resolution=300, min_elevation=80.0, label="rotated"
+)
 pyant.plotting.gain_heatmap(
-    rotated_beam, resolution=300, min_elevation=80.0, label='rotated')
-pyant.plotting.gain_heatmap(
-    azimuthal_beam, resolution=300, min_elevation=80.0, label='azimuthal')
+    azimuthal_beam, resolution=300, min_elevation=80.0, label="azimuthal"
+)
 pyant.plotting.show()

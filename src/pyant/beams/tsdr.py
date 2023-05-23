@@ -4,8 +4,8 @@
 
 '''
 
-from ..finite_cylindrical_parabola import FiniteCylindricalParabola
-from ..phased_finite_cylindrical_parabola import PhasedFiniteCylindricalParabola
+from ..models import FiniteCylindricalParabola
+from ..models import PhasedFiniteCylindricalParabola
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 
@@ -14,17 +14,17 @@ from ..registry import Radars, Models
 def generate_tsdr():
     '''Tromso Space Debris Radar system with all panels moving as a whole.
 
-    Has an extra method called :code:`calibrate` that numerically calculates 
+    Has an extra method called :code:`calibrate` that numerically calculates
     the integral of the gain and scales the gain pattern according.
 
-    **Reference**: [White paper] McKay, D., Grydeland, T., Vierinen, J., 
-    Kastinen, D., Kero, J., Krag, H. (2019) Conversion of the EISCAT VHF 
+    **Reference**: [White paper] McKay, D., Grydeland, T., Vierinen, J.,
+    Kastinen, D., Kero, J., Krag, H. (2019) Conversion of the EISCAT VHF
     antenna into the Tromso Space Debris Radar
 
     '''
     return FiniteCylindricalParabola(
         azimuth=0,
-        elevation=90.0, 
+        elevation=90.0,
         frequency=1.8e9,
         I0=None,
         width=120.0,
@@ -36,17 +36,17 @@ def generate_tsdr():
 def generate_tsdr_phased():
     '''Tromso Space Debris Radar system with panels moving independently.
 
-    This model is a list of the 4 panels. This applies heave approximations on 
+    This model is a list of the 4 panels. This applies heave approximations on
     the behavior of the gain pattern as the panels move. Considering a linefeed
-    of a single panel, it will receive more reflection area if one of the 
-    adjacent panels move in into the same pointing direction therefor 
-    distorting the side-lobe as support structures pass but also narrowing the 
-    resulting beam.None of these effects are considered here and this 
-    approximation is reasonably valid when all panels are pointing in 
+    of a single panel, it will receive more reflection area if one of the
+    adjacent panels move in into the same pointing direction therefor
+    distorting the side-lobe as support structures pass but also narrowing the
+    resulting beam.None of these effects are considered here and this
+    approximation is reasonably valid when all panels are pointing in
     sufficiently different directions.
 
-    **Reference**: [White paper] McKay, D., Grydeland, T., Vierinen, J., 
-    Kastinen, D., Kero, J., Krag, H. (2019) Conversion of the EISCAT VHF 
+    **Reference**: [White paper] McKay, D., Grydeland, T., Vierinen, J.,
+    Kastinen, D., Kero, J., Krag, H. (2019) Conversion of the EISCAT VHF
     antenna into the Tromso Space Debris Radar
 
     '''

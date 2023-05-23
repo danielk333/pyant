@@ -1,21 +1,20 @@
-'''
+"""
 Antenna array gain
 ===========================
-'''
-import time
+"""
+# import time
 import numpy as np
 
 import pyant
 
-xv, yv = np.meshgrid(np.linspace(-50, 50, num=22),
-                     np.linspace(-50, 50, num=22))
+xv, yv = np.meshgrid(np.linspace(-50, 50, num=22), np.linspace(-50, 50, num=22))
 antennas = np.zeros((3, 22**2))
 antennas[0, :] = xv.flatten()
 antennas[1, :] = yv.flatten()
 
-beam = pyant.Array(
+beam = pyant.models.Array(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     antennas=antennas,
 )

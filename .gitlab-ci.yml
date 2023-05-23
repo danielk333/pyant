@@ -11,21 +11,21 @@ default:
   tags:
     - IRF
 
-# Prepare the development enviornment
+# Prepare the development environment
 .devsetup:
   before_script:
     - python -V
-    # Prepare and activate virtualenv
+    # Prepare and activate virtual env
     - pip install -U pip
     - pip install virtualenv
     - virtualenv venv
     - source venv/bin/activate
-    # install the package and develop dependancies
+    # install the package and develop dependencies
     - pip install .[develop]
     - apt update
     - apt install -y pandoc
 
-# Prepare the nominal usage enviornment
+# Prepare the nominal usage environment
 .setup:
   before_script:
     - python -V
@@ -90,7 +90,7 @@ pypi:
   stage: release
   extends: .devsetup
   variables:
-    #Use a gitlab variable to securly store the token
+    #Use a gitlab variable to securely store the token
     PYPI_TOKEN: $PYPI_TOKEN
   script:
     - python -m build

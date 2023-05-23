@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .beam import Beam
+from ..beam import Beam
 
 
 class Measured(Beam):

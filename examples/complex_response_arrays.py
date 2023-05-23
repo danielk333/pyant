@@ -2,7 +2,6 @@
 Complex response of array
 ===========================
 '''
-import time
 import numpy as np
 
 import pyant
@@ -11,23 +10,23 @@ ant_n = 55
 dr = 2.0
 
 xv, yv = np.meshgrid(
-    np.arange(-ant_n//2, ant_n//2)*dr, 
-    np.arange(-ant_n//2, ant_n//2)*dr, 
+    np.arange(-ant_n//2, ant_n//2)*dr,
+    np.arange(-ant_n//2, ant_n//2)*dr,
 )
 antennas = np.zeros((3, ant_n**2))
 antennas[0, :] = xv.flatten()
 antennas[1, :] = yv.flatten()
 
-beam = pyant.Array(
+beam = pyant.models.Array(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     antennas=antennas,
 )
 
-beam_linp = pyant.Array(
+beam_linp = pyant.models.Array(
     azimuth=0,
-    elevation=90.0, 
+    elevation=90.0,
     frequency=46.5e6,
     polarization=np.array([1, 0]),
     antennas=antennas,
@@ -43,11 +42,17 @@ print(f'Gain LHCP: {beam.gain(km)}')
 print(f'Gain |H>: {beam_linp.gain(k)}')
 print(f'Gain |H>: {beam_linp.gain(km)}')
 
-print(f'Complex response from {k} of LHCP analysis when signal is |H>: {beam.complex(k=k, polarization=np.array([1,0]))}')
-print(f'Complex response from {k} of LHCP analysis when signal is LHCP: {beam.complex(k=k, polarization=beam.polarization)}')
+print(f'Complex response from {k} of LHCP analysis when signal is |H>: \
+    {beam.complex(k=k, polarization=np.array([1,0]))}')
+print(f'Complex response from {k} of LHCP analysis when signal is LHCP: \
+    {beam.complex(k=k, polarization=beam.polarization)}')
 
-print(f'Gain from {k} of LHCP analysis when signal is |H>: {beam.gain(k=k, polarization=np.array([1,0]))}')
-print(f'Gain from {k} of LHCP analysis when signal is LHCP: {beam.gain(k=k, polarization=beam.polarization)}')
+print(f'Gain from {k} of LHCP analysis when signal is |H>: \
+    {beam.gain(k=k, polarization=np.array([1,0]))}')
+print(f'Gain from {k} of LHCP analysis when signal is LHCP: \
+    {beam.gain(k=k, polarization=beam.polarization)}')
 
-print(f'Gain from {k} of |H> analysis when signal is |H>: {beam_linp.gain(k=k, polarization=np.array([1,0]))}')
-print(f'Gain from {k} of |H> analysis when signal is LHCP: {beam_linp.gain(k=k, polarization=beam.polarization)}')
+print(f'Gain from {k} of |H> analysis when signal is |H>: \
+    {beam_linp.gain(k=k, polarization=np.array([1,0]))}')
+print(f'Gain from {k} of |H> analysis when signal is LHCP: \
+    {beam_linp.gain(k=k, polarization=beam.polarization)}')

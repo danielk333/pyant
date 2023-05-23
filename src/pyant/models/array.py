@@ -5,8 +5,7 @@ import numpy as np
 import scipy.constants
 import scipy.special
 
-from .beam import Beam
-from . import coordinates
+from ..beam import Beam
 
 
 def plane_wave(k, r, p, J):
@@ -14,7 +13,7 @@ def plane_wave(k, r, p, J):
 
     :param numpy.ndarray k: Wave-vectors (wave propagation directions)
     :param numpy.ndarray r: Spatial locations (Antenna positions in space)
-    :param numpy.ndarray p: Beam-forming direction by phase offsets 
+    :param numpy.ndarray p: Beam-forming direction by phase offsets
         (antenna array "pointing" direction)
     :param numpy.ndarray J: Polarization given as a Jones vector
     '''
@@ -29,41 +28,41 @@ def plane_wave(k, r, p, J):
 
 
 class Array(Beam):
-    '''Gain pattern of an antenna array radar receiving/transmitting plane 
-    waves, i.e in the far field approximation regime. Assumes the same 
+    '''Gain pattern of an antenna array radar receiving/transmitting plane
+    waves, i.e in the far field approximation regime. Assumes the same
     antenna is used throughout the array.
 
-    Antennas can be combined into a single channel or multiple depending on 
+    Antennas can be combined into a single channel or multiple depending on
     the shape of the input :code:`antenna` ndarray.
 
-    :param numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of 
-        antenna spatial positions, where `n` is the number of antennas and 
+    :param numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of
+        antenna spatial positions, where `n` is the number of antennas and
         `c` is the number of sub-arrays.
-    :param float scaling: Scaling parameter for the output gain, can be 
+    :param float scaling: Scaling parameter for the output gain, can be
         interpreted as an antenna element scalar gain.
-    :param numpy.ndarray polarization: The Jones vector of the assumed 
-        polarization used when calculating the gain. 
+    :param numpy.ndarray polarization: The Jones vector of the assumed
+        polarization used when calculating the gain.
         Default is Left-hand circular polarized.
 
-    :ivar numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of 
-        antenna spatial positions, where `n` is the number of antennas 
+    :ivar numpy.ndarray antennas: `(3, n)` or `(3, n, c)` numpy array of
+        antenna spatial positions, where `n` is the number of antennas
         and `c` is the number of sub-arrays.
-    :ivar float scaling: Scaling parameter for the output gain, 
+    :ivar float scaling: Scaling parameter for the output gain,
         can be interpreted as an antenna element scalar gain.
-    :param numpy.ndarray polarization: The Jones vector of the assumed 
+    :param numpy.ndarray polarization: The Jones vector of the assumed
         polarization used when calculating the gain.
-    :ivar int channels: Number of sub-arrays the antenna array has, 
+    :ivar int channels: Number of sub-arrays the antenna array has,
         i.e the number of channels.
 
     '''
 
-    def __init__(self, 
-                 azimuth, 
-                 elevation, 
-                 frequency, 
-                 antennas, 
-                 polarization=np.array([1, 1j])/np.sqrt(2), 
-                 scaling=1.0, 
+    def __init__(self,
+                 azimuth,
+                 elevation,
+                 frequency,
+                 antennas,
+                 polarization=np.array([1, 1j])/np.sqrt(2),
+                 scaling=1.0,
                  **kwargs
                  ):
         super().__init__(azimuth, elevation, frequency, **kwargs)
@@ -109,9 +108,9 @@ class Array(Beam):
         return ret[:, None]*k[2, :]*self.scaling
 
     def gain(
-                    self, k, 
-                    ind=None, polarization=None, 
-                    vectorized_parameters=False, 
+                    self, k,
+                    ind=None, polarization=None,
+                    vectorized_parameters=False,
                     **kwargs
                 ):
         '''Gain of the antenna array.
@@ -141,9 +140,9 @@ class Array(Beam):
     def complex(self, k, polarization, ind=None, channels=None, **kwargs):
         '''Complex voltage output signal after summation of antennas.
 
-        :return: `(c,2,num_k)` ndarray where `c` is the number of channels 
-            requested, `2` are the two polarization axis of the Jones vector 
-            and `num_k` is the number of input wave vectors. 
+        :return: `(c,2,num_k)` ndarray where `c` is the number of channels
+            requested, `2` are the two polarization axis of the Jones vector
+            and `num_k` is the number of input wave vectors.
             If `num_k = 1` the returned ndarray is `(c,2)`.
         '''
         pointing, frequency = self.get_parameters(ind, **kwargs)
@@ -190,25 +189,25 @@ class DipoleArray(Array):
     :ivar float antenna_rotation: Azimuth east of north of the dipole axis.
     '''
 
-    def __init__(self, 
-                 azimuth, 
-                 elevation, 
-                 frequency, 
-                 antennas, 
-                 polarization=np.array([1, 0]), 
-                 scaling=1.0, 
+    def __init__(self,
+                 azimuth,
+                 elevation,
+                 frequency,
+                 antennas,
+                 polarization=np.array([1, 0]),
+                 scaling=1.0,
                  antenna_rotation = 0.0,
                  **kwargs
                  ):
         raise NotImplementedError('DipoleArray not finished')
 
         super().__init__(
-            azimuth, 
-            elevation, 
-            frequency, 
-            antennas, 
-            polarization, 
-            scaling, 
+            azimuth,
+            elevation,
+            frequency,
+            antennas,
+            polarization,
+            scaling,
             **kwargs
         )
         self.antenna_rotation = antenna_rotation

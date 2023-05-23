@@ -1,11 +1,14 @@
-# Compiled source #
-###################
-
-# Compiled source #
-###################
+#docs
+docs/build/
+docs/source/autosummary/
+docs/source/autogallery/
+*_report
 
 #Sublime
 *.sublime*
+*.code*
+.vscode
+
 
 # Vi/vim editor backup files
 *~
@@ -87,4 +90,3 @@ dmypy.json
 logfile
 cache_error*
 *.log
-

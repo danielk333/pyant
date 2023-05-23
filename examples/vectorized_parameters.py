@@ -17,9 +17,9 @@ fs = np.linspace(200e6, 930e6, num=num)
 
 start_time = time.time()
 
-ant = pyant.Airy(
+ant = pyant.models.Airy(
     azimuth=45,
-    elevation=75.0, 
+    elevation=75.0,
     frequency=930e6,
     I0=10**4.81,
     radius=23.0,
@@ -30,8 +30,8 @@ for ind in range(num):
     g[ind] = ant.gain(ks[:, ind])
 
 print(f'g.shape={g.shape}')
-execution_time_loop = time.time() - start_time
-print(f'"gain calculations" ({num}) loop       performance: {execution_time_loop:.1e} seconds')
+ex_time_loop = time.time() - start_time
+print(f'"gain calculations" ({num}) loop       performance: {ex_time_loop:.1e} seconds')
 
 start_time = time.time()
 
@@ -41,8 +41,8 @@ g = ant.gain(
     vectorized_parameters=True,
 )
 print(f'g.shape={g.shape}')
-execution_time_vectorized = time.time() - start_time
-print(f'"gain calculations" ({num}) vectorized performance: {execution_time_vectorized:.1e} seconds')
+ex_time_vectorized = time.time() - start_time
+print(f'"gain calculations" ({num}) vectorized performance: {ex_time_vectorized:.1e} seconds')
 
 # This way also works
 start_time = time.time()
@@ -56,6 +56,6 @@ print(f'g.shape={g.shape}')
 print(f'"gain calculations" ({num}) vectorized performance: {time.time() - start_time:.1e} seconds')
 
 
-print(f'Speedup = {execution_time_loop/execution_time_vectorized:.2f}')
+print(f'Speedup = {ex_time_loop/ex_time_vectorized:.2f}')
 
 pyant.plotting.show()
