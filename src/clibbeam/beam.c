@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
-#include "libbeam.h"
+#include "beam.h"
 
-int 
-main(int argc, char *argv[]) 
+int
+main(int argc, char *argv[])
 {
     double kvec[3];
     size_t channels = 1;

@@ -16,17 +16,17 @@ def get_version(path):
             raise RuntimeError("Unable to find version string.")
 
 
-libbeam = Extension(
-    name='pyant.libbeam',
+clib_beam = Extension(
+    name='pyant.clibbeam',
     sources=[
-        'src/libbeam/libarray.c',
-        'src/libbeam/libbeam.c',
+        'src/clibbeam/array.c',
+        'src/clibbeam/beam.c',
     ],
-    include_dirs=['src/libbeam/'],
+    include_dirs=['src/clibbeam/'],
 )
 
 
 setuptools.setup(
     version=get_version(HERE / 'src' / 'pyant' / 'version.py'),
-    ext_modules=[libbeam],
+    ext_modules=[clib_beam],
 )

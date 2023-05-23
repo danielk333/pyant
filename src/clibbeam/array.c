@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
-#include "libbeam.h"
+#include "beam.h"
 
 
 void
