@@ -173,6 +173,7 @@ def gain_heatmap(
     ind=None,
     usetex=False,
     label=None,
+    centered=True,
     **kwargs,
 ):
     """Creates a heatmap of the beam-patterns as a function of azimuth and
@@ -210,8 +211,12 @@ def gain_heatmap(
     # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
 
     cmin = np.cos(np.radians(min_elevation))
-    kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
-    ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
+    if centered:
+        kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
+        ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
+    else:
+        kx = np.linspace(-cmin, cmin, num=resolution)
+        ky = np.linspace(-cmin, cmin, num=resolution)
 
     K = np.zeros((resolution, resolution, 2))
 
@@ -224,10 +229,13 @@ def gain_heatmap(
         k[1, :] = K[:, :, 1].reshape(1, size)
 
         # circles in k space, centered on vertical and pointing, respectively
-        z2 = k[0, :] ** 2 + k[1, :] ** 2
-        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
+        z2 = k[0, :]**2 + k[1, :]**2
+        z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
 
-        inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
+        if centered:
+            inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
+        else:
+            inds_ = z2 < cmin**2
         not_inds_ = np.logical_not(inds_)
 
         k[2, inds_] = np.sqrt(1.0 - z2[inds_])
@@ -249,24 +257,30 @@ def gain_heatmap(
         S = np.ones((resolution, resolution))
         for i, x in enumerate(kx):
             for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
+                z2_c = (pointing[0] - x)**2 + (pointing[1] - y)**2
                 z2 = x**2 + y**2
-                if z2_c < np.cos(min_elevation * np.pi / 180.0) ** 2 and z2 <= 1.0:
-                    k = np.array([x, y, np.sqrt(1.0 - z2)])
-                    if isinstance(beam, Beam):
-                        S[i, j] = beam.gain(k, polarization=polarization, ind=ind)
-                    elif isinstance(beam, list):
-                        S[i, j] = functools.reduce(
-                            operator.add,
-                            [
-                                b.gain(k, polarization=polarization, ind=ind)
-                                for b in beam
-                            ],
-                        )
-                    else:
-                        raise TypeError(
-                            f'Can only plot Beam or list, not "{type(beam)}"'
-                        )
+                if centered:
+                    if z2_c >= np.cos(min_elevation * np.pi / 180.0)**2 or z2 > 1.0:
+                        continue
+                else:
+                    if z2 >= np.cos(min_elevation * np.pi / 180.0)**2:
+                        continue
+
+                k = np.array([x, y, np.sqrt(1.0 - z2)])
+                if isinstance(beam, Beam):
+                    S[i, j] = beam.gain(k, polarization=polarization, ind=ind)
+                elif isinstance(beam, list):
+                    S[i, j] = functools.reduce(
+                        operator.add,
+                        [
+                            b.gain(k, polarization=polarization, ind=ind)
+                            for b in beam
+                        ],
+                    )
+                else:
+                    raise TypeError(
+                        f'Can only plot Beam or list, not "{type(beam)}"'
+                    )
 
                 K[i, j, 0] = x
                 K[i, j, 1] = y
@@ -389,8 +403,8 @@ def hemisphere_plot(
         k[0, :] = K[:, :, 0].reshape(1, size)
         k[1, :] = K[:, :, 1].reshape(1, size)
 
-        z2 = k[0, :] ** 2 + k[1, :] ** 2
-        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
+        z2 = k[0, :]**2 + k[1, :]**2
+        z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
 
         inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
         not_inds_ = np.logical_not(inds_)
@@ -407,7 +421,7 @@ def hemisphere_plot(
         S = np.ones((resolution, resolution)) * np.nan
         for i, x in enumerate(kx):
             for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
+                z2_c = (pointing[0] - x)**2 + (pointing[1] - y)**2
                 z2 = x**2 + y**2
                 if z2_c < cmin**2 and z2 <= 1.0:
                     k = np.array([x, y, np.sqrt(1.0 - z2)])
@@ -518,15 +532,15 @@ def hemisphere_plot(
 #     K = np.zeros((resolution, resolution, 2))
 
 #     K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-#     size = len(kx) ** 2
+#     size = len(kx)**2
 #     k = np.empty((3, size), dtype=np.float64)
 #     k[0, :] = K[:, :, 0].reshape(1, size)
 #     k[1, :] = K[:, :, 1].reshape(1, size)
 
-#     z2 = k[0, :] ** 2 + k[1, :] ** 2
-#     z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
+#     z2 = k[0, :]**2 + k[1, :]**2
+#     z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
 
-#     inds_ = np.logical_and(z2_c < np.cos(min_elevation * np.pi / 180.0) ** 2, z2 <= 1.0)
+#     inds_ = np.logical_and(z2_c < np.cos(min_elevation * np.pi / 180.0)**2, z2 <= 1.0)
 #     not_inds_ = np.logical_not(inds_)
 
 #     k[2, inds_] = np.sqrt(1.0 - z2[inds_])

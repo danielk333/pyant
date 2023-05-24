@@ -4,7 +4,6 @@ from enum import Enum
 class Models(Enum):
     Airy = 'airy'
     Array = 'array'
-    DipoleArray = 'dipole_array'
     Cassegrain = 'cassegrain'
     Gaussian = 'gaussian'
     Interpolated = 'interpolated'
