@@ -1,6 +1,6 @@
 """
-Phase steerable Half-pipe
-============================
+Phase steerable Half-pipe effects
+==================================
 """
 
 import numpy as np

@@ -20,12 +20,12 @@ import pyant
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyAnt'
-version = '.'.join(pyant.__version__.split('.')[:2])
+project = "pyant"
+version = ".".join(pyant.__version__.split(".")[:2])
 release = pyant.__version__
 
-copyright = f'2020-{date.today().year}, Daniel Kastinen'
-author = 'Daniel Kastinen'
+copyright = f"2020-{date.today().year}, Daniel Kastinen"
+author = "Daniel Kastinen"
 
 
 # -- General configuration ---------------------------------------------------
@@ -36,60 +36,66 @@ add_module_names = False
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx_gallery.gen_gallery',
+    "nbsphinx",
+    "numpydoc",
+    "sphinx_gallery.load_style",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx_gallery.gen_gallery",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["autogallery/*.ipynb", "examples"]
 
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-#
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+# source_suffix = '.rst'
 
+# The master toctree document.
+master_doc = "index"
+
+nbsphinx_kernel_name = "python3"
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'bizstyle'
+html_theme = "basic"
+html_css_files = [
+    "https://www.irf.se/branding/irf.css",
+    "https://www.irf.se/branding/irf-sphinx-basic.css",
+]
+html_favicon = "static/favicon.png"
+html_logo = "static/logo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["static"]
 
 
 # -- Options for gallery extension ---------------------------------------
 sphinx_gallery_conf = {
-     'examples_dirs': '../../examples',   # path to your example scripts
-     'gallery_dirs': 'auto_gallery',  # path saved gallery generated examples
-     'filename_pattern': '/*.py',
+    "examples_dirs": "../../examples",  # path to your example scripts
+    "gallery_dirs": "autogallery",  # path where to save gallery generated examples
+    "filename_pattern": r".*\.py",
+    "ignore_pattern": r".*__no_agl\.py",
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
-    message='Matplotlib is currently using agg, which is a'
-    ' non-GUI backend, so cannot show the figure.',
+    message="Matplotlib is currently using agg, which is a"
+    " non-GUI backend, so cannot show the figure.",
 )
-
 
 # -----------------------------------------------------------------------------
 # Autosummary
@@ -97,10 +103,12 @@ warnings.filterwarnings(
 
 autosummary_generate = True
 autosummary_generate_overwrite = True
+autosummary_imported_members = False
+
 
 # -----------------------------------------------------------------------------
 # Intersphinx configuration
 # -----------------------------------------------------------------------------
 intersphinx_mapping = {
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    "numpy": ("https://docs.scipy.org/doc/numpy", None),
 }

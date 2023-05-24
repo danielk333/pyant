@@ -9,9 +9,11 @@ Modules
    :toctree: autosummary
 
    pyant.beam
+   pyant.clibbeam
    pyant.coordinates
    pyant.plotting
    pyant.interpolated
+   pyant.registry
    pyant.statistics
 
 
@@ -21,43 +23,33 @@ Radiation Models
 .. autosummary::
    :toctree: autosummary
 
-   pyant.airy
-   pyant.cassegrain
-   pyant.gaussian
-   pyant.array
-   pyant.finite_cylindrical_parabola
-   pyant.phased_finite_cylindrical_parabola
-   pyant.interpolated_array
-   pyant.measured
+   pyant.models.airy
+   pyant.models.cassegrain
+   pyant.models.gaussian
+   pyant.models.array
+   pyant.models.finite_cylindrical_parabola
+   pyant.models.phased_finite_cylindrical_parabola
+   pyant.models.interpolated_array
+   pyant.models.measured
 
 
-Instances
-=========
-
-.. autosummary::
-   :toctree: autosummary
-
-   e3d_array_module
-   e3d_array_stage1
-   e3d_array_stage2
-
-Contents
-----------
-
-.. automodule:: pyant.instances
-
-.. autosummary::
-   :toctree: .
-
-   e3d_array_module
-   e3d_array_stage1
-   e3d_array_stage2
-
-
-Misc
------
+Predefined beams
+=================
 
 .. autosummary::
    :toctree: autosummary
 
-   pyant.instances.eiscat3d
+   pyant.beams.beams
+   pyant.beams.eiscat_3d
+   pyant.beams.eiscat_uhf
+   pyant.beams.esr
+   pyant.beams.tsdr
+
+
+Saved radar parameters
+=======================
+
+.. autosummary::
+   :toctree: autosummary
+
+   pyant.beams.radar_parameters
