@@ -10,19 +10,32 @@ from .. import coordinates
 
 
 class Gaussian(Beam):
-    """Gaussian tapered planar array model
+    '''Gaussian tapered planar array model
 
-    :param float I0: Peak gain (linear scale) in the pointing direction.
-    :param float radius: Radius in meters of the planar array
-    :param float normal_azimuth: Azimuth of normal vector of the planar array in dgreees.
-    :param float normal_elevation: Elevation of pointing direction in degrees.
+    Parameters
+    ----------
+    I0 : float
+        Peak gain (linear scale) in the pointing direction.
+    radius : float
+        Radius in meters of the planar array
+    normal_azimuth : float
+        Azimuth of normal vector of the planar array in degrees.
+    normal_elevation : float
+        Elevation of pointing direction in degrees.
 
-    :ivar float I0: Peak gain (linear scale) in the pointing direction.
-    :ivar float radius: Radius in meters of the airy disk
-    :ivar numpy.ndarray normal: Planar array normal vector in local coordinates
-    :ivar float normal_azimuth: Azimuth of normal vector of the planar array in dgreees.
-    :ivar float normal_elevation: Elevation of pointing direction in degrees.
-    """
+    Attributes
+    ----------
+    I0 : float
+        Peak gain (linear scale) in the pointing direction.
+    radius : float
+        Radius in meters of the airy disk
+    normal : numpy.ndarray
+        Planar array normal vector in local coordinates
+    normal_azimuth : float
+        Azimuth of normal vector of the planar array in degrees.
+    normal_elevation : float
+        Elevation of pointing direction in degrees.
+    '''
 
     def __init__(
         self,
@@ -46,7 +59,7 @@ class Gaussian(Beam):
         )
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         return Gaussian(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),

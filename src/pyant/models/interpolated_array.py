@@ -5,15 +5,15 @@ from ..interpolated import Interpolated
 
 
 class InterpolatedArray(Interpolated):
-    """Interpolated gain pattern of an planar antenna array.
+    '''Interpolated gain pattern of an planar antenna array.
     Translates and scales the interpolated gain pattern to the pointing direction.
-    """
+    '''
 
     def __init__(self, azimuth, elevation, frequency, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         bm = InterpolatedArray(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),

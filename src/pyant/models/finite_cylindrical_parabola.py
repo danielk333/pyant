@@ -11,7 +11,7 @@ from .. import coordinates
 
 
 class FiniteCylindricalParabola(Beam):
-    """A finite Cylindrical Parabola with a finite receiver line feed in the
+    '''A finite Cylindrical Parabola with a finite receiver line feed in the
     longitudinal direction, i.e. in the direction of the cylinder axis.
 
     Custom (measured or more accurately estimated) peak gain at boresight can
@@ -31,7 +31,7 @@ class FiniteCylindricalParabola(Beam):
         Optional, Length of the feed in meters.
         Default is same as reflector width.
 
-    """
+    '''
 
     def __init__(
         self,
@@ -53,13 +53,13 @@ class FiniteCylindricalParabola(Beam):
         self.I0 = I0
 
     def normalize(self, width, height, wavelength):
-        """Calculate normalization constant for beam pattern by assuming
+        '''Calculate normalization constant for beam pattern by assuming
         width and height >> wavelength.
-        """
+        '''
         return 4 * np.pi * width * height / wavelength**2
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         return FiniteCylindricalParabola(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
@@ -72,9 +72,9 @@ class FiniteCylindricalParabola(Beam):
         )
 
     def local_to_pointing(self, k, azimuth, elevation):
-        """Convert from local wave vector direction to bore-sight relative
+        '''Convert from local wave vector direction to bore-sight relative
         longitudinal and transverse angles.
-        """
+        '''
         k_ = k / np.linalg.norm(k, axis=0)
 
         if self.degrees:
@@ -106,9 +106,9 @@ class FiniteCylindricalParabola(Beam):
         return theta, phi
 
     def pointing_to_local(self, theta, phi, azimuth, elevation):
-        """Convert from bore-sight relative longitudinal and transverse angles
+        '''Convert from bore-sight relative longitudinal and transverse angles
         to local wave vector direction.
-        """
+        '''
         sz = (3,)
         if isinstance(theta, np.ndarray):
             sz = sz + (len(theta),)
@@ -168,15 +168,17 @@ class FiniteCylindricalParabola(Beam):
         )
 
     def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
-        """
-        theta is below-axis angle.
-        When elevation < 90, positive theta tends towards the horizon,
-        and negative theta towards zenith.
-
-        phi is off-axis angle.
-        When looking out along boresight with the azimuth direction straight
-        ahead, positive phi is to your right, negative phi to your left.
-        """
+        '''
+        Parameters
+        ----------
+        theta : numpy.ndarray
+            The below-axis angle. When elevation < 90, positive theta tends
+            towards the horizon, and negative theta towards zenith.
+        phi : numpy.ndarray
+            The off-axis angle. When looking out along boresight with the
+            azimuth direction straight ahead, positive phi is to your right,
+            negative phi to your left.
+        '''
         if "frequency" not in kwargs:
             _, frequency = self.get_parameters(ind, **kwargs)
         else:

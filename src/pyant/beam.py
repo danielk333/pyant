@@ -17,19 +17,31 @@ class Beam(ABC):
     amplification of the electromagnetic wave amplitude when transferred to a
     complex voltage amplitude.
 
-    :param float frequency: Frequency of radiation pattern.
-    :param float azimuth: Azimuth of pointing direction.
-    :param float elevation: Elevation of pointing direction.
-    :param bool radians: If :code:`True` all input/output angles are in
-        radians, else they are in degrees
+    Parameters
+    ----------
+    frequency : float
+        Frequency of radiation pattern.
+    azimuth : float
+        Azimuth of pointing direction.
+    elevation : float
+        Elevation of pointing direction.
+    degrees : bool
+        If :code:`True` all input/output angles are in degrees,
+        else they are in radians.
 
-    :ivar float frequency: Frequency of radiation pattern.
-    :ivar float azimuth: Azimuth of pointing direction.
-    :ivar float elevation: Elevation of pointing direction.
-    :ivar bool radians: If :code:`True` all input/output angles are in
-        radians, else they are in degrees
-    :ivar numpy.ndarray pointing: Cartesian vector in local coordinates
-        describing pointing direction.
+    Attributes
+    ----------
+    frequency : float
+        Frequency of radiation pattern.
+    azimuth : float
+        Azimuth of pointing direction.
+    elevation : float
+        Elevation of pointing direction.
+    degrees : bool
+        If :code:`True` all input/output angles are in degrees,
+        else they are in radians.
+    pointing : numpy.ndarray
+        Cartesian vector in local coordinates describing pointing direction.
     '''
 
     def __init__(self, azimuth, elevation, frequency, degrees=False, **kwargs):
@@ -133,16 +145,22 @@ class Beam(ABC):
                 ):
         '''Get parameters for a specific configuration given by `ind`.
 
-        :param (iterable, dict, None) ind: Index for the parameters.
+        Parameters
+        ----------
+        ind : (iterable, dict, None)
+            Index for the parameters.
             Can be an iterable over the parameters, a dict with each
             parameter name and index or None for all parameters.
-        :param bool named: Return parameters as a dict instead of a tuple.
-        :param bool vectorized_parameters: Parameters can be vectors of
+        named : bool
+            Return parameters as a dict instead of a tuple.
+        vectorized_parameters : bool
+            Parameters can be vectors of
             values, used to vectorize gain calculations
             using arrays of parameters.
-        :param dict **kwargs: Any keyword arugment here is used as the
+        **kwargs : dict
+            Any keyword argument here is used as the
             parameter here instead of the ones stored inside the Beam,
-            this can be used to call gain functions programtically
+            this can be used to call gain functions programmatically
             without modifying the object.
 
         '''
@@ -311,12 +329,16 @@ class Beam(ABC):
     def sph_point(self, azimuth, elevation, degrees=None):
         '''Point beam towards azimuth and elevation coordinate.
 
-        :param float azimuth: Azimuth east of north of pointing direction.
-        :param float elevation: Elevation from horizon of pointing direction.
-        :param bool radians: If :code:`True` all input/output angles are in
-            radians, if False degrees are used. Defaults to instance
+        Parameters
+        ----------
+        azimuth : float
+            Azimuth east of north of pointing direction.
+        elevation : float
+            Elevation from horizon of pointing direction.
+        degrees : bool
+            If :code:`True` all input/output angles are in degrees,
+            else they are in radians. Defaults to instance
             settings :code:`self.radians`.
-        :return: :code:`None`
 
         '''
         azimuth, elevation = self._check_degrees(azimuth, elevation, degrees)
@@ -329,8 +351,11 @@ class Beam(ABC):
     def point(self, k):
         '''Point beam in local cartesian direction.
 
-        :param numpy.ndarray k: Pointing direction in local coordinates.
-        :return: :code:`None`
+        Parameters
+        ----------
+        k : numpy.ndarray
+            Pointing direction in local coordinates.
+
         '''
         self.pointing = k/np.linalg.norm(k, axis=0)
         sph = coordinates.cart_to_sph(
@@ -343,14 +368,22 @@ class Beam(ABC):
     def sph_angle(self, azimuth, elevation, degrees=None):
         '''Get angle between azimuth and elevation and pointing direction.
 
-        :param float azimuth: Azimuth east of north to measure from.
-        :param float elevation: Elevation from horizon to measure from.
-        :param bool radians: If :code:`True` all input/output angles are in
-            radians, if False degrees are used. Defaults to instance
+        Parameters
+        ----------
+        azimuth : float
+            Azimuth east of north of pointing direction.
+        elevation : float
+            Elevation from horizon of pointing direction.
+        degrees : bool
+            If :code:`True` all input/output angles are in degrees,
+            else they are in radians. Defaults to instance
             settings :code:`self.radians`.
 
-        :return: Angle between pointing and given direction.
-        :rtype: float
+        Returns
+        -------
+        float
+            Angle between pointing and given direction.
+
         '''
         if degrees is None:
             degrees = self.degrees
@@ -362,13 +395,20 @@ class Beam(ABC):
     def angle(self, k, degrees=None):
         '''Get angle between local direction and pointing direction.
 
-        :param numpy.ndarray k: Direction to evaluate angle to.
-        :param bool radians: If :code:`True` all input/output angles are in
-            radians, if False degrees are used. Defaults to instance
+        Parameters
+        ----------
+        k : numpy.ndarray
+            Direction to evaluate angle to.
+        degrees : bool
+            If :code:`True` all input/output angles are in degrees,
+            else they are in radians. Defaults to instance
             settings :code:`self.radians`.
 
-        :return: Angle between pointing and given direction.
-        :rtype: float
+        Returns
+        -------
+        float
+            Angle between pointing and given direction.
+
         '''
         if degrees is None:
             degrees = self.degrees
@@ -398,21 +438,32 @@ class Beam(ABC):
         '''Return the gain in the given direction. This method should be
         vectorized in the `k` variable.
 
-        If e.g. pointing is the only parameter with 5 directions,
-        :code:`ind=(2,)` would evaluate the gain using the third
-        pointing direction.
-
-        :param numpy.ndarray k: Direction in local coordinates to evaluate
+        Parameters
+        ----------
+        k : numpy.ndarray
+            Direction in local coordinates to evaluate
             gain in. Must be a `(3,)` vector or a `(3,n)` matrix.
-        :param tuple ind: The incidences of the available parameters.
+        ind : tuple
+            The incidences of the available parameters.
             If the parameters have a size of `1`, no index is needed.
-        :param numpy.ndarray polarization: The Jones vector of the incoming
+        polarization : numpy.ndarray
+            The Jones vector of the incoming
             plane waves, if applicable for the beam in question.
 
-        :return: Radar gain in the given direction. If input is a `(3,)`
+        Returns
+        -------
+        float/numpy.ndarray
+            Radar gain in the given direction. If input is a `(3,)`
             vector, output is a float. If input is a `(3,n)` matrix output
             is a `(n,)` vector of gains.
-        :rtype: float/numpy.ndarray
+
+        Notes
+        -----
+        Parameter indexing
+            If e.g. pointing is the only parameter with 5 directions,
+            :code:`ind=(2,)` would evaluate the gain using the third
+            pointing direction.
+
         '''
         pass
 
@@ -424,14 +475,23 @@ class Beam(ABC):
                 ):
         '''Return the gain in the given direction.
 
-        :param float azimuth: Azimuth east of north to evaluate gain in.
-        :param float elevation: Elevation from horizon to evaluate gain in.
-        :param bool radians: If :code:`True` all input/output angles are in
-            radians, if False degrees are used. Defaults to instance
+        Parameters
+        ----------
+        azimuth : float
+            Azimuth east of north to evaluate gain in.
+        elevation : float
+            Elevation from horizon to evaluate gain in.
+        degrees : bool
+            If :code:`True` all input/output angles are in degrees,
+            else they are in radians. Defaults to instance
             settings :code:`self.radians`.
 
-        :return: Radar gain in the given direction.
-        :rtype: float
+        Returns
+        -------
+        float/numpy.ndarray
+            Radar gain in the given direction. If input is a `(3,)`
+            vector, output is a float. If input is a `(3,n)` matrix output
+            is a `(n,)` vector of gains.
         '''
         if degrees is None:
             degrees = self.degrees

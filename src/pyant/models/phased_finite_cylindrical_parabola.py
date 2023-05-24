@@ -11,23 +11,34 @@ from .finite_cylindrical_parabola import FiniteCylindricalParabola
 
 
 class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
-    """A finite Cylindrical Parabola with a phased finite receiver line feed
+    '''A finite Cylindrical Parabola with a phased finite receiver line feed
         in the longitudinal direction, i.e. in the direction of the cylinder axis.
 
-    Custom (measured or more accurately estimated) peak gain at boresight can
-    be input, otherwise assumes width and height >> wavelength and approximates
-    integral with analytic form.
-
-    :param float I0: Peak gain (linear scale) in the pointing direction.
-    :param float width:  Reflector width (axial/azimuth dimension) in meters
-    :param float height: Reflector height (perpendicular/elevation dimension) in meters
-    :param float depth: Perpendicular distance from feed to reflector in meters
-    :param float aperture: Optional, Length of the feed in meters.
+    Parameters
+    ----------
+    width : float
+        Reflector width (axial/azimuth dimension) in meters
+    height : float
+        Reflector height (perpendicular/elevation dimension) in meters
+    depth : float
+        Perpendicular distance from feed to reflector in meters
+    aperture : float
+        Optional, Length of the feed in meters.
         Default is same as reflector width
+    I0 : float
+        Peak gain (linear scale) in the pointing direction.
+        Default use approximate analytical integral of 2D Fourier
+        transform of rectangle.
 
-    :param float I0: Peak gain (linear scale) in the pointing direction.
-        Default use approximate analytical integral of 2D Fourier transform of rectangle.
-    """
+    Notes
+    ------
+    Peak gain
+        Custom (measured or more accurately estimated) peak gain at boresight can
+        be input, otherwise assumes width and height >> wavelength and approximates
+        integral with analytic form.
+
+
+    '''
 
     def __init__(
         self,
@@ -52,7 +63,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         self.register_parameter("phase_steering")
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         return PhasedFiniteCylindricalParabola(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
@@ -94,7 +105,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
     # interface method `gain()`, inherited from super, defers to `gain_tf(), below`
     def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
-        """
+        '''
         theta is below-axis angle (radians).
         When elevation < 90, positive theta tends towards the horizon,
         and negative theta towards zenith.
@@ -102,7 +113,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         phi is off-axis angle (radians).
         When looking out along boresight with the azimuth direction straight
         ahead, positive phi is to your right, negative phi to your left.
-        """
+        '''
 
         # small efficiency fix to skip unnecessary calls of get_parameters
         if "called_from_gain" in kwargs:
@@ -156,7 +167,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         return G * I0
 
     def _nominal_phase_steering(self, phi):
-        """
+        '''
         For a given desired pointing `phi`, compute the nominal phase
         steering angle that gives a pattern that peaks at `phi`.
 
@@ -175,7 +186,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
         This also means that steering past phi = 1, or 57.3°, is not possible.
 
-        """
+        '''
 
         if not self.radians:
             phi = np.radians(phi)

@@ -9,16 +9,24 @@ from .. import coordinates
 
 
 class Cassegrain(Beam):
-    """Cassegrain gain model of a radar dish.
+    '''Cassegrain gain model of a radar dish.
 
-    :param float I0: Peak gain (linear scale) in the pointing direction.
-    :param float a0: outer radius (main reflector)
-    :param float a1: inner radius (subreflector)
+    Parameters
+    ----------
+    I0 : float
+        Peak gain (linear scale) in the pointing direction.
+    a0 : float
+        Outer radius (main reflector)
+    a1 : float
+        Inner radius (sub reflector)
 
-    The gain pattern is expressed as the Fourier transform of an annular region
-    with outer radius a0 and inner radius a1.  Values below the aperture plane
-    or below the horizon should not be believed.
-    """
+    Notes
+    -----
+    Derivation
+        The gain pattern is expressed as the Fourier transform of an annular
+        region with outer radius a0 and inner radius a1.  Values below the
+        aperture plane or below the horizon should not be believed.
+    '''
 
     def __init__(self, azimuth, elevation, frequency, I0, a0, a1, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
@@ -27,7 +35,7 @@ class Cassegrain(Beam):
         self.a0 = a0
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         return Cassegrain(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),

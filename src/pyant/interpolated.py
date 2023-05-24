@@ -10,9 +10,16 @@ from .beam import Beam
 class Interpolated(Beam):
     '''Interpolated gain pattern. Does not assume any effect on pointing.
 
-    :param float scaling: Scaling of the gain pattern to apply.
+    Parameters
+    ----------
+    scaling : float
+        Scaling of the gain pattern to apply.
 
-    :ivar float scaling: Scaling of the gain pattern to apply.
+    Attributes
+    ----------
+    scaling : float
+        Scaling of the gain pattern to apply.
+
     '''
 
     def __init__(self, azimuth, elevation, frequency, scaling = 1.0, **kwargs):

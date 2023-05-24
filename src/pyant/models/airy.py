@@ -11,20 +11,22 @@ from .. import coordinates
 
 
 class Airy(Beam):
-    """Airy disk gain model of a radar dish.
+    '''Airy disk gain model of a radar dish.
 
-    :param float I0: Peak gain (linear scale) in the pointing direction.
-    :param float radius: Radius in meters of the airy disk
+    Parameters
+    ----------
+    I0 : float
+        Peak gain (linear scale) in the pointing direction.
+    radius : float
+        Radius in meters of the airy disk
 
-    :ivar float I0: Peak gain (linear scale) in the pointing direction.
-    :ivar float radius: Radius in meters of the airy disk
-
-    **Notes:**
-
-    * To avoid singularity at beam center, use
+    Notes
+    -----
+    Singularities
+        To avoid singularity at beam center, use
         :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}` and a threshold.
 
-    """
+    '''
 
     def __init__(self, azimuth, elevation, frequency, I0, radius, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
@@ -33,7 +35,7 @@ class Airy(Beam):
         self.register_parameter("radius")
 
     def copy(self):
-        """Return a copy of the current instance."""
+        '''Return a copy of the current instance.'''
         return Airy(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
