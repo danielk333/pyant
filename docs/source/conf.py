@@ -9,14 +9,15 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
 
+import sys
+import pathlib
 import warnings
 from datetime import date
 import pyant
+
+ext_paths = (pathlib.Path(__file__).parent / "extensions").resolve()
+sys.path.append(str(ext_paths))
 
 # -- Project information -----------------------------------------------------
 
@@ -38,7 +39,9 @@ add_module_names = False
 extensions = [
     "numpydoc",
     "myst_nb",
+    "irf.autopackages",
     "sphinx_gallery.load_style",
+    "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
@@ -46,11 +49,14 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
-    "sphinx_gallery.gen_gallery",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["templates"]
+
+# autopackages settings
+irf_autopackages_toctree = "autopackages"
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -117,4 +123,6 @@ autosummary_imported_members = False
 # -----------------------------------------------------------------------------
 intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy", None),
+    "scipy": ("http://docs.scipy.org/doc/scipy/reference/", None),
+    "matplotlib": ("http://matplotlib.sourceforge.net/", None),
 }

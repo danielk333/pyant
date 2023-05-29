@@ -1,5 +1,5 @@
-{{ fullname | escape }}
-{{ (fullname | escape | length)*"=" }}
+{{ objname | escape }}
+{{ (objname | escape | length)*"=" }}
 
 .. currentmodule:: {{ module }}
 

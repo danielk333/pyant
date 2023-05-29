@@ -15,26 +15,29 @@ PyAnt is a standardization of implementing radar gain pattern in Python. Nothing
 Getting started
 -----------------
 
-To install (Not yet available)
+To install
 
 .. code-block:: bash
 
    pip install pyant
 
-or
+or the nightly build
 
 .. code-block:: bash
 
-   git clone git@github.com:danielk333/pyant.git
+   git clone --branch develop git@github.com:danielk333/pyant.git
    cd pyant
    pip install .
 
-Then get started with this quick "getting started" guide
+
+Tutorials
+---------
 
 .. toctree::
    :maxdepth: 2
 
-   start
+   notebooks/getting_started
+   notebooks/gain_heatmap_movie
 
 
 Examples
@@ -45,17 +48,43 @@ Example gallery of the different modular functionality of the toolbox.
 .. toctree::
    :maxdepth: 2
 
-   auto_gallery/index
+   autogallery/index
 
 
 API Reference
-===============
+==============
 
-.. toctree::
-   :maxdepth: 3
+.. irf_autopackages:: package
+   :template: autosummary/module.rst
+   :toctree: autosummary
+   :exclude: pyant.version
 
-   api
+   pyant
 
+
+Developing
+----------
+
+Please refer to the style and contribution guidelines documented in the
+[IRF Software Contribution Guide](https://danielk.developer.irf.se/software_contribution_guide/).
+Generally external code-contributions are made trough a "Fork-and-pull"
+workflow, while internal contributions follow the branching strategy outlined
+in the contribution guide.
+
+Notebooks
+~~~~~~~~~
+
+To develop notebooks for documentation in Jupyter-lab, install the following
+
+```bash
+pip install notebook jupytext
+```
+
+Then run notebooks in the appropriate folder using `jupyter-notebook` and
+pair the notebook with a MyST file.
+
+For more information on how to pair notebooks in order to have persistent plain-text versions,
+see the [jupytext docs](https://jupytext.readthedocs.io/en/latest/paired-notebooks.html).
 
 
 Indices and tables

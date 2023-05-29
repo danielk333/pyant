@@ -1,36 +1,10 @@
-{{ fullname | escape }}
-{{ (fullname | escape | length)*"=" }}
+{{ objname | escape }}
+{{ (objname | escape | length)*"=" }}
 
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-
-Summary
--------
-
-{% if attributes %}
-Attributes
-^^^^^^^^^^
-
-.. autosummary::
-  :toctree: .
-{% for item in attributes %}
-  ~{{ name }}.{{ item }}
-{%- endfor %}
-{% endif %}
-
-
-{% if methods %}
-Methods
-^^^^^^^
-
-.. autosummary::
-  :toctree: .
-{% for item in methods %}
-  ~{{ name }}.{{ item }}
-{%- endfor %}
-{% endif %}
-
+    :members: None
 
 {% block attributes %}
 {% if attributes %}
