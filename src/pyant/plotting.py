@@ -9,7 +9,7 @@ from . import coordinates as coord
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from matplotlib import animation
+from matplotlib import animation
 from matplotlib import cm
 
 import functools
@@ -229,8 +229,8 @@ def gain_heatmap(
         k[1, :] = K[:, :, 1].reshape(1, size)
 
         # circles in k space, centered on vertical and pointing, respectively
-        z2 = k[0, :]**2 + k[1, :]**2
-        z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
+        z2 = k[0, :] ** 2 + k[1, :] ** 2
+        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
 
         if centered:
             inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
@@ -257,13 +257,13 @@ def gain_heatmap(
         S = np.ones((resolution, resolution))
         for i, x in enumerate(kx):
             for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x)**2 + (pointing[1] - y)**2
+                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
                 z2 = x**2 + y**2
                 if centered:
-                    if z2_c >= np.cos(min_elevation * np.pi / 180.0)**2 or z2 > 1.0:
+                    if z2_c >= np.cos(min_elevation * np.pi / 180.0) ** 2 or z2 > 1.0:
                         continue
                 else:
-                    if z2 >= np.cos(min_elevation * np.pi / 180.0)**2:
+                    if z2 >= np.cos(min_elevation * np.pi / 180.0) ** 2:
                         continue
 
                 k = np.array([x, y, np.sqrt(1.0 - z2)])
@@ -272,15 +272,10 @@ def gain_heatmap(
                 elif isinstance(beam, list):
                     S[i, j] = functools.reduce(
                         operator.add,
-                        [
-                            b.gain(k, polarization=polarization, ind=ind)
-                            for b in beam
-                        ],
+                        [b.gain(k, polarization=polarization, ind=ind) for b in beam],
                     )
                 else:
-                    raise TypeError(
-                        f'Can only plot Beam or list, not "{type(beam)}"'
-                    )
+                    raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
 
                 K[i, j, 0] = x
                 K[i, j, 1] = y
@@ -403,8 +398,8 @@ def hemisphere_plot(
         k[0, :] = K[:, :, 0].reshape(1, size)
         k[1, :] = K[:, :, 1].reshape(1, size)
 
-        z2 = k[0, :]**2 + k[1, :]**2
-        z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
+        z2 = k[0, :] ** 2 + k[1, :] ** 2
+        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
 
         inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
         not_inds_ = np.logical_not(inds_)
@@ -421,7 +416,7 @@ def hemisphere_plot(
         S = np.ones((resolution, resolution)) * np.nan
         for i, x in enumerate(kx):
             for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x)**2 + (pointing[1] - y)**2
+                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
                 z2 = x**2 + y**2
                 if z2_c < cmin**2 and z2 <= 1.0:
                     k = np.array([x, y, np.sqrt(1.0 - z2)])
@@ -473,96 +468,93 @@ def hemisphere_plot(
 #     return fh, ax, hh
 
 
-# def gain_heatmap_movie(
-#     beam, iterable, beam_update, plt_kwargs={}, plot_update=None, fps=20, **kwargs
-# ):
-#     """WORK IN PROGRESS!"""
+def gain_heatmap_movie(
+    beam, iterable, beam_update, plt_kwargs={}, plot_update=None, fps=20, **kwargs
+):
+    """WORK IN PROGRESS!"""
 
-#     def run(it, fig, ax, mesh, size, beam, k, inds_, resolution):
-#         beam = beam_update(beam, it)
+    def run(it, fig, ax, mesh, size, beam, k, inds_, resolution):
+        beam = beam_update(beam, it)
 
-#         S = np.ones((1, size))
-#         if isinstance(beam, Beam):
-#             S[0, inds_] = beam.gain(k[:, inds_])
-#         elif isinstance(beam, list):
-#             S[0, inds_] = functools.reduce(
-#                 operator.add, [b.gain(k[:, inds_]) for b in beam]
-#             )
-#         else:
-#             raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
+        S = np.ones((1, size))
+        if isinstance(beam, Beam):
+            S[0, inds_] = beam.gain(k[:, inds_])
+        elif isinstance(beam, list):
+            S[0, inds_] = functools.reduce(operator.add, [b.gain(k[:, inds_]) for b in beam])
+        else:
+            raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
 
-#         SdB = np.log10(S) * 10.0
-#         SdB[np.isinf(SdB)] = 0
-#         SdB[np.isnan(SdB)] = 0
-#         # SdB[SdB < 0] = 0
-#         S = SdB
+        SdB = np.log10(S) * 10.0
+        SdB[np.isinf(SdB)] = 0
+        SdB[np.isnan(SdB)] = 0
+        # SdB[SdB < 0] = 0
+        S = SdB
 
-#         S = S.reshape(resolution, resolution)
-#         mesh.update({"array": S.ravel()})
+        S = S.reshape(resolution, resolution)
+        mesh.update({"array": S.ravel()})
 
-#         if plot_update is not None:
-#             fig, ax, mesh = plot_update(fig, ax, mesh)
+        if plot_update is not None:
+            fig, ax, mesh = plot_update(fig, ax, mesh)
 
-#         # fig.canvas.draw()
+        # fig.canvas.draw()
 
-#         return (
-#             ax,
-#             mesh,
-#         )
+        return (
+            ax,
+            mesh,
+        )
 
-#     fig, ax, mesh = gain_heatmap(beam, **plt_kwargs)
-#     titl = fig.text(0.5, 0.94, "", horizontalalignment="center")
+    fig, ax, mesh = gain_heatmap(beam, **plt_kwargs)
+    fig.text(0.5, 0.94, "", horizontalalignment="center")
 
-#     resolution = plt_kwargs.get("resolution", 201)
+    resolution = plt_kwargs.get("resolution", 201)
 
-#     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
-#     # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
-#     min_elevation = plt_kwargs.get("min_elevation", 0)
-#     kx = np.linspace(
-#         pointing[0] - np.cos(min_elevation * np.pi / 180.0),
-#         pointing[0] + np.cos(min_elevation * np.pi / 180.0),
-#         num=resolution,
-#     )
-#     ky = np.linspace(
-#         pointing[1] - np.cos(min_elevation * np.pi / 180.0),
-#         pointing[1] + np.cos(min_elevation * np.pi / 180.0),
-#         num=resolution,
-#     )
+    # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
+    # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
+    min_elevation = plt_kwargs.get("min_elevation", 0)
+    kx = np.linspace(
+        np.cos(min_elevation * np.pi / 180.0),
+        np.cos(min_elevation * np.pi / 180.0),
+        num=resolution,
+    )
+    ky = np.linspace(
+        np.cos(min_elevation * np.pi / 180.0),
+        np.cos(min_elevation * np.pi / 180.0),
+        num=resolution,
+    )
 
-#     K = np.zeros((resolution, resolution, 2))
+    K = np.zeros((resolution, resolution, 2))
 
-#     K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-#     size = len(kx)**2
-#     k = np.empty((3, size), dtype=np.float64)
-#     k[0, :] = K[:, :, 0].reshape(1, size)
-#     k[1, :] = K[:, :, 1].reshape(1, size)
+    K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
+    size = len(kx) ** 2
+    k = np.empty((3, size), dtype=np.float64)
+    k[0, :] = K[:, :, 0].reshape(1, size)
+    k[1, :] = K[:, :, 1].reshape(1, size)
 
-#     z2 = k[0, :]**2 + k[1, :]**2
-#     z2_c = (pointing[0] - k[0, :])**2 + (pointing[1] - k[1, :])**2
+    z2 = k[0, :] ** 2 + k[1, :] ** 2
 
-#     inds_ = np.logical_and(z2_c < np.cos(min_elevation * np.pi / 180.0)**2, z2 <= 1.0)
-#     not_inds_ = np.logical_not(inds_)
+    inds_ = z2 <= np.cos(min_elevation * np.pi / 180.0)
+    not_inds_ = np.logical_not(inds_)
 
-#     k[2, inds_] = np.sqrt(1.0 - z2[inds_])
-#     k[2, not_inds_] = 0
+    k[2, inds_] = np.sqrt(1.0 - z2[inds_])
+    k[2, not_inds_] = 0
 
-#     ani = animation.FuncAnimation(
-#         fig,
-#         run,
-#         iterable,
-#         blit=kwargs.get("blit", True),
-#         interval=1.0e3 / float(fps),
-#         repeat=True,
-#         fargs=(
-#             fig,
-#             ax,
-#             mesh,
-#             size,
-#             beam,
-#             k,
-#             inds_,
-#             resolution,
-#         ),
-#     )
+    ani = animation.FuncAnimation(
+        fig,
+        run,
+        iterable,
+        blit=kwargs.get("blit", True),
+        interval=1.0e3 / float(fps),
+        repeat=True,
+        fargs=(
+            fig,
+            ax,
+            mesh,
+            size,
+            beam,
+            k,
+            inds_,
+            resolution,
+        ),
+    )
 
-#     return fig, ax, mesh, ani
+    return fig, ax, mesh, ani

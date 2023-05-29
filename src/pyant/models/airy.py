@@ -11,7 +11,7 @@ from .. import coordinates
 
 
 class Airy(Beam):
-    '''Airy disk gain model of a radar dish.
+    """Airy disk gain model of a radar dish.
 
     Parameters
     ----------
@@ -26,7 +26,7 @@ class Airy(Beam):
         To avoid singularity at beam center, use
         :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}` and a threshold.
 
-    '''
+    """
 
     def __init__(self, azimuth, elevation, frequency, I0, radius, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
@@ -35,7 +35,7 @@ class Airy(Beam):
         self.register_parameter("radius")
 
     def copy(self):
-        '''Return a copy of the current instance.'''
+        """Return a copy of the current instance."""
         return Airy(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
@@ -45,16 +45,14 @@ class Airy(Beam):
             radians=self.radians,
         )
 
-    def gain(
-        self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs
-    ):
+    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
         pointing, frequency, radius = self.get_parameters(
             ind, vectorized_parameters=vectorized_parameters, **kwargs
         )
 
         lam = scipy.constants.c / frequency
 
-        theta = coordinates.vector_angle(pointing, k, radians=True)
+        theta = coordinates.vector_angle(pointing, k, degrees=False)
 
         k_n = 2.0 * np.pi / lam
         alph = k_n * radius * np.sin(theta)
@@ -71,8 +69,6 @@ class Airy(Beam):
             inds_ = alph < 1e-9
             not_inds_ = np.logical_not(inds_)
             G[inds_] = self.I0
-            G[not_inds_] = (
-                self.I0 * ((2.0 * jn_val[not_inds_] / alph[not_inds_])) ** 2.0
-            )
+            G[not_inds_] = self.I0 * ((2.0 * jn_val[not_inds_] / alph[not_inds_])) ** 2.0
 
         return G
