@@ -46,6 +46,7 @@ class Array(Beam):
     antennas : numpy.ndarray
         `(3, n)` or `(3, n, c)` numpy array of antenna spatial positions,
         where `n` is the number of antennas and `c` is the number of sub-arrays.
+        *This is not the same arrangement as the internal antennas variable*.
     scaling : float
         Scaling parameter for the output gain, can be interpreted as an
         antenna element scalar gain.
@@ -56,7 +57,7 @@ class Array(Beam):
     Attributes
     ----------
     antennas : numpy.ndarray
-        `(3, n)` or `(3, n, c)` numpy array of antenna spatial positions,
+        `(n, 3, c)` numpy array of antenna spatial positions,
         where `n` is the number of antennas and `c` is the number of sub-arrays.
     scaling : float
         Scaling parameter for the output gain, can be interpreted as an
@@ -166,22 +167,14 @@ class Array(Beam):
         k_ = k / np.linalg.norm(k, axis=0)
         if len(k.shape) == 1:
             psi = np.zeros(
-                (
-                    chan_num,
-                    2,
-                    1,
-                ),
+                (chan_num, 2, 1),
                 dtype=np.complex128,
             )
             p = pointing.reshape(3, 1)
             k_ = k_.reshape(3, 1)
         else:
             psi = np.zeros(
-                (
-                    chan_num,
-                    2,
-                    k.shape[1],
-                ),
+                (chan_num, 2, k.shape[1]),
                 dtype=np.complex128,
             )
             p = np.repeat(pointing.reshape(3, 1), k.shape[1], axis=1)

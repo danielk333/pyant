@@ -6,7 +6,7 @@ Collection of pre-defined radar beams of different Models.
 These instances usually correspond to a real physical system.
 
 To register a new radar beam model use the registartor function to pass it the
-function that generate the specific radar beam. The function expects a 
+function that generate the specific radar beam. The function expects a
 signiature of only keyword arguments which are options for the generating
 function.
 
@@ -24,3 +24,4 @@ from . import eiscat_3d
 from . import eiscat_uhf
 from . import esr
 from . import tsdr
+from . import arrays
