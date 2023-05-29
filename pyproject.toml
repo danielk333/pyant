@@ -53,12 +53,16 @@ develop = [
     "coverage >= 6.0.2",
     "sphinx-gallery >= 0.3.1",
     "matplotlib >= 3.5.1",
-    "nbsphinx >= 0.8.8",
+    "myst-nb >= 0.17.2",
     "ipykernel >= 6.9.1",
     "radon >= 5.1.0",
     "numpydoc >= 1.2",
     "pre-commit > 3.0.0",
     "black >= 23.3.0",
+]
+notebooks = [
+    "notebook >= 6.5.4",
+    "jupytext >= 1.14.5",
 ]
 
 [project.urls]

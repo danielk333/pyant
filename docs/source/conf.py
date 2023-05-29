@@ -36,8 +36,8 @@ add_module_names = False
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "nbsphinx",
     "numpydoc",
+    "myst_nb",
     "sphinx_gallery.load_style",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -55,15 +55,21 @@ templates_path = ["templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["autogallery/*.ipynb", "examples"]
+exclude_patterns = ["*.ipynb", "examples"]
 
-# source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "myst-nb",
+    ".myst": "myst-nb",
+}
 
 # The master toctree document.
 master_doc = "index"
 
-nbsphinx_kernel_name = "python3"
+# MyST-NB config
+myst_enable_extensions = [
+    "amsmath",
+]
 
 # -- Options for HTML output -------------------------------------------------
 
