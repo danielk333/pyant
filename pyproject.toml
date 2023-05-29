@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyant"
+description = "Radar antenna models in python"
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [
+    {name = "Daniel Kastinen", email = "daniel.kastinen@irf.se"},
+    {name = "Tom Grydeland", email = "tgry@norceresearch.no"},
+    {name = "Juha Vierinen", email = "juha-pekka.vierinen@uit.no"},
+]
+maintainers = [
+    {name = "Daniel Kastinen", email = "daniel.kastinen@irf.se"},
+]
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+]
+requires-python = ">=3.5"
+dependencies = [
+    "numpy >= 1.14.3",
+    "scipy >= 1.1.0",
+    "matplotlib >= 3.2.0",
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+include-package-data = true
+license-files = ["LICENSE"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyant.version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"pyant.beams" = ["data/*"]
+
+[project.optional-dependencies]
+develop = [
+    "pytest >= 6.2.5",
+    "sphinx >= 4.2.0",
+    "flake8 >= 6.0.0",
+    "wheel >= 0.37.0",
+    "build >= 0.7.0",
+    "twine >= 3.4.2",
+    "coverage >= 6.0.2",
+    "sphinx-gallery >= 0.3.1",
+    "matplotlib >= 3.5.1",
+    "nbsphinx >= 0.8.8",
+    "ipykernel >= 6.9.1",
+    "radon >= 5.1.0",
+    "numpydoc >= 1.2",
+    "pre-commit > 3.0.0",
+    "black >= 23.3.0",
+]
+
+[project.urls]
+Documentation = "https://danielk.developer.irf.se/pyant/"
+Repository = "https://github.com/danielk333/pyant"
+
+[tool.black]
+line-length = 100
+target_version = ['py35', 'py36', 'py37', 'py38', 'py39', 'py310']

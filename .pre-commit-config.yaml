@@ -6,6 +6,7 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+    -   id: check-toml
     -   id: check-added-large-files
 -   repo: https://github.com/pycqa/flake8
     rev: 6.0.0
@@ -21,3 +22,9 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+-   repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    -   id: black
+        name: black
+        entry: black
