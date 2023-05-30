@@ -1,8 +1,3 @@
-.. PyOrb documentation master file, created by
-   sphinx-quickstart on Fri Jun  5 17:24:05 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 PyAnt
 =====
 
@@ -71,17 +66,27 @@ Generally external code-contributions are made trough a "Fork-and-pull"
 workflow, while internal contributions follow the branching strategy outlined
 in the contribution guide.
 
+Docs
+~~~~
+
+To make the docs, use the `Makefile` by running
+
+.. code-block:: bash
+
+   make html
+
+
 Notebooks
 ~~~~~~~~~
 
 To develop notebooks for documentation in Jupyter-lab, install the following
 
-```bash
-pip install notebook jupytext
-```
+.. code-block:: bash
 
-Then run notebooks in the appropriate folder using `jupyter-notebook` and
-pair the notebook with a MyST file.
+   pip install notebook jupytext
+
+Then run notebooks in the appropriate folder `docs/source/notebooks` using `jupyter-notebook` and
+pair the new notebook with a MyST file.
 
 For more information on how to pair notebooks in order to have persistent plain-text versions,
 see the [jupytext docs](https://jupytext.readthedocs.io/en/latest/paired-notebooks.html).
