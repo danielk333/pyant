@@ -206,9 +206,12 @@ class Beam(ABC):
         {parameter name: parameter indexing} dict format.
         """
         if ind is None:
-            ind = {key: slice(None, None, None) for key in self._keys}
+            ind = {key: slice(None) for key in self._keys}
         elif isinstance(ind, dict):
-            pass
+            for key in self._keys:
+                if key in ind:
+                    continue
+                ind[key] = slice(None)
         else:
             if len(ind) != len(self._keys):
                 raise ValueError(
