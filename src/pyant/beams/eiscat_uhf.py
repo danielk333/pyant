@@ -3,7 +3,6 @@
 """
 
 """
-import pkg_resources
 import copy
 
 import numpy as np
@@ -13,14 +12,13 @@ from ..models import Measured
 from .. import coordinates
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
+from .data import DATA
 
-try:
-    stream = pkg_resources.resource_stream(
-        "pyant.beams.data",
-        "eiscat_uhf_bp.txt",
-    )
-    _eiscat_beam_data = np.genfromtxt(stream)
-except FileNotFoundError:
+_data_file = DATA["eiscat_uhf_bp.txt"] if "eiscat_uhf_bp.txt" in DATA else None
+if _data_file is not None:
+    with _data_file.open("r") as stream:
+        _eiscat_beam_data = np.genfromtxt(stream)
+else:
     _eiscat_beam_data = None
 
 
