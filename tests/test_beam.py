@@ -77,6 +77,11 @@ class TestBeam(unittest.TestCase):
             data[self.beam2._inds["radius"]],
         )
 
+    def test_get_parameters_ind(self):
+        data = self.beam1.get_parameters(ind=(0, 0))
+        nt.assert_array_almost_equal(data[0], self.k[:, 0])
+        nt.assert_almost_equal(data[1], self.data["frequency"][0])
+
     def test_set_parameters_property(self):
         f = np.array([2.0])
         self.beam1.frequency = f
@@ -154,16 +159,14 @@ class TestBeam(unittest.TestCase):
         assert self.beam2.keys == tuple(self.beam2.parameters.keys())
 
     def test_ind_to_dict(self):
-        keys = ["pointing", "frequency"]
-
         inds = self.beam1.ind_to_dict(None)
-        for key in keys:
-            assert inds[key] == slice(None)
+        assert inds["pointing"] == (slice(None), slice(None))
+        assert inds["frequency"] == (slice(None),)
 
         inds = self.beam1.ind_to_dict({"pointing": 0})
-        assert inds["pointing"] == 0
-        assert inds["frequency"] == slice(None)
+        assert inds["pointing"] == (slice(None), 0)
+        assert inds["frequency"] == (slice(None),)
 
         inds = self.beam1.ind_to_dict((slice(1, None), 1))
-        assert inds["pointing"] == slice(1, None)
-        assert inds["frequency"] == 1
+        assert inds["pointing"] == (slice(None), slice(1, None))
+        assert inds["frequency"] == (1,)

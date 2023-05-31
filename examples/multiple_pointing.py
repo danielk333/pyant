@@ -21,10 +21,8 @@ print("These are the default values:")
 for key, val in beam.get_parameters(named=True).items():
     print(f"{key}: {val}")
 
-exit()
-
 k = np.array([[0, 0, 1.0], [0, 1, 1]]).T
-G = beam.gain(k[:, 0], vectorized_parameters=True)
+G = beam.gain(k[:, 0])
 
 print(f"Gain for {k[:,0]} without giving parameter index: {G}")
 

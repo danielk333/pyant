@@ -205,22 +205,31 @@ class Beam(ABC):
         """Convert a parameter index to a common
         {parameter name: parameter indexing} dict format.
         """
+        base_inds = {key: [slice(None)] * self.parameters[key].ndim for key in self._keys}
         if ind is None:
-            ind = {key: slice(None) for key in self._keys}
+            pass
         elif isinstance(ind, dict):
             for key in self._keys:
-                if key in ind:
+                if key not in ind:
                     continue
-                ind[key] = slice(None)
+                base_inds[key][self._parameter_axis[key]] = ind[key]
         else:
             if len(ind) != len(self._keys):
                 raise ValueError(
                     f"Not enough incidences ({len(ind)}) \
                     given to choose ({len(self._keys)}) parameters"
                 )
-            ind = {key: i for key, i in zip(self._keys, ind)}
+            for key, indexing in zip(self._keys, ind):
+                base_inds[key][self._parameter_axis[key]] = indexing
+        base_inds = {key: tuple(val) for key, val in base_inds.items()}
+        return base_inds
 
-        return ind
+    def _generate_gain_array(self, inds):
+        shape = []
+        for key in self._keys:
+            mock = np.arange(self.parameters[key].shape[self._parameter_axis[key]])
+            shape.append(mock[inds[key][self._parameter_axis[key]]].size)
+        return np.full(shape, np.nan, dtype=np.float64)
 
     def _check_degrees(self, azimuth, elevation, degrees):
         """Converts input azimuth and elevation to the correct angle units."""

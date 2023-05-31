@@ -31,8 +31,8 @@ class Airy(Beam):
     def __init__(self, azimuth, elevation, frequency, I0, radius, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
         self.I0 = I0
-        self.radius = radius
         self.register_parameter("radius")
+        self.fill_parameter("radius", radius)
 
     def copy(self):
         """Return a copy of the current instance."""
@@ -45,30 +45,21 @@ class Airy(Beam):
             degrees=self.degrees,
         )
 
-    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
-        pointing, frequency, radius = self.get_parameters(
-            ind, vectorized_parameters=vectorized_parameters, **kwargs
-        )
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        p = self.get_parameters(ind, named=True)
+        inds = self.ind_to_dict(ind)
+        G = self._generate_gain_array(inds)
 
-        lam = scipy.constants.c / frequency
-
-        theta = coordinates.vector_angle(pointing, k, degrees=False)
+        lam = scipy.constants.c / p["frequency"]
+        theta = coordinates.vector_angle(p["pointing"], k, degrees=False)
 
         k_n = 2.0 * np.pi / lam
-        alph = k_n * radius * np.sin(theta)
+        alph = np.outer(np.outer(k_n, p["radius"]), np.sin(theta))
         jn_val = scipy.special.jn(1, alph)
 
-        if len(k.shape) == 1 and not vectorized_parameters:
-            # lim_(alph->0) (J_1(alph))/alph = 1/2
-            if alph < 1e-9:
-                G = self.I0
-            else:
-                G = self.I0 * ((2.0 * jn_val / alph)) ** 2.0
-        else:
-            G = np.empty((k.shape[1],), dtype=k.dtype)
-            inds_ = alph < 1e-9
-            not_inds_ = np.logical_not(inds_)
-            G[inds_] = self.I0
-            G[not_inds_] = self.I0 * ((2.0 * jn_val[not_inds_] / alph[not_inds_])) ** 2.0
+        inds_ = alph < 1e-9
+        not_inds_ = np.logical_not(inds_)
+        G[inds_] = self.I0
+        G[not_inds_] = self.I0 * ((2.0 * jn_val[not_inds_] / alph[not_inds_])) ** 2.0
 
         return G
