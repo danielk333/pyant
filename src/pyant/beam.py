@@ -42,27 +42,41 @@ class Beam(ABC):
         else they are in radians.
     pointing : numpy.ndarray
         Cartesian vector in local coordinates describing pointing direction.
+
+    Notes
+    ------
+    Parameters
+        Parameters are stored and indexed as coordinate axis similar to how NetCDF
+        enforces the definition of matrix axis. By default, if the axis consist of
+        multiple points a matrix of gains will be generated for each evaluation of
+        the gain. If there are multiple input wave vectors into the gain evaluation
+        till will be appended at the end of the array as a new axis dimension.
+        One can also skip the evaluation of the entire matrix by supplying slices
+        of the parameter axis.
+
     """
 
     def __init__(self, azimuth, elevation, frequency, degrees=False, **kwargs):
         """Basic constructor."""
-        self.__parameters = []
-        self.__param_axis = []
-
-        if isinstance(frequency, list) or isinstance(frequency, tuple):
-            frequency = np.array(frequency, dtype=np.float64)
-
-        sph = Beam._azel_to_numpy(azimuth, elevation)
-
-        self.frequency = frequency
-        self._azimuth = sph[0, ...]
-        self._elevation = sph[1, ...]
+        self._keys = []
+        self._inds = {}
+        self._parameter_axis = {}
+        self.parameters = collections.OrderedDict()
         self.degrees = degrees
-
-        self.pointing = coordinates.sph_to_cart(sph, degrees=degrees)
 
         self.register_parameter("pointing", numpy_parameter_axis=1)
         self.register_parameter("frequency")
+
+        self.frequency = frequency
+        self.sph_point(azimuth, elevation)
+
+    @property
+    def pointing(self):
+        return self.parameters["pointing"]
+
+    @pointing.setter
+    def pointing(self, val):
+        self.fill_parameter("pointing", val)
 
     @property
     def azimuth(self):
@@ -86,54 +100,80 @@ class Beam(ABC):
         self._elevation = sph[1, ...]
         self.pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
 
-    def __get_len(self, pind):
-        obj = getattr(self, self.__parameters[pind])
+    @property
+    def frequency(self):
+        """The radar wavelength."""
+        return self.parameters["frequency"]
 
-        if isinstance(obj, np.ndarray):
-            if len(obj.shape) == 0:
-                return None
-            elif len(obj.shape) - 1 < self.__param_axis[pind]:
-                return None
-            else:
-                return obj.shape[self.__param_axis[pind]]
-        elif isinstance(obj, list) or isinstance(obj, tuple):
-            return len(obj)
+    @frequency.setter
+    def frequency(self, val):
+        self.fill_parameter("frequency", val)
+
+    @property
+    def wavelength(self):
+        """The radar wavelength."""
+        return scipy.constants.c / self.frequency
+
+    @wavelength.setter
+    def wavelength(self, val):
+        self.frequency = scipy.constants.c / val
+
+    def fill_parameter(self, key, data):
+        """Assign axis values to parameter"""
+        if isinstance(data, list) or isinstance(data, tuple):
+            data = np.array(data, dtype=np.float64)
+        if isinstance(data, np.ndarray):
+            self.parameters[key] = data
+        elif isinstance(self.parameters[key], np.ndarray):
+            self.parameters[key][:] = data
         else:
+            self.parameters[key] = data
+
+    def _get_parameter_len(self, key):
+        """Get the length of a parameter axis, `None` indicates scalar axis."""
+        obj = self.parameters[key]
+        if len(obj.shape) == 0:
             return None
+        elif len(obj.shape) - 1 < self._parameter_axis[key]:
+            return None
+        else:
+            return obj.shape[self._parameter_axis[key]]
 
     def register_parameter(self, name, numpy_parameter_axis=0):
         """Register parameter, it can then be indexed in gain calls."""
-        self.__parameters.append(name)
-        self.__param_axis.append(numpy_parameter_axis)
+        self._keys.append(name)
+        self._parameter_axis[name] = numpy_parameter_axis
+        self.parameters[name] = np.full((1,), np.nan, dtype=np.float64)
+        self._inds[name] = len(self._keys) - 1
 
     def unregister_parameter(self, name):
         """Unregister parameter, they can no longer be indexed in gain calls.
         Can be done for speed to reduce overhead of the gain call.
         """
-        pid = self.__parameters.index(name)
-        del self.__parameters[pid]
-        del self.__param_axis[pid]
+        pid = self._inds[name]
+        del self._keys[pid]
+        del self._parameter_axis[name]
+        del self.parameters[name]
+        del self._inds[name]
 
+    @property
     def named_shape(self):
         """Return the named shape of all variables. This can be overridden to
         extend the possible variables contained in an instance.
         """
-        kw = {
-            self.__parameters[pind]: self.__get_len(pind) for pind in range(len(self.__parameters))
-        }
-        return collections.OrderedDict(**kw)
+        return collections.OrderedDict([(key, self._get_parameter_len(key)) for key in self._keys])
 
     @property
     def shape(self):
         """The additional dimensions added to the output Gain."""
-        return tuple(self.__get_len(pind) for pind in range(len(self.__parameters)))
+        return tuple(self._get_parameter_len(key) for key in self._keys)
 
     @property
-    def parameters(self):
+    def keys(self):
         """Current list of parameters."""
-        return tuple(self.__parameters)
+        return tuple(self._keys)
 
-    def get_parameters(self, ind, named=False, vectorized_parameters=False, **kwargs):
+    def get_parameters(self, ind=None, named=False):
         """Get parameters for a specific configuration given by `ind`.
 
         Parameters
@@ -144,104 +184,40 @@ class Beam(ABC):
             parameter name and index or None for all parameters.
         named : bool
             Return parameters as a dict instead of a tuple.
-        vectorized_parameters : bool
-            Parameters can be vectors of
-            values, used to vectorize gain calculations
-            using arrays of parameters.
-        **kwargs : dict
-            Any keyword argument here is used as the
-            parameter here instead of the ones stored inside the Beam,
-            this can be used to call gain functions programmatically
-            without modifying the object.
 
         """
-        if len(self.__parameters) == 0:
-            return ()
-
-        # only parameter that has two names, handle special case
-        if "pointing" not in kwargs:
-            if "azimuth" in kwargs or "elevation" in kwargs:
-                if not ("azimuth" in kwargs and "elevation" in kwargs):
-                    raise ValueError(
-                        "If azimuth and elevation is used \
-                        instead of pointing both must be supplied."
-                    )
-                sph_ = Beam._azel_to_numpy(kwargs["azimuth"], kwargs["elevation"])
-                kwargs["pointing"] = coordinates.sph_to_cart(sph_, degrees=self.degrees)
-        else:
-            if "azimuth" in kwargs or "elevation" in kwargs:
-                raise ValueError(
-                    "Cannot give pointing vector \
-                    and angles simultaneously."
-                )
-
-        ind, named_shape = self.convert_ind(ind)
-
-        params = ()
-        for pind in range(len(self.__parameters)):
-            key = self.__parameters[pind]
-
-            if key in kwargs:
-                if key in ind:
-                    if ind[key] is not None:
-                        raise ValueError(
-                            "Cannot both supply keyword argument \
-                            and index for parameter"
-                        )
-                params = params + (kwargs[key],)
-                continue
-
-            obj = getattr(self, key)
-
-            if named_shape[key] is None:
-                if key in ind:
-                    if not (ind[key] is None or ind[key] == 0):
-                        raise ValueError(f'Cannot index scalar parameter "{key}"')
-                params = params + (obj,)
+        if len(self._keys) == 0:
+            if named:
+                return {}
             else:
-                if key not in ind:
-                    if named_shape[key] == 1:
-                        params = params + (obj[0],)
-                        continue
-                    elif vectorized_parameters:
-                        params = params + (obj,)
-                        continue
-                    else:
-                        raise ValueError("Not enough parameter values or indices given")
-                if isinstance(obj, np.ndarray):
-                    inds = [slice(None)] * obj.ndim
-                    inds[self.__param_axis[pind]] = ind[key]
-                    params = params + (obj[tuple(inds)],)
-                else:
-                    params = params + (obj[ind[key]],)
+                return ()
 
+        inds = self.ind_to_dict(ind)
         if named:
-            kw = {self.__parameters[pind]: params[pind] for pind in range(len(self.__parameters))}
-            params = collections.OrderedDict(**kw)
+            params = collections.OrderedDict(
+                {key: self.parameters[key][inds[key]].copy() for key in self._keys}
+            )
+        else:
+            params = list(self.parameters[key][inds[key]].copy() for key in self._keys)
         return params
 
-    def convert_ind(self, ind):
+    def ind_to_dict(self, ind):
         """Convert a parameter index to a common
-        {parameter namme: parameter index} dict format.
+        {parameter name: parameter indexing} dict format.
         """
-        shape = self.named_shape()
-        parameters = self.parameters
-
         if ind is None:
-            ind = {}
-        elif isinstance(ind, tuple) or isinstance(ind, list):
-            if len(ind) != len(parameters):
-                raise ValueError(
-                    f"Not enough incidences ({len(ind)}) \
-                    given to choose ({len(parameters)}) parameters"
-                )
-            ind = {key: i for key, i in zip(parameters, ind)}
+            ind = {key: slice(None, None, None) for key in self._keys}
         elif isinstance(ind, dict):
             pass
         else:
-            raise ValueError(f'Indexing of type "{type(ind)}" not supported')
+            if len(ind) != len(self._keys):
+                raise ValueError(
+                    f"Not enough incidences ({len(ind)}) \
+                    given to choose ({len(self._keys)}) parameters"
+                )
+            ind = {key: i for key, i in zip(self._keys, ind)}
 
-        return ind, shape
+        return ind
 
     def _check_degrees(self, azimuth, elevation, degrees):
         """Converts input azimuth and elevation to the correct angle units."""
@@ -295,15 +271,6 @@ class Beam(ABC):
         sph[2, ...] = 1.0
 
         return sph
-
-    @property
-    def wavelength(self):
-        """The radar wavelength."""
-        return scipy.constants.c / self.frequency
-
-    @wavelength.setter
-    def wavelength(self, val):
-        self.frequency = scipy.constants.c / val
 
     def copy(self):
         """Return a copy of the current instance."""
@@ -418,7 +385,7 @@ class Beam(ABC):
         return theta
 
     @abstractmethod
-    def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
+    def gain(self, k, ind=None, polarization=None, **kwargs):
         """Return the gain in the given direction. This method should be
         vectorized in the `k` variable.
 
@@ -451,16 +418,7 @@ class Beam(ABC):
         """
         pass
 
-    def sph_gain(
-        self,
-        azimuth,
-        elevation,
-        ind=None,
-        polarization=None,
-        degrees=None,
-        vectorized_parameters=False,
-        **kwargs
-    ):
+    def sph_gain(self, azimuth, elevation, ind=None, polarization=None, degrees=None, **kwargs):
         """Return the gain in the given direction.
 
         Parameters
@@ -491,6 +449,5 @@ class Beam(ABC):
             k,
             polarization=polarization,
             ind=ind,
-            vectorized_parameters=vectorized_parameters,
             **kwargs,
         )

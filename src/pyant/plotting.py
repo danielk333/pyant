@@ -58,7 +58,7 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, ax=None):
+def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, legends=None, ax=None):
     """Plot the gain of a list of beam patterns as a function of elevation at
     :math:`0^\circ` degrees azimuth.
 
@@ -83,17 +83,17 @@ def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, ax=N
 
     S = np.zeros((resolution, len(beams)))
     for b, beam in enumerate(beams):
-        for i, th in enumerate(theta):
-            k = coord.sph_to_cart(np.array([0.0, th, 1.0]), radians=False)
-            S[i, b] = beam.gain(k)
+        for ind, th in enumerate(theta):
+            k = coord.sph_to_cart(np.array([0.0, th, 1.0]), degrees=True)
+            S[ind, b] = beam.gain(k)
     for b in range(len(beams)):
-        ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha)
-    ax.legend()
-    bottom, top = plt.ylim()
-    plt.ylim((0, top))
+        lg = legends[b] if legends is not None else None
+        ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha, label=lg)
+    if legends is not None:
+        ax.legend()
+
     ax.set_xlabel("Zenith angle [deg]", fontsize=24)
-    plt.xticks(fontsize=17)
-    plt.yticks(fontsize=17)
+    ax.tick_params(axis="both", labelsize=17)
     if usetex:
         ax.set_ylabel("Gain $G$ [dB]", fontsize=24)
     else:
