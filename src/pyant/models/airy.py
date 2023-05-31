@@ -42,7 +42,7 @@ class Airy(Beam):
             frequency=copy.deepcopy(self.frequency),
             I0=copy.deepcopy(self.I0),
             radius=copy.deepcopy(self.radius),
-            radians=self.radians,
+            degrees=self.degrees,
         )
 
     def gain(self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs):
