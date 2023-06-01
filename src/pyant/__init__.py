@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-'''
+"""
 
-'''
+"""
 
 from .version import __version__
 
@@ -20,9 +20,14 @@ from .beams import Radars, Models
 
 # Functions
 from .beams import (
-    beam_of_radar, avalible_beams,
-    parameters_of_radar, avalible_radar_info,
+    beam_of_radar,
+    avalible_beams,
+    parameters_of_radar,
+    avalible_radar_info,
 )
 
 # Static
 from .beams import UNITS
+
+# Profiling
+from .profiling import profile, print_profile

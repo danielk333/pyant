@@ -202,7 +202,7 @@ def gain_heatmap(
         fig = None
 
     if isinstance(beam, Beam):
-        params = beam.get_parameters(ind, named=True, **kwargs)
+        params = beam.get_parameters(ind, named=True)
         pointing = params["pointing"]
     else:
         raise TypeError(f'Can only plot Beam, not "{type(beam)}"')

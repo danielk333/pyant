@@ -46,15 +46,43 @@ class Airy(Beam):
         )
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
-        p = self.get_parameters(ind, named=True)
-        inds = self.ind_to_dict(ind)
-        G = self._generate_gain_array(inds)
+        k_len = k.shape[1] if len(k.shape) == 2 else 0
+        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
 
-        lam = scipy.constants.c / p["frequency"]
-        theta = coordinates.vector_angle(p["pointing"], k, degrees=False)
+        params, G = self.get_parameters(ind, named=True, generate_array=True, extend_size=k_len)
+        bcast = self._get_broadcaster(named=True, extend_size=k_len)
+        # CHANGE ALL OF THIS: dont try to be too fancy, thats the problem
+        # 1. get size of parameters
+        # 2. repmat the parameters to the size of G
+        # 3. then just do calculations without broadcasting
+        # (ram should not be a problem here and its fast as well)
+        params = {key: np.array([x]) if len(x.shape) == 0 else x for key, x in params.items()}
+        if len(params["pointing"].shape) == 1:
+            params["pointing"].shape = (3, 1)
 
+        if k_len > 0:
+            p_len = params["pointing"].shape[1]
+            theta = np.empty((k_len, p_len), dtype=np.float64)
+            for ind in range(p_len):
+                theta[:, ind] = coordinates.vector_angle(
+                    params["pointing"][:, ind],
+                    k,
+                    degrees=False,
+                )
+        else:
+            theta = coordinates.vector_angle(params["pointing"], k, degrees=False)
+            if len(params["pointing"].shape) == 1:
+                theta = np.array([theta], dtype=np.float64)
+
+        lam = scipy.constants.c / params["frequency"]
         k_n = 2.0 * np.pi / lam
-        alph = np.outer(np.outer(k_n, p["radius"]), np.sin(theta))
+        alph = (
+            k_n[bcast["frequency"]]
+            * params["radius"][bcast["radius"]]
+            * np.sin(theta)[bcast["pointing"]]
+        )
+        if k_len > 0:
+            alph = np.transpose(alph, tuple(range(1, len(G.shape))) + (0,))
         jn_val = scipy.special.jn(1, alph)
 
         inds_ = alph < 1e-9

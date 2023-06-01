@@ -173,7 +173,7 @@ class Beam(ABC):
         """Current list of parameters."""
         return tuple(self._keys)
 
-    def get_parameters(self, ind=None, named=False):
+    def get_parameters(self, ind=None, named=False, generate_array=False, extend_size=0):
         """Get parameters for a specific configuration given by `ind`.
 
         Parameters
@@ -184,6 +184,9 @@ class Beam(ABC):
             parameter name and index or None for all parameters.
         named : bool
             Return parameters as a dict instead of a tuple.
+        generate_array : bool
+            Generate an empty array with the shape corresponding to the
+            fetched parameters.
 
         """
         if len(self._keys) == 0:
@@ -199,6 +202,10 @@ class Beam(ABC):
             )
         else:
             params = list(self.parameters[key][inds[key]].copy() for key in self._keys)
+
+        if generate_array:
+            field = self._generate_gain_array(inds, extend_size=extend_size)
+            return params, field
         return params
 
     def ind_to_dict(self, ind):
@@ -224,11 +231,34 @@ class Beam(ABC):
         base_inds = {key: tuple(val) for key, val in base_inds.items()}
         return base_inds
 
-    def _generate_gain_array(self, inds):
+    def _get_broadcaster(self, named=False, extend_size=0):
+        extend_size = 1 if extend_size > 0 else 0
+        akeys = ["input"] * extend_size
+        dims = len(self._keys) + len(akeys)
+        bcast = [
+            collections.deque([slice(None)] + [np.newaxis] * (dims - 1))
+            for ind in range(dims - extend_size)
+        ]
+        for ind, b in enumerate(bcast):
+            b.rotate(ind + extend_size)
+        if extend_size > 0:
+            # place pointing and input together
+            bcast[0][0] = slice(None)
+        if named:
+            return {key: tuple(x) for key, x in zip(self._keys + akeys, bcast)}
+        else:
+            return [tuple(x) for x in bcast]
+
+    def _generate_gain_array(self, inds, extend_size=0):
+        """Generate an array that corresponds to the dimensions of the indexing of the parameters.
+        Currently brute-forces it and tries not to be clever but stable and slow.
+        """
         shape = []
         for key in self._keys:
             mock = np.arange(self.parameters[key].shape[self._parameter_axis[key]])
             shape.append(mock[inds[key][self._parameter_axis[key]]].size)
+        if extend_size > 0:
+            shape += (extend_size,)
         return np.full(shape, np.nan, dtype=np.float64)
 
     def _check_degrees(self, azimuth, elevation, degrees):

@@ -22,18 +22,22 @@ for key, val in beam.get_parameters(named=True).items():
     print(f"{key}: {val}")
 
 k = np.array([[0, 0, 1.0], [0, 1, 1]]).T
-G = beam.gain(k[:, 0])
 
-print(f"Gain for {k[:,0]} without giving parameter index: {G}")
+G = beam.gain(k[:, 0])
+print(f"Gain for {k[:,0]} without giving parameter index: \n{G}")
+
+G = beam.gain(k)
+print(f"Gain for {k} without giving parameter index: \n{G}")
 
 for pi in range(len(beam.azimuth)):
     print(
-        f'Gain for {k[:,0]} and pointing {pi} (freq = 0 by default): \
-        {beam.gain(k[:,0], ind={"pointing":pi})}'
+        f'Gain for {k[:,0]} and pointing {pi}: \
+        \n{beam.gain(k[:,0], ind={"pointing":pi})}'
     )
-print(f'Gain for {k} and freq = 1: {beam.gain(k, ind={"frequency":1})}')
+print(f'Gain for {k} and freq = 1: {beam.gain(k, ind={"frequency": 1})}')
 
 fig, axes = plt.subplots(3, 2, figsize=(10, 6), dpi=80)
+
 for i in range(beam.shape[0]):
     for j in range(beam.shape[1]):
         pyant.plotting.gain_heatmap(
@@ -49,4 +53,4 @@ for i in range(beam.shape[0]):
         pstr = " ".join([f"{x:.2e}" for x in beam.pointing[:, i]])
         axes[i, j].set_title(f"p: {pstr} | f:{beam.frequency[j]}")
 
-pyant.plotting.show()
+plt.show()

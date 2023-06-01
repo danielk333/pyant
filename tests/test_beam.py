@@ -82,6 +82,16 @@ class TestBeam(unittest.TestCase):
         nt.assert_array_almost_equal(data[0], self.k[:, 0])
         nt.assert_almost_equal(data[1], self.data["frequency"][0])
 
+    def test_get_parameters_gen_array(self):
+        data, arr = self.beam2.get_parameters(ind=None, generate_array=True)
+        nt.assert_array_almost_equal(data[0], self.k)
+        assert arr.shape == (3, 2, 1)
+        _, arr = self.beam2.get_parameters(
+            ind=(slice(1, None), 0, slice(None)),
+            generate_array=True,
+        )
+        assert arr.shape == (2, 1, 1)
+
     def test_set_parameters_property(self):
         f = np.array([2.0])
         self.beam1.frequency = f
