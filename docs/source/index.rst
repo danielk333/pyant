@@ -32,7 +32,6 @@ Tutorials
    :maxdepth: 2
 
    notebooks/getting_started
-   notebooks/gain_heatmap_movie
 
 
 Examples
