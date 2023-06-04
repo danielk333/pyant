@@ -169,11 +169,10 @@ def gain_heatmap(
     min_elevation=0.0,
     levels=20,
     ax=None,
-    vectorized=True,
     ind=None,
-    usetex=False,
     label=None,
     centered=True,
+    cmap=None,
     **kwargs,
 ):
     """Creates a heatmap of the beam-patterns as a function of azimuth and
@@ -188,12 +187,8 @@ def gain_heatmap(
         is from this number to :math:`90^\circ`. This number defines the half
         the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     :param int levels: Number of levels in the contour plot.
-    :param bool vectorized: Use vectorized gain functionality to calculate gain-map.
     :return: matplotlib figure handle, axis and QuadMesh instance
     """
-
-    # set TeX interperter
-    plt.rc("text", usetex=usetex)
 
     if ax is None:
         fig = plt.figure()  # figsize=(15,7))
@@ -202,7 +197,7 @@ def gain_heatmap(
         fig = None
 
     if isinstance(beam, Beam):
-        params = beam.get_parameters(ind, named=True)
+        params, shape = beam.get_parameters(ind, named=True)
         pointing = params["pointing"]
     else:
         raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
@@ -220,94 +215,53 @@ def gain_heatmap(
 
     K = np.zeros((resolution, resolution, 2))
 
-    # TODO: Refactor evaluation of function on a hemispherical domain to a function
-    if vectorized:
-        K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-        size = resolution**2
-        k = np.empty((3, size), dtype=np.float64)
-        k[0, :] = K[:, :, 0].reshape(1, size)
-        k[1, :] = K[:, :, 1].reshape(1, size)
+    # TODO: Refactor evaluation of function on a hemispherical domain to a function"
+    K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
+    size = resolution**2
+    k = np.empty((3, size), dtype=np.float64)
+    k[0, :] = K[:, :, 0].reshape(1, size)
+    k[1, :] = K[:, :, 1].reshape(1, size)
 
-        # circles in k space, centered on vertical and pointing, respectively
-        z2 = k[0, :] ** 2 + k[1, :] ** 2
-        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
+    # circles in k space, centered on vertical and pointing, respectively
+    z2 = k[0, :] ** 2 + k[1, :] ** 2
+    z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
 
-        if centered:
-            inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
-        else:
-            inds_ = z2 < cmin**2
-        not_inds_ = np.logical_not(inds_)
-
-        k[2, inds_] = np.sqrt(1.0 - z2[inds_])
-        k[2, not_inds_] = 0
-        S = np.ones((1, size)) * np.nan
-        if isinstance(beam, Beam):
-            S[0, inds_] = beam.gain(k[:, inds_], polarization=polarization, ind=ind)
-        elif isinstance(beam, list):
-            S[0, inds_] = functools.reduce(
-                operator.add,
-                [b.gain(k[:, inds_], polarization=polarization, ind=ind) for b in beam],
-            )
-        else:
-            raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
-
-        S = S.reshape(resolution, resolution)
-
+    if centered:
+        inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
     else:
-        S = np.ones((resolution, resolution))
-        for i, x in enumerate(kx):
-            for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
-                z2 = x**2 + y**2
-                if centered:
-                    if z2_c >= np.cos(min_elevation * np.pi / 180.0) ** 2 or z2 > 1.0:
-                        continue
-                else:
-                    if z2 >= np.cos(min_elevation * np.pi / 180.0) ** 2:
-                        continue
+        inds_ = z2 < cmin**2
+    not_inds_ = np.logical_not(inds_)
 
-                k = np.array([x, y, np.sqrt(1.0 - z2)])
-                if isinstance(beam, Beam):
-                    S[i, j] = beam.gain(k, polarization=polarization, ind=ind)
-                elif isinstance(beam, list):
-                    S[i, j] = functools.reduce(
-                        operator.add,
-                        [b.gain(k, polarization=polarization, ind=ind) for b in beam],
-                    )
-                else:
-                    raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
+    k[2, inds_] = np.sqrt(1.0 - z2[inds_])
+    k[2, not_inds_] = 0
+    S = np.ones((1, size)) * np.nan
+    if isinstance(beam, Beam):
+        S[0, inds_] = beam.gain(k[:, inds_], polarization=polarization, ind=ind).flatten()
+    elif isinstance(beam, list):
+        S[0, inds_] = functools.reduce(
+            operator.add,
+            [b.gain(k[:, inds_], polarization=polarization, ind=ind) for b in beam],
+        ).flatten()
+    else:
+        raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
 
-                K[i, j, 0] = x
-                K[i, j, 1] = y
+    S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
     SdB = np.log10(S) * 10.0
     np.seterr(**old)
 
-    if 0:
-        levels = np.arange(0, np.nanmax(SdB), 5)
-        conf = ax.contourf(
-            K[:, :, 0],
-            K[:, :, 1],
-            SdB,
-            cmap=cm.plasma,
-            vmin=0,
-            vmax=np.nanmax(SdB),
-            levels=levels,
-        )
-    else:
-        # Recipe at
-        # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
-        from matplotlib.colors import BoundaryNorm
-        from matplotlib.ticker import MaxNLocator
+    # Recipe at
+    # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
+    from matplotlib.colors import BoundaryNorm
+    from matplotlib.ticker import MaxNLocator
 
-        bins = MaxNLocator(nbins=levels).tick_values(0, np.nanmax(SdB))
+    bins = MaxNLocator(nbins=levels).tick_values(0, np.nanmax(SdB))
+    if cmap is None:
         cmap = plt.get_cmap("plasma")
-        norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
+    norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
 
-        conf = ax.pcolormesh(
-            K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm
-        )  # , vmin=0, vmax=np.nanmax(SdB)
+    conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
     ax.axis("scaled")
     ax.set_clip_box([[-1, -1], [1, 1]])
@@ -315,12 +269,8 @@ def gain_heatmap(
     add_circle(ax, [0, 0], 1.0, "--", linewidth=1, color="#c0c0c0")
     add_circle(ax, pointing[:2], cmin, "-.", linewidth=1, color="#c0c0c0")
 
-    if usetex:
-        ax.set_xlabel("$k_x$ [1]")
-        ax.set_ylabel("$k_y$ [1]")
-    else:
-        ax.set_xlabel("kx [1]")
-        ax.set_ylabel("ky [1]")
+    ax.set_xlabel("kx [1]")
+    ax.set_ylabel("ky [1]")
 
     plt.xticks()
     plt.yticks()

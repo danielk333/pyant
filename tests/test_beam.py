@@ -65,32 +65,66 @@ class TestBeam(unittest.TestCase):
         )
 
     def test_get_parameters(self):
-        data = self.beam1.get_parameters()
+        params, shape = self.beam1.get_parameters()
         nt.assert_array_almost_equal(
             self.data["frequency"],
-            data[self.beam1._inds["frequency"]],
+            params[self.beam1._inds["frequency"]],
         )
 
-        data = self.beam2.get_parameters()
+        params, shape = self.beam2.get_parameters()
         nt.assert_array_almost_equal(
             self.data["radius"],
-            data[self.beam2._inds["radius"]],
+            params[self.beam2._inds["radius"]],
         )
 
     def test_get_parameters_ind(self):
-        data = self.beam1.get_parameters(ind=(0, 0))
-        nt.assert_array_almost_equal(data[0], self.k[:, 0])
-        nt.assert_almost_equal(data[1], self.data["frequency"][0])
+        params, shape = self.beam1.get_parameters(ind=(0, 0))
+        nt.assert_array_almost_equal(params[0], self.k[:, 0])
+        nt.assert_almost_equal(params[1], self.data["frequency"][0])
 
-    def test_get_parameters_gen_array(self):
-        data, arr = self.beam2.get_parameters(ind=None, generate_array=True)
-        nt.assert_array_almost_equal(data[0], self.k)
-        assert arr.shape == (3, 2, 1)
-        _, arr = self.beam2.get_parameters(
-            ind=(slice(1, None), 0, slice(None)),
-            generate_array=True,
-        )
-        assert arr.shape == (2, 1, 1)
+        params, shape = self.beam1.get_parameters(ind=(0, 0), named=True)
+        nt.assert_array_almost_equal(params["pointing"], self.k[:, 0])
+        nt.assert_almost_equal(params["frequency"], self.data["frequency"][0])
+
+    def test_broadcast_params(self):
+        base_params, shape = self.beam1.get_parameters(named=True)
+        with self.assertRaises(AssertionError):
+            params, G = self.beam1.broadcast_params(base_params, shape, 0)
+        base_params, shape = self.beam1.get_parameters(ind=(slice(None), 0), named=True)
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 0)
+        assert G.shape == (len(self.data["azimuth"]),)
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 10)
+        assert G.shape == (10, len(self.data["azimuth"]))
+
+        base_params, shape = self.beam1.get_parameters(ind=(0, 0), named=True)
+        params, G = self.beam1.broadcast_params(base_params, shape, 0)
+        assert len(G.shape) == 0
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 10)
+        assert G.shape == (10,)
+
+        base_params, shape = self.beam1.get_parameters(ind=(0, slice(None)), named=True)
+        params, G = self.beam1.broadcast_params(base_params, shape, 0)
+        assert G.shape == (len(self.data["frequency"]),)
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 10)
+        assert G.shape == (10, len(self.data["frequency"]))
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 0)
+        for key in params:
+            if key == "pointing":
+                assert params[key].shape == (3,)
+            else:
+                assert params[key].shape == G.shape
+
+        params, G = self.beam1.broadcast_params(base_params, shape, 10)
+        for key in params:
+            if key == "pointing":
+                assert params[key].shape == (3,)
+            else:
+                assert params[key].shape == G.shape
 
     def test_set_parameters_property(self):
         f = np.array([2.0])

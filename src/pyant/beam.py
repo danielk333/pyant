@@ -133,9 +133,9 @@ class Beam(ABC):
         """Get the length of a parameter axis, `None` indicates scalar axis."""
         obj = self.parameters[key]
         if len(obj.shape) == 0:
-            return None
+            return 1
         elif len(obj.shape) - 1 < self._parameter_axis[key]:
-            return None
+            return 1
         else:
             return obj.shape[self._parameter_axis[key]]
 
@@ -173,7 +173,7 @@ class Beam(ABC):
         """Current list of parameters."""
         return tuple(self._keys)
 
-    def get_parameters(self, ind=None, named=False, generate_array=False, extend_size=0):
+    def get_parameters(self, ind=None, named=False, max_vectors=None):
         """Get parameters for a specific configuration given by `ind`.
 
         Parameters
@@ -184,9 +184,8 @@ class Beam(ABC):
             parameter name and index or None for all parameters.
         named : bool
             Return parameters as a dict instead of a tuple.
-        generate_array : bool
-            Generate an empty array with the shape corresponding to the
-            fetched parameters.
+        max_vectors : (int, None)
+            Maximum number of parameters that are allowed to be vectors.
 
         """
         if len(self._keys) == 0:
@@ -200,13 +199,62 @@ class Beam(ABC):
             params = collections.OrderedDict(
                 {key: self.parameters[key][inds[key]].copy() for key in self._keys}
             )
+            shape = {
+                key: x.shape[self._parameter_axis[key]]
+                if len(x.shape) > self._parameter_axis[key]
+                else 0
+                for key, x in params.items()
+            }
+            vector_cnt = sum(1 for x in shape.values() if x > 1)
         else:
             params = list(self.parameters[key][inds[key]].copy() for key in self._keys)
+            shape = (
+                x.shape[self._parameter_axis[key]]
+                if len(x.shape) > self._parameter_axis[key]
+                else 0
+                for key, x in zip(self._keys, params)
+            )
+            vector_cnt = sum(1 for x in shape if x > 1)
 
-        if generate_array:
-            field = self._generate_gain_array(inds, extend_size=extend_size)
-            return params, field
-        return params
+        if max_vectors is not None:
+            assert vector_cnt <= max_vectors, "Too many vector valued parameters"
+
+        return params, shape
+
+    def broadcast_params(self, params, shape, input_k_len):
+        """Broadcast the input parameters to the output shape taking the input wave
+        vectorization length into account.
+
+        Note
+        ----
+        Input params and shape
+            This function assumes params and shape was generated using the `named=True` option.
+        """
+        vector_cnt = sum(1 for x in shape.values() if x > 1)
+        max_shape = max(shape.values())
+        assert vector_cnt <= 1, "Too many vector valued parameters to broadcast"
+
+        gain_shape = tuple(x for x in (input_k_len, max_shape) if x > 0)
+        g_max = len(gain_shape)
+        if g_max == 0:
+            gain_array = np.float64(np.nan)
+        else:
+            gain_array = np.full(gain_shape, np.nan, dtype=np.float64)
+        expanded_params = {}
+        for key in params:
+            if key == "pointing":
+                expanded_params[key] = params[key].copy()
+                continue
+
+            if g_max == 0:
+                ext_param = params[key]
+            elif shape[key] <= 1:
+                ext_param = np.full_like(gain_array, params[key])
+            else:
+                ext_param = np.broadcast_to(params[key], gain_array.shape).copy()
+            expanded_params[key] = ext_param
+
+        return expanded_params, gain_array
 
     def ind_to_dict(self, ind):
         """Convert a parameter index to a common
@@ -230,36 +278,6 @@ class Beam(ABC):
                 base_inds[key][self._parameter_axis[key]] = indexing
         base_inds = {key: tuple(val) for key, val in base_inds.items()}
         return base_inds
-
-    def _get_broadcaster(self, named=False, extend_size=0):
-        extend_size = 1 if extend_size > 0 else 0
-        akeys = ["input"] * extend_size
-        dims = len(self._keys) + len(akeys)
-        bcast = [
-            collections.deque([slice(None)] + [np.newaxis] * (dims - 1))
-            for ind in range(dims - extend_size)
-        ]
-        for ind, b in enumerate(bcast):
-            b.rotate(ind + extend_size)
-        if extend_size > 0:
-            # place pointing and input together
-            bcast[0][0] = slice(None)
-        if named:
-            return {key: tuple(x) for key, x in zip(self._keys + akeys, bcast)}
-        else:
-            return [tuple(x) for x in bcast]
-
-    def _generate_gain_array(self, inds, extend_size=0):
-        """Generate an array that corresponds to the dimensions of the indexing of the parameters.
-        Currently brute-forces it and tries not to be clever but stable and slow.
-        """
-        shape = []
-        for key in self._keys:
-            mock = np.arange(self.parameters[key].shape[self._parameter_axis[key]])
-            shape.append(mock[inds[key][self._parameter_axis[key]]].size)
-        if extend_size > 0:
-            shape += (extend_size,)
-        return np.full(shape, np.nan, dtype=np.float64)
 
     def _check_degrees(self, azimuth, elevation, degrees):
         """Converts input azimuth and elevation to the correct angle units."""
@@ -341,7 +359,6 @@ class Beam(ABC):
         """
         azimuth, elevation = self._check_degrees(azimuth, elevation, degrees)
         sph = Beam._azel_to_numpy(azimuth, elevation)
-
         self._azimuth = azimuth
         self._elevation = elevation
         self.pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
