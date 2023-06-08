@@ -225,8 +225,8 @@ class Beam(ABC):
         """Broadcast the input parameters to the output shape taking the input wave
         vectorization length into account.
 
-        Note
-        ----
+        Notes
+        -----
         Input params and shape
             This function assumes params and shape was generated using the `named=True` option.
         """
