@@ -41,6 +41,9 @@ beam.sph_gain(
 stats, total2 = pyant.get_profile()
 pyant.profile_stop(clear=True)
 
+# Uncomment this to save and visualize in callgrind
+# stats.save("callgrind.example", type="callgrind")
+
 time_g2 = next(x for x in stats if x.name == "Airy.gain")
 
 print("\n" * 2 + "USING VECTORIZED INPUTS")

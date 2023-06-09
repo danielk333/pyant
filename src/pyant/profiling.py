@@ -39,7 +39,7 @@ def profile():
 
 
 @check_yappi
-def get_profile(modules=None, save=False):
+def get_profile(modules=None):
     if modules is None:
         modules = ["pyant"]
     stats = yappi.get_func_stats(
@@ -48,9 +48,6 @@ def get_profile(modules=None, save=False):
         ),
     )
     stats = stats.sort("ttot", "desc")
-
-    if save:
-        stats.save(save)
 
     total = time.time() - START_TIME
     return stats, total
