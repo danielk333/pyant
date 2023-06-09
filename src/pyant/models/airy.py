@@ -41,7 +41,7 @@ class Airy(Beam):
             elevation=copy.deepcopy(self.elevation),
             frequency=copy.deepcopy(self.frequency),
             I0=copy.deepcopy(self.I0),
-            radius=copy.deepcopy(self.radius),
+            radius=copy.deepcopy(self.parameters["radius"]),
             degrees=self.degrees,
         )
 
@@ -73,16 +73,16 @@ class Airy(Beam):
         k_n = 2.0 * np.pi / lam
         alph = k_n * params["radius"] * np.sin(theta)
         jn_val = scipy.special.jn(1, alph)
-        inds_ = alph < 1e-9
+        inds = alph < 1e-9
 
         if len(G.shape) == 0:
-            if inds_:
+            if inds:
                 G = self.I0
             else:
                 G = self.I0 * ((2.0 * jn_val / alph)) ** 2.0
         else:
-            not_inds_ = np.logical_not(inds_)
-            G[inds_] = self.I0
-            G[not_inds_] = self.I0 * ((2.0 * jn_val[not_inds_] / alph[not_inds_])) ** 2.0
+            not_inds = np.logical_not(inds)
+            G[inds] = self.I0
+            G[not_inds] = self.I0 * ((2.0 * jn_val[not_inds] / alph[not_inds])) ** 2.0
 
         return G
