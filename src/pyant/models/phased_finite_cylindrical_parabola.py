@@ -6,12 +6,11 @@ import numpy as np
 import scipy.constants
 import scipy.special
 
-from .. import coordinates
 from .finite_cylindrical_parabola import FiniteCylindricalParabola
 
 
 class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
-    '''A finite Cylindrical Parabola with a phased finite receiver line feed
+    """A finite Cylindrical Parabola with a phased finite receiver line feed
         in the longitudinal direction, i.e. in the direction of the cylinder axis.
 
     Parameters
@@ -22,6 +21,8 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         Reflector height (perpendicular/elevation dimension) in meters
     depth : float
         Perpendicular distance from feed to reflector in meters
+    phase_steering : float
+        Phase steering angle applied to the feed bridge of antennas
     aperture : float
         Optional, Length of the feed in meters.
         Default is same as reflector width
@@ -29,6 +30,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         Peak gain (linear scale) in the pointing direction.
         Default use approximate analytical integral of 2D Fourier
         transform of rectangle.
+
 
     Notes
     ------
@@ -38,7 +40,7 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         integral with analytic form.
 
 
-    '''
+    """
 
     def __init__(
         self,
@@ -54,16 +56,26 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         **kwargs,
     ):
         super().__init__(
-            azimuth, elevation, frequency, width, height, aperture, I0=I0, **kwargs
+            azimuth, elevation, frequency, width, height, aperture=aperture, I0=I0, **kwargs
         )
-        self.depth = depth
-        self.phase_steering = phase_steering
-        self.depth = depth
-
+        self.register_parameter("depth")
         self.register_parameter("phase_steering")
 
+        self.fill_parameter("depth", depth)
+        self.fill_parameter("phase_steering", phase_steering)
+
+    @property
+    def depth(self):
+        """Perpendicular distance from feed to reflector in meters."""
+        return self.parameters["depth"]
+
+    @property
+    def phase_steering(self):
+        """Phase steering angle applied to the feed bridge of antennas"""
+        return self.parameters["phase_steering"]
+
     def copy(self):
-        '''Return a copy of the current instance.'''
+        """Return a copy of the current instance."""
         return PhasedFiniteCylindricalParabola(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
@@ -77,83 +89,54 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             radians=self.radians,
         )
 
-    def gain(
-        self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs
-    ):
-        if vectorized_parameters:
-            if "frequency" in kwargs:
-                raise NotImplementedError(
-                    "Cannot vectorize pointing yet, self.local_to_pointing"
-                    "rotation matrices not vectorized."
-                )
+    def gain_tf(self, theta, phi, params, degrees=None):
+        """Calculate gain in the frame rotated to the aperture plane.
 
-        params = self.get_parameters(
-            ind, named=True, vectorized_parameters=vectorized_parameters, **kwargs
-        )
+        Parameters
+        ----------
+        theta : numpy.ndarray
+            The below-axis angle. When elevation < 90, positive theta tends
+            towards the horizon, and negative theta towards zenith.
+        phi : numpy.ndarray
+            The off-axis angle. When looking out along boresight with the
+            azimuth direction straight ahead, positive phi is to your right,
+            negative phi to your left.
+        params : dict
+            The parameters to use for gain calculation.
 
-        sph = coordinates.cart_to_sph(params["pointing"], radians=self.radians)
+        """
+        if degrees is None:
+            degrees = self.degrees
 
-        theta, phi = self.local_to_pointing(k, sph[0], sph[1])
-
-        return self.gain_tf(
-            theta,
-            phi,
-            called_from_gain=True,
-            vectorized_parameters=vectorized_parameters,
-            **params,
-        )
-
-    # interface method `gain()`, inherited from super, defers to `gain_tf(), below`
-    def gain_tf(self, theta, phi, ind=None, vectorized_parameters=False, **kwargs):
-        '''
-        theta is below-axis angle (radians).
-        When elevation < 90, positive theta tends towards the horizon,
-        and negative theta towards zenith.
-
-        phi is off-axis angle (radians).
-        When looking out along boresight with the azimuth direction straight
-        ahead, positive phi is to your right, negative phi to your left.
-        '''
-
-        # small efficiency fix to skip unnecessary calls of get_parameters
-        if "called_from_gain" in kwargs:
-            frequency = kwargs["frequency"]
-            phase_steering = kwargs["phase_steering"]
-        else:
-            _, frequency, phase_steering = self.get_parameters(
-                ind, vectorized_parameters=vectorized_parameters, **kwargs
-            )
-
-        wavelength = scipy.constants.c / frequency
-
-        if not self.radians:
-            phase_steering = np.radians(phase_steering)
+        wavelength = scipy.constants.c / params["frequency"]
+        if degrees:
             theta = np.radians(theta)
             phi = np.radians(phi)
 
+        if self.degrees:
+            phase_steering = np.radians(params["phase_steering"])
+        else:
+            phase_steering = params["phase_steering"]
+
         # Compute effective area loss due to spillover when phase-steering past edge of reflector.
-        w_loss = np.clip(
-            self.depth * np.tan(np.abs(phase_steering))
-            - (self.width - self.aperture) / 2,
-            0,
-            None,
+        A = (
+            params["depth"] * np.tan(np.abs(phase_steering))
+            - (params["width"] - params["aperture"]) / 2
         )
+        w_loss = np.clip(A, 0, None)
 
         # This implies geometric optics for the feed-to-reflector path
-        w_eff = np.clip(self.aperture - w_loss, 0, None)
-        height = self.height
+        w_eff = np.clip(params["aperture"] - w_loss, 0, None)
 
         if self.I0 is None:
-            I0 = self.normalize(w_eff, height, wavelength)
+            I0 = self.normalize(w_eff, params["height"], wavelength)
         else:
             I0 = self.I0
 
         # y = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # x = transverse angle, 0 = boresight, radians
-        x = (
-            w_eff / wavelength * (np.sin(phi) - phase_steering)
-        )  # sinc component (transverse)
-        y = height / wavelength * np.sin(theta)  # sinc component (longitudinal)
+        x = w_eff / wavelength * (np.sin(phi) - phase_steering)  # sinc component (transverse)
+        y = params["height"] / wavelength * np.sin(theta)  # sinc component (longitudinal)
         G = (
             np.sinc(x) * np.sinc(y) * (w_eff / self.aperture)
         )  # sinc fn. (= field), NB: np.sinc includes pi !!
@@ -166,8 +149,8 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
         return G * I0
 
-    def _nominal_phase_steering(self, phi):
-        '''
+    def _nominal_phase_steering(self, phi, degrees=None):
+        """
         For a given desired pointing `phi`, compute the nominal phase
         steering angle that gives a pattern that peaks at `phi`.
 
@@ -186,18 +169,16 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
         This also means that steering past phi = 1, or 57.3°, is not possible.
 
-        '''
-
-        if not self.radians:
+        """
+        if degrees is None:
+            degrees = self.degrees
+        if degrees:
             phi = np.radians(phi)
-
-        assert np.all(
-            np.abs(phi) <= np.pi / 2
-        ), f"cannot steer past the horizon {np.abs(phi)}"
+        assert np.all(np.abs(phi) <= np.pi / 2), f"cannot steer past the horizon {np.abs(phi)}"
 
         phi0 = np.sin(phi)
 
-        if not self.radians:
+        if degrees:
             phi0 = np.degrees(phi0)
 
         return phi0
