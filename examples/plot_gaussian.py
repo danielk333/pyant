@@ -1,8 +1,9 @@
-'''
+"""
 Gaussian planar array gain
 ===========================
-'''
+"""
 
+import matplotlib.pyplot as plt
 import pyant
 
 beam = pyant.models.Gaussian(
@@ -11,10 +12,10 @@ beam = pyant.models.Gaussian(
     frequency=46.5e6,
     I0=10**4.81,
     radius=100.0,
-    normal_azimuth = 0,
-    normal_elevation = 90.0,
+    normal_azimuth=0,
+    normal_elevation=90.0,
+    degrees=True,
 )
 
-
 pyant.plotting.gain_heatmap(beam, resolution=300, min_elevation=80.0)
-pyant.plotting.show()
+plt.show()
