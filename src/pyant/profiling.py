@@ -33,7 +33,7 @@ def check_yappi(func):
 @check_yappi
 def profile():
     global START_TIME
-    START_TIME = time.process_time()
+    START_TIME = time.time()
     yappi.set_clock_type("cpu")
     yappi.start()
 
@@ -52,7 +52,7 @@ def get_profile(modules=None, save=False):
     if save:
         stats.save(save)
 
-    total = time.process_time() - START_TIME
+    total = time.time() - START_TIME
     return stats, total
 
 

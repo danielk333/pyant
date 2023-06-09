@@ -25,7 +25,10 @@ for ind in range(num):
 stats, total1 = pyant.get_profile()
 pyant.profile_stop(clear=True)
 
-print(f"Total time = {total1:.2f} [s]")
+# Get the stats for only the gain method
+time_g1 = next(x for x in stats if x.name == "Airy.gain")
+
+print(f"Total time = {total1:.4f} [s]")
 pyant.print_profile(stats, total=total1)
 
 pyant.profile()
@@ -38,8 +41,12 @@ beam.sph_gain(
 stats, total2 = pyant.get_profile()
 pyant.profile_stop(clear=True)
 
-print("\n" * 2)
-print(f"Total time = {total2:.2f} [s]")
+time_g2 = next(x for x in stats if x.name == "Airy.gain")
+
+print("\n" * 2 + "USING VECTORIZED INPUTS")
+print(f"Total time = {total2:.4f} [s]")
 pyant.print_profile(stats, total=total2)
 
-print(f"Speedup = {total1/total2}")
+print("\n")
+print(f"Total time speedup = {total1/total2}")
+print(f"Airy.gain speedup = {time_g1.ttot/time_g2.ttot}")
