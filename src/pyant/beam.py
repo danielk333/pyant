@@ -76,7 +76,10 @@ class Beam(ABC):
 
     @pointing.setter
     def pointing(self, val):
+        sph = coordinates.cart_to_sph(val, degrees=self.degrees)
         self.fill_parameter("pointing", val)
+        self._azimuth = sph[0, ...]
+        self._elevation = sph[1, ...]
 
     @property
     def azimuth(self):
@@ -87,7 +90,8 @@ class Beam(ABC):
     def azimuth(self, val):
         sph = Beam._azel_to_numpy(val, self._elevation)
         self._azimuth = sph[0, ...]
-        self.pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        self.fill_parameter("pointing", pointing)
 
     @property
     def elevation(self):
@@ -98,7 +102,8 @@ class Beam(ABC):
     def elevation(self, val):
         sph = Beam._azel_to_numpy(self._azimuth, val)
         self._elevation = sph[1, ...]
-        self.pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        self.fill_parameter("pointing", pointing)
 
     @property
     def frequency(self):
@@ -359,9 +364,10 @@ class Beam(ABC):
         """
         azimuth, elevation = self._check_degrees(azimuth, elevation, degrees)
         sph = Beam._azel_to_numpy(azimuth, elevation)
-        self._azimuth = azimuth
-        self._elevation = elevation
-        self.pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        self._azimuth = sph[0, ...]
+        self._elevation = sph[1, ...]
+        pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        self.fill_parameter("pointing", pointing)
 
     def point(self, k):
         """Point beam in local cartesian direction.
@@ -373,12 +379,6 @@ class Beam(ABC):
 
         """
         self.pointing = k / np.linalg.norm(k, axis=0)
-        sph = coordinates.cart_to_sph(
-            self.pointing,
-            degrees=self.degrees,
-        )
-        self._azimuth = sph[0, ...]
-        self._elevation = sph[1, ...]
 
     def sph_angle(self, azimuth, elevation, degrees=None):
         """Get angle between azimuth and elevation and pointing direction.
@@ -428,18 +428,18 @@ class Beam(ABC):
         if degrees is None:
             degrees = self.degrees
 
-        if len(self.pointing.shape) > 1:
-            if len(k.shape) > 1:
-                theta = np.empty((k.shape[1], self.pointing.shape[1]), dtype=k.dtype)
-            else:
-                theta = np.empty((self.pointing.shape[1],), dtype=k.dtype)
+        pt = self.pointing
 
-            for ind in range(self.pointing.shape[1]):
-                theta[..., ind] = coordinates.vector_angle(
-                    self.pointing[ind, :], k, degrees=degrees
-                )
+        if len(pt.shape) > 1:
+            if len(k.shape) > 1:
+                theta = np.empty((k.shape[1], pt.shape[1]), dtype=k.dtype)
+            else:
+                theta = np.empty((pt.shape[1],), dtype=k.dtype)
+
+            for ind in range(pt.shape[1]):
+                theta[..., ind] = coordinates.vector_angle(pt[ind, :], k, degrees=degrees)
         else:
-            theta = coordinates.vector_angle(self.pointing, k, degrees=degrees)
+            theta = coordinates.vector_angle(pt, k, degrees=degrees)
 
         return theta
 
