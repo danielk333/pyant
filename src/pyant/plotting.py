@@ -2,23 +2,19 @@
 
 """Useful coordinate related functions.
 """
-
-from .beam import Beam
-from . import coordinates as coord
+import functools
+import operator
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib import animation
 from matplotlib import cm
+from matplotlib.colors import BoundaryNorm
+from matplotlib.ticker import MaxNLocator
 
-import functools
-import operator
-
-
-def show():
-    """Shorthand for matplotlib :code:`show` function."""
-    plt.show()
+from .beam import Beam
+from . import coordinates as coord
 
 
 def _clint(p, c, lim=1):
@@ -251,17 +247,17 @@ def gain_heatmap(
     SdB = np.log10(S) * 10.0
     np.seterr(**old)
 
-    # Recipe at
-    # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
-    from matplotlib.colors import BoundaryNorm
-    from matplotlib.ticker import MaxNLocator
-
-    bins = MaxNLocator(nbins=levels).tick_values(0, np.nanmax(SdB))
     if cmap is None:
         cmap = plt.get_cmap("plasma")
-    norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
 
-    conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
+    if levels is None:
+        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=0)
+    else:
+        # Recipe at
+        # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
+        bins = MaxNLocator(nbins=levels).tick_values(0, np.nanmax(SdB))
+        norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
+        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
     ax.axis("scaled")
     ax.set_clip_box([[-1, -1], [1, 1]])
