@@ -242,7 +242,7 @@ class Beam(ABC):
             gain_array = np.full(gain_shape, np.nan, dtype=np.float64)
         expanded_params = {}
         for key in params:
-            if key == "pointing":
+            if self._parameter_axis[key] > 0:
                 expanded_params[key] = params[key].copy()
                 continue
 
