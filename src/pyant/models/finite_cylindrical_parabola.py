@@ -164,6 +164,8 @@ class FiniteCylindricalParabola(Beam):
         assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
 
         params, shape = self.get_parameters(ind, named=True, max_vectors=0)
+        if len(params["pointing"].shape) == 2:
+            params["pointing"] = params["pointing"].reshape(3)
 
         sph = coordinates.cart_to_sph(params["pointing"], degrees=False)
         theta, phi = self.local_to_pointing(k, sph[0], sph[1], degrees=False)

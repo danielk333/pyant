@@ -76,6 +76,8 @@ class Beam(ABC):
 
     @pointing.setter
     def pointing(self, val):
+        if len(val.shape) <= 1:
+            val = val.reshape(3, 1)
         sph = coordinates.cart_to_sph(val, degrees=self.degrees)
         self.fill_parameter("pointing", val)
         self._azimuth = sph[0, ...]
@@ -89,6 +91,8 @@ class Beam(ABC):
     @azimuth.setter
     def azimuth(self, val):
         sph = Beam._azel_to_numpy(val, self._elevation)
+        if len(sph.shape) <= 1:
+            sph = sph.reshape(3, 1)
         self._azimuth = sph[0, ...]
         pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
         self.fill_parameter("pointing", pointing)
@@ -101,6 +105,8 @@ class Beam(ABC):
     @elevation.setter
     def elevation(self, val):
         sph = Beam._azel_to_numpy(self._azimuth, val)
+        if len(sph.shape) <= 1:
+            sph = sph.reshape(3, 1)
         self._elevation = sph[1, ...]
         pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)
         self.fill_parameter("pointing", pointing)
@@ -364,6 +370,8 @@ class Beam(ABC):
         """
         azimuth, elevation = self._check_degrees(azimuth, elevation, degrees)
         sph = Beam._azel_to_numpy(azimuth, elevation)
+        if len(sph.shape) <= 1:
+            sph = sph.reshape(3, 1)
         self._azimuth = sph[0, ...]
         self._elevation = sph[1, ...]
         pointing = coordinates.sph_to_cart(sph, degrees=self.degrees)

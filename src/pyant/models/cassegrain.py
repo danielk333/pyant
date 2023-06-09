@@ -80,6 +80,8 @@ class Cassegrain(Beam):
                     degrees=False,
                 )
         else:
+            if p_len == 1:
+                params["pointing"] = params["pointing"].reshape(3)
             theta = coordinates.vector_angle(params["pointing"], k, degrees=False)
             if theta.size == G.size:
                 if len(theta.shape) > 0:

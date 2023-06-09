@@ -109,6 +109,8 @@ class Gaussian(Beam):
         params, shape = self.get_parameters(ind, named=True, max_vectors=1)
         assert params["normal"].size == 3, "Cannot vectorize on normal vector"
         assert params["pointing"].size == 3, "Cannot vectorize on pointing"
+        if len(params["pointing"].shape) == 2:
+            params["pointing"] = params["pointing"].reshape(3)
 
         params, G = self.broadcast_params(params, shape, k_len)
 
