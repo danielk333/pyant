@@ -18,13 +18,22 @@ beam = pyant.models.FiniteCylindricalParabola(
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
-pyant.plotting.gain_heatmap(beam, resolution=300, min_elevation=80.0, label="plain", ax=ax1)
+pyant.plotting.gain_heatmap(
+    beam,
+    resolution=300,
+    min_elevation=80.0,
+    ax=ax1,
+)
 
 # Azimuth is angle (in degrees) clockwise
 beam.azimuth = 30.0
 
 pyant.plotting.gain_heatmap(
-    beam, resolution=300, min_elevation=80.0, label=f"turned {beam.azimuth} deg clockwise", ax=ax2
+    beam,
+    resolution=300,
+    min_elevation=80.0,
+    label=f" - turned {beam.azimuth} deg clockwise",
+    ax=ax2,
 )
 
 plt.show()
