@@ -10,7 +10,7 @@ from .. import coordinates
 
 
 class Gaussian(Beam):
-    '''Gaussian tapered planar array model
+    """Gaussian tapered planar array model
 
     Parameters
     ----------
@@ -35,87 +35,114 @@ class Gaussian(Beam):
         Azimuth of normal vector of the planar array in degrees.
     normal_elevation : float
         Elevation of pointing direction in degrees.
-    '''
+    """
 
     def __init__(
-        self,
-        azimuth,
-        elevation,
-        frequency,
-        I0,
-        radius,
-        normal_azimuth,
-        normal_elevation,
-        **kwargs
+        self, azimuth, elevation, frequency, I0, radius, normal_azimuth, normal_elevation, **kwargs
     ):
         super().__init__(azimuth, elevation, frequency, **kwargs)
         self.I0 = I0
-        self.radius = radius
-        self.normal_azimuth = normal_azimuth
-        self.normal_elevation = normal_elevation
-        self.normal = coordinates.sph_to_cart(
-            np.array([normal_azimuth, normal_elevation, 1]),
-            radians=self.radians,
-        )
+        self.min_off_axis = 1e-6
+
+        # Random number in case pointing and planar normal align
+        # Used to determine basis vectors in the plane perpendicular to pointing
+        self.__randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
+
+        self.register_parameter("radius")
+        self.register_parameter("normal", numpy_parameter_axis=1)
+
+        normal_sph = Beam._azel_to_numpy(normal_azimuth, normal_elevation)
+        normal = coordinates.sph_to_cart(normal_sph, degrees=self.degrees)
+        self._normal_azimuth = normal_azimuth
+        self._normal_elevation = normal_elevation
+
+        self.fill_parameter("radius", radius)
+        self.fill_parameter("normal", normal)
+
+    @property
+    def normal(self):
+        return self.parameters["normal"]
+
+    @normal.setter
+    def normal(self, val):
+        self.fill_parameter("normal", val)
+
+    @property
+    def normal_azimuth(self):
+        """Azimuth, east of north, of planar array normal vector"""
+        return self._normal_azimuth
+
+    @normal_azimuth.setter
+    def normal_azimuth(self, val):
+        sph = Beam._azel_to_numpy(val, self._normal_elevation)
+        self._normal_azimuth = sph[0, ...]
+        self.normal = coordinates.sph_to_cart(sph, degrees=self.degrees)
+
+    @property
+    def normal_elevation(self):
+        """Elevation from horizon of pointing planar array normal vector"""
+        return self._normal_elevation
+
+    @normal_elevation.setter
+    def normal_elevation(self, val):
+        sph = Beam._azel_to_numpy(self._normal_azimuth, val)
+        self._normal_elevation = sph[1, ...]
+        self.normal = coordinates.sph_to_cart(sph, degrees=self.degrees)
 
     def copy(self):
-        '''Return a copy of the current instance.'''
+        """Return a copy of the current instance."""
         return Gaussian(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
             frequency=copy.deepcopy(self.frequency),
             I0=copy.deepcopy(self.I0),
-            radius=copy.deepcopy(self.radius),
+            radius=copy.deepcopy(self.parameters["radius"]),
             normal_azimuth=copy.deepcopy(self.normal_azimuth),
             normal_elevation=copy.deepcopy(self.normal_elevation),
-            radians=self.radians,
+            degrees=self.degrees,
         )
 
-    def gain(
-        self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs
-    ):
-        if vectorized_parameters:
-            raise NotImplementedError(
-                "vectorized_parameters is not supported by Gaussian"
-            )
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        k_len = k.shape[1] if len(k.shape) == 2 else 0
+        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
 
-        pointing, frequency = self.get_parameters(
-            ind, vectorized_parameters=vectorized_parameters, **kwargs
-        )
+        params, shape = self.get_parameters(ind, named=True, max_vectors=1)
+        assert params["normal"].size == 3, "Cannot vectorize on normal vector"
+        assert params["pointing"].size == 3, "Cannot vectorize on pointing"
 
-        lam = scipy.constants.c / frequency
+        params, G = self.broadcast_params(params, shape, k_len)
 
-        if np.abs(1 - np.dot(pointing, self.normal)) < 1e-6:
-            rd = np.random.randn(3)
-            rd = rd / np.sqrt(np.dot(rd, rd))
-            ct = np.cross(pointing, rd)
+        lam = scipy.constants.c / params["frequency"]
+
+        pn_dot = np.dot(params["pointing"], params["normal"])
+        if np.abs(1 - pn_dot) < self.min_off_axis:
+            ct = np.cross(self.__randn_point, params["normal"])
         else:
-            ct = np.cross(pointing, self.normal)
+            ct = np.cross(params["pointing"], params["normal"])
 
         ct = ct / np.sqrt(np.dot(ct, ct))
-        ht = np.cross(self.normal, ct)
-        ht = ht / np.sqrt(np.dot(ht, ht))
-        angle = coordinates.vector_angle(pointing, ht, radians=True)
 
-        ot = np.cross(pointing, ct)
+        ht = np.cross(params["normal"], ct)
+        ht = ht / np.sqrt(np.dot(ht, ht))
+        angle = coordinates.vector_angle(params["pointing"], ht, degrees=False)
+
+        ot = np.cross(params["pointing"], ct)
         ot = ot / np.sqrt(np.dot(ot, ot))
 
         I_1 = np.sin(angle) * self.I0
-        a0p = np.sin(angle) * self.radius
+        a0p = np.sin(angle) * params["radius"]
 
         sigma1 = 0.7 * a0p / lam
-        sigma2 = 0.7 * self.radius / lam
+        sigma2 = 0.7 * params["radius"] / lam
 
-        k0 = k / np.linalg.norm(k, axis=0)
+        k0 = (k / np.linalg.norm(k, axis=0)).T
 
-        l1 = np.dot(ct, k0)
-        m1 = np.dot(ot, k0)
+        l1 = np.dot(k0, ct).reshape(G.shape)
+        m1 = np.dot(k0, ot).reshape(G.shape)
 
-        l2 = l1 * l1
-        m2 = m1 * m1
         G = (
             I_1
-            * np.exp(-np.pi * m2 * 2.0 * np.pi * sigma1**2.0)
-            * np.exp(-np.pi * l2 * 2.0 * np.pi * sigma2**2.0)
+            * np.exp(-np.pi * l1 * l1 * 2.0 * np.pi * sigma1**2.0)
+            * np.exp(-np.pi * m1 * m1 * 2.0 * np.pi * sigma2**2.0)
         )
         return G

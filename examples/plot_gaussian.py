@@ -17,5 +17,13 @@ beam = pyant.models.Gaussian(
     degrees=True,
 )
 
-pyant.plotting.gain_heatmap(beam, resolution=300, min_elevation=80.0)
+fig, (ax1, ax2) = plt.subplots(1, 2)
+
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax1)
+ax1.set_title(f"normal-elevation {beam.normal_elevation}")
+
+beam.normal_elevation = 45.0
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax2)
+ax2.set_title(f"normal-elevation {beam.normal_elevation}")
+
 plt.show()
