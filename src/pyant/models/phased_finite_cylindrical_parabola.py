@@ -69,10 +69,18 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         """Perpendicular distance from feed to reflector in meters."""
         return self.parameters["depth"]
 
+    @depth.setter
+    def depth(self, val):
+        self.fill_parameter("depth", val)
+
     @property
     def phase_steering(self):
         """Phase steering angle applied to the feed bridge of antennas"""
         return self.parameters["phase_steering"]
+
+    @phase_steering.setter
+    def phase_steering(self, val):
+        self.fill_parameter("phase_steering", val)
 
     def copy(self):
         """Return a copy of the current instance."""

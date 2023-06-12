@@ -1,7 +1,7 @@
-'''
+"""
 Phased paracyl plots
 ===========================
-'''
+"""
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -49,6 +49,7 @@ def get_parc():
         I0=None,
         width=120.0,
         height=40.0,
+        degrees=True,
     )
 
 
@@ -60,6 +61,7 @@ def get_farc():
         I0=None,
         width=120.0,
         height=40.0,
+        degrees=True,
     )
 
 
@@ -118,9 +120,7 @@ def l2p_hemiplots(azim, elev, check=False):
             return np.degrees(np.arcsin(El(elev).dot(Az(azim).dot(uvec(v)))[1]))
 
     levels = np.r_[-90:100:15]
-    fh, ah = plt.subplots(
-        1 + (check is not False), 2, sharex="all", sharey="all", squeeze=False
-    )
+    fh, ah = plt.subplots(1 + (check is not False), 2, sharex="all", sharey="all", squeeze=False)
 
     _, aa, ph = hemisphere_plot(
         nphi,
