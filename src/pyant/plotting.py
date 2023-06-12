@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib import animation
-from matplotlib import cm
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
@@ -25,6 +24,40 @@ def _clint(p, c, lim=1):
 def add_circle(ax, c, r, fmt="k--", *args, **kw):
     th = np.linspace(0, 2 * np.pi, 180)
     ax.plot(c[0] + np.cos(th), c[1] + np.sin(th), fmt, *args, **kw)
+
+
+def compute_k_grid(pointing, min_elevation, resolution, centered, cmin):
+    if centered:
+        kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
+        ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
+    else:
+        kx = np.linspace(-cmin, cmin, num=resolution)
+        ky = np.linspace(-cmin, cmin, num=resolution)
+
+    K = np.zeros((resolution, resolution, 2))
+
+    # TODO: Refactor evaluation of function on a hemispherical domain to a function"
+    K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
+    size = resolution**2
+    k = np.empty((3, size), dtype=np.float64)
+    k[0, :] = K[:, :, 0].reshape(1, size)
+    k[1, :] = K[:, :, 1].reshape(1, size)
+
+    # circles in k space, centered on vertical and pointing, respectively
+    z2 = k[0, :] ** 2 + k[1, :] ** 2
+    z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
+
+    if centered:
+        inds = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
+    else:
+        inds = z2 < cmin**2
+    not_inds = np.logical_not(inds)
+
+    k[2, inds] = np.sqrt(1.0 - z2[inds])
+    k[2, not_inds] = 0
+    S = np.ones((size,)) * np.nan
+
+    return S, K, k, inds
 
 
 def antenna_configuration(antennas, ax=None, color=None):
@@ -93,9 +126,11 @@ def gains(
     S = np.zeros((resolution, len(beams)))
     for b, beam in enumerate(beams):
         S[:, b] = beam.gain(k, polarization=polarizations[b], ind=inds[b]).flatten()
+    lns = []
     for b in range(len(beams)):
         lg = legends[b] if legends is not None else None
-        ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha, label=lg)
+        ln = ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha, label=lg)
+        lns.append(ln)
     if legends is not None:
         ax.legend()
 
@@ -104,10 +139,22 @@ def gains(
     ax.set_ylabel("Gain [dB]", fontsize=24)
     ax.set_title("Gain patterns", fontsize=28)
 
-    return fig, ax
+    return fig, ax, lns
 
 
-def gain_surface(beam, resolution=200, min_elevation=0.0, usetex=False):
+def gain_surface(
+    beam,
+    polarization=None,
+    resolution=201,
+    min_elevation=0.0,
+    render_resolution=None,
+    clip_low_dB=True,
+    ax=None,
+    ind=None,
+    label=None,
+    centered=True,
+    cmap=None,
+):
     """Creates a 3d plot of the beam-patters as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
 
@@ -119,51 +166,58 @@ def gain_surface(beam, resolution=200, min_elevation=0.0, usetex=False):
         the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
     """
 
-    # set TeX interperter
-    plt.rc("text", usetex=usetex)
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+    else:
+        fig = None
 
-    fig = plt.figure(figsize=(15, 7))
-    ax = fig.add_subplot(111, projection="3d")
+    if isinstance(beam, Beam):
+        params, shape = beam.get_parameters(ind, named=True)
+        pointing = params["pointing"]
+    else:
+        raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
 
     cmin = np.cos(np.radians(min_elevation))
-    kx = np.linspace(*_clint(0, cmin), num=resolution)
-    ky = np.linspace(*_clint(0, cmin), num=resolution)
+    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
-    S = np.zeros((resolution, resolution))
-    K = np.zeros((resolution, resolution, 2))
-    for i, x in enumerate(kx):
-        for j, y in enumerate(ky):
-            z2 = x**2 + y**2
-            if z2 < cmin**2:
-                k = np.array([x, y, np.sqrt(1.0 - z2)])
-                S[i, j] = beam.gain(k)
-            else:
-                S[i, j] = 0
-            K[i, j, 0] = x
-            K[i, j, 1] = y
+    S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
+    S = S.reshape(resolution, resolution)
+
+    old = np.seterr(invalid="ignore")
     SdB = np.log10(S) * 10.0
-    SdB[SdB < 0] = 0
-    _ = ax.plot_surface(
+    np.seterr(**old)
+
+    if cmap is None:
+        cmap = plt.get_cmap("plasma")
+
+    rend_count = resolution if render_resolution is None else render_resolution
+
+    if clip_low_dB:
+        SdB[SdB < 0] = 0
+
+    surf = ax.plot_surface(
         K[:, :, 0],
         K[:, :, 1],
         SdB,
-        cmap=cm.plasma,
+        cmap=cmap,
         linewidth=0,
         antialiased=False,
         vmin=0,
-        vmax=np.max(SdB),
+        vmax=np.nanmax(SdB),
+        rcount=rend_count,
+        ccount=rend_count,
     )
-    if usetex:
-        ax.set_xlabel("$k_x$ [1]")
-        ax.set_ylabel("$k_y$ [1]")
-        ax.set_zlabel("Gain $G$ [dB]")
-    else:
-        ax.set_xlabel("kx [1]")
-        ax.set_ylabel("ky [1]")
-        ax.set_zlabel("Gain [dB]")
-    plt.xticks()
-    plt.yticks()
-    plt.show()
+
+    tit = "Gain pattern"
+    if label:
+        tit += " " + label
+    ax.set_title(tit)
+
+    ax.set_xlabel("kx [1]")
+    ax.set_ylabel("ky [1]")
+    ax.set_zlabel("Gain [dB]")
+    return fig, ax, surf
 
 
 def gain_heatmap(
@@ -195,8 +249,7 @@ def gain_heatmap(
     """
 
     if ax is None:
-        fig = plt.figure()  # figsize=(15,7))
-        ax = fig.add_subplot(111)
+        fig, ax = plt.subplots()
     else:
         fig = None
 
@@ -207,48 +260,10 @@ def gain_heatmap(
         raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
-    # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
-
     cmin = np.cos(np.radians(min_elevation))
-    if centered:
-        kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
-        ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
-    else:
-        kx = np.linspace(-cmin, cmin, num=resolution)
-        ky = np.linspace(-cmin, cmin, num=resolution)
+    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
-    K = np.zeros((resolution, resolution, 2))
-
-    # TODO: Refactor evaluation of function on a hemispherical domain to a function"
-    K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-    size = resolution**2
-    k = np.empty((3, size), dtype=np.float64)
-    k[0, :] = K[:, :, 0].reshape(1, size)
-    k[1, :] = K[:, :, 1].reshape(1, size)
-
-    # circles in k space, centered on vertical and pointing, respectively
-    z2 = k[0, :] ** 2 + k[1, :] ** 2
-    z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
-
-    if centered:
-        inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
-    else:
-        inds_ = z2 < cmin**2
-    not_inds_ = np.logical_not(inds_)
-
-    k[2, inds_] = np.sqrt(1.0 - z2[inds_])
-    k[2, not_inds_] = 0
-    S = np.ones((1, size)) * np.nan
-    if isinstance(beam, Beam):
-        S[0, inds_] = beam.gain(k[:, inds_], polarization=polarization, ind=ind).flatten()
-    elif isinstance(beam, list):
-        S[0, inds_] = functools.reduce(
-            operator.add,
-            [b.gain(k[:, inds_], polarization=polarization, ind=ind) for b in beam],
-        ).flatten()
-    else:
-        raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
-
+    S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
