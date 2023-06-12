@@ -58,11 +58,14 @@ def compute_k_grid(pointing, min_elevation, resolution, centered, cmin):
     return S, K, k, inds
 
 
-def antenna_configuration(antennas, ax=None, color=None):
+def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
     """Plot the 3d antenna positions"""
     if ax is None:
         fig = plt.figure(figsize=(15, 7))
-        ax = fig.add_subplot(111, projection="3d")
+        if z_axis:
+            ax = fig.add_subplot(111, projection="3d")
+        else:
+            ax = fig.add_subplot(111)
     else:
         fig = None
 
@@ -71,16 +74,24 @@ def antenna_configuration(antennas, ax=None, color=None):
     else:
         style_ = "." + color
 
-    ax.plot(
-        antennas[:, 0, :].flatten(),
-        antennas[:, 1, :].flatten(),
-        antennas[:, 2, :].flatten(),
-        style_,
-    )
+    if z_axis:
+        ax.plot(
+            antennas[:, 0, :].flatten(),
+            antennas[:, 1, :].flatten(),
+            antennas[:, 2, :].flatten(),
+            style_,
+        )
+    else:
+        ax.plot(
+            antennas[:, 0, :].flatten(),
+            antennas[:, 1, :].flatten(),
+            style_,
+        )
     ax.set_title("Antennas", fontsize=22)
     ax.set_xlabel("X-position [m]", fontsize=20)
     ax.set_ylabel("Y-position [m]", fontsize=20)
-    ax.set_zlabel("Z-position [m]", fontsize=20)
+    if z_axis:
+        ax.set_zlabel("Z-position [m]", fontsize=20)
 
     return fig, ax
 
