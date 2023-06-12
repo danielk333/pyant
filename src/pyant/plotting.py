@@ -2,8 +2,6 @@
 
 """Useful coordinate related functions.
 """
-import functools
-import operator
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -231,7 +229,6 @@ def gain_heatmap(
     label=None,
     centered=True,
     cmap=None,
-    **kwargs,
 ):
     """Creates a heatmap of the beam-patterns as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
@@ -313,7 +310,8 @@ def hemisphere_plot(
     p_kw={},
     resolution=201,
     ax=None,
-    vectorized=False,
+    min_elevation=0,
+    centered=None,
 ):
     """
     Create a hemispherical plot of some function of pointing direction
@@ -331,69 +329,29 @@ def hemisphere_plot(
                 square of this number.
     :keyword plot_axis ax: Axis in which to make the plot.
                 If not given, one will be created in a new figure window
-    :keyword boolean vectorized: If True (default=False), then `func` accepts a
-                2D array of `k` vectors, of shape (N, 3).
     :keyword: string preproc, in ['none', 'abs', 'dba', 'dbp']
     """
-
-    from numpy import radians
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = None
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
-    min_elevation = 0.0  # So as not to trip up code below
-    pointing = np.array([0.0, 0.0, 1.0])
-
-    if ax is None:
-        fh = plt.figure()  # figsize=(15,7))
-        ax = fh.add_subplot(111)
+    if centered is None:
+        pointing = np.array([0.0, 0.0, 1.0])
     else:
-        fh = None
+        pointing = centered
+
+    # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
+    cmin = np.cos(np.radians(min_elevation))
+    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+
+    S[inds] = func(k[:, inds]).flatten()
+    S = S.reshape(resolution, resolution)
 
     if isinstance(plotfunc, str):
         # TODO: Some cleverness with try/except, perhaps?
         plotfunc = getattr(ax, plotfunc)
-
-    cmin = np.cos(radians(min_elevation))
-
-    kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
-    ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
-
-    K = np.zeros((resolution, resolution, 2))
-
-    # TODO: Refactor evaluation of function on a hemispherical domain to a function
-    if vectorized:
-        K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-        size = resolution**2
-        k = np.empty((3, size), dtype=np.float64)
-        k[0, :] = K[:, :, 0].reshape(1, size)
-        k[1, :] = K[:, :, 1].reshape(1, size)
-
-        z2 = k[0, :] ** 2 + k[1, :] ** 2
-        z2_c = (pointing[0] - k[0, :]) ** 2 + (pointing[1] - k[1, :]) ** 2
-
-        inds_ = np.logical_and(z2_c < cmin**2, z2 <= 1.0)
-        not_inds_ = np.logical_not(inds_)
-
-        k[2, inds_] = np.sqrt(1.0 - z2[inds_])
-        k[2, not_inds_] = 0
-        S = np.ones((1, size)) * np.nan
-
-        S[0, inds_] = func(k[:, inds_], *f_args, **f_kw)
-
-        S = S.reshape(resolution, resolution)
-
-    else:
-        S = np.ones((resolution, resolution)) * np.nan
-        for i, x in enumerate(kx):
-            for j, y in enumerate(ky):
-                z2_c = (pointing[0] - x) ** 2 + (pointing[1] - y) ** 2
-                z2 = x**2 + y**2
-                if z2_c < cmin**2 and z2 <= 1.0:
-                    k = np.array([x, y, np.sqrt(1.0 - z2)])
-
-                    S[i, j] = func(k, *f_args, **f_kw)
-
-                K[i, j, 0] = x
-                K[i, j, 1] = y
 
     if preproc in [None, "none"]:
         pass
@@ -411,119 +369,70 @@ def hemisphere_plot(
     hh = plotfunc(K[:, :, 0], K[:, :, 1], S, *p_args, **p_kw)
     ax.axis("scaled")
 
-    return fh, ax, hh
-
-
-# def new_heatmap(beam, ax=None, **kw):
-#     pkw = dict(cmap=cm.plasma, vmin=0, shading="giraud")
-
-#     fh, ax, hh = hemisphere_plot(beam.gain, "pcolormesh", ax=ax, p_kw=pkw, **kw)
-
-#     usetex = True
-
-#     if usetex:
-#         ax.set_xlabel("$k_x$ [1]")
-#         ax.set_ylabel("$k_y$ [1]")
-#     else:
-#         ax.set_xlabel("kx [1]")
-#         ax.set_ylabel("ky [1]")
-
-#     plt.xticks()
-#     plt.yticks()
-#     cbar = plt.colorbar(conf, ax=ax)
-#     cbar.ax.set_ylabel("Gain [dB]")
-#     ax.set_title("Gain pattern")
-
-#     return fh, ax, hh
+    return fig, ax, hh
 
 
 def gain_heatmap_movie(
-    beam, iterable, beam_update, plt_kwargs={}, plot_update=None, fps=20, **kwargs
+    beam,
+    iterable,
+    beam_update,
+    polarization=None,
+    resolution=201,
+    min_elevation=0.0,
+    levels=20,
+    ax=None,
+    ind=None,
+    label=None,
+    centered=True,
+    cmap=None,
+    plot_update=None,
+    fps=20,
+    blit=True,
 ):
-    """WORK IN PROGRESS!"""
+    """
+    Animates a movie of a heatmap
+    """
 
-    def run(it, fig, ax, mesh, size, beam, k, inds_, resolution):
+    fig, ax, mesh = gain_heatmap(
+        beam,
+        polarization=polarization,
+        resolution=resolution,
+        min_elevation=min_elevation,
+        levels=levels,
+        ind=ind,
+        label=label,
+        centered=centered,
+        cmap=cmap,
+    )
+
+    params, _ = beam.get_parameters(ind, named=True)
+    pointing = params["pointing"]
+    cmin = np.cos(np.radians(min_elevation))
+    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+
+    def run(it, fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds):
         beam = beam_update(beam, it)
-
-        S = np.ones((1, size))
-        if isinstance(beam, Beam):
-            S[0, inds_] = beam.gain(k[:, inds_])
-        elif isinstance(beam, list):
-            S[0, inds_] = functools.reduce(operator.add, [b.gain(k[:, inds_]) for b in beam])
-        else:
-            raise TypeError(f'Can only plot Beam or list, not "{type(beam)}"')
-
-        SdB = np.log10(S) * 10.0
-        SdB[np.isinf(SdB)] = 0
-        SdB[np.isnan(SdB)] = 0
-        # SdB[SdB < 0] = 0
-        S = SdB
-
+        S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
         S = S.reshape(resolution, resolution)
-        mesh.update({"array": S.ravel()})
+
+        old = np.seterr(invalid="ignore")
+        SdB = np.log10(S) * 10.0
+        np.seterr(**old)
+        mesh.update({"array": SdB.ravel()})
 
         if plot_update is not None:
             fig, ax, mesh = plot_update(fig, ax, mesh)
 
-        # fig.canvas.draw()
-
-        return (
-            ax,
-            mesh,
-        )
-
-    fig, ax, mesh = gain_heatmap(beam, **plt_kwargs)
-    fig.text(0.5, 0.94, "", horizontalalignment="center")
-
-    resolution = plt_kwargs.get("resolution", 201)
-
-    # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
-    # TODO: Limit to norm(k) <= 1 (horizon) since below-horizon will be discarded anyway
-    min_elevation = plt_kwargs.get("min_elevation", 0)
-    kx = np.linspace(
-        np.cos(min_elevation * np.pi / 180.0),
-        np.cos(min_elevation * np.pi / 180.0),
-        num=resolution,
-    )
-    ky = np.linspace(
-        np.cos(min_elevation * np.pi / 180.0),
-        np.cos(min_elevation * np.pi / 180.0),
-        num=resolution,
-    )
-
-    K = np.zeros((resolution, resolution, 2))
-
-    K[:, :, 0], K[:, :, 1] = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-    size = len(kx) ** 2
-    k = np.empty((3, size), dtype=np.float64)
-    k[0, :] = K[:, :, 0].reshape(1, size)
-    k[1, :] = K[:, :, 1].reshape(1, size)
-
-    z2 = k[0, :] ** 2 + k[1, :] ** 2
-
-    inds_ = z2 <= np.cos(min_elevation * np.pi / 180.0)
-    not_inds_ = np.logical_not(inds_)
-
-    k[2, inds_] = np.sqrt(1.0 - z2[inds_])
-    k[2, not_inds_] = 0
+        return [mesh]
 
     ani = animation.FuncAnimation(
         fig,
         run,
         iterable,
-        blit=kwargs.get("blit", True),
+        blit=blit,
         interval=1.0e3 / float(fps),
         repeat=True,
-        fargs=(
-            fig,
-            ax,
-            mesh,
-            size,
-            beam,
-            k,
-            inds_,
-            resolution,
-        ),
+        fargs=(fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds),
     )
 
     return fig, ax, mesh, ani
