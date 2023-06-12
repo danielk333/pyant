@@ -28,11 +28,13 @@ class EISCAT_UHF(Measured):
     **Reference:** [Personal communication] Vierinen, J.
     """
 
-    def __init__(self, azimuth, elevation, frequency=930e6, **kwargs):
+    def __init__(self, azimuth, elevation, frequency, **kwargs):
         super().__init__(azimuth, elevation, frequency, **kwargs)
+        self.I0 = 10**4.81
+        self.F0 = 930e6
 
         angle = _eiscat_beam_data[:, 0]
-        gain = 10 ** (_eiscat_beam_data[:, 1] / 10.0)
+        gain = 10.0 ** (_eiscat_beam_data[:, 1] / 10.0)
 
         self.beam_function = scipy.interpolate.interp1d(np.abs(angle), gain)
 
@@ -46,11 +48,32 @@ class EISCAT_UHF(Measured):
         )
 
     def gain(self, k, polarization=None, ind=None, **kwargs):
-        theta = coordinates.vector_angle(self.pointing, k, degrees=True)
+        k_len = k.shape[1] if len(k.shape) == 2 else 0
+        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
 
-        sf = self.frequency / 930e6
-        G = 10**4.81 * self.beam_function(sf * np.abs(theta))
+        params, shape = self.get_parameters(ind, named=True, max_vectors=1)
+        params, G = self.broadcast_params(params, shape, k_len)
 
+        p_len = params["pointing"].shape[1] if len(params["pointing"].shape) == 2 else 0
+        if p_len > 1 and k_len > 1:
+            theta = np.empty_like(G)
+            for ind in range(p_len):
+                theta[:, ind] = coordinates.vector_angle(
+                    params["pointing"][:, ind],
+                    k,
+                    degrees=True,
+                )
+        else:
+            if p_len == 1:
+                params["pointing"] = params["pointing"].reshape(3)
+            theta = coordinates.vector_angle(params["pointing"], k, degrees=True)
+            if theta.size == G.size:
+                if len(theta.shape) > 0:
+                    theta.shape = G.shape
+            else:
+                theta = np.broadcast_to(theta, G.shape)
+
+        G = self.I0 * self.beam_function(params["frequency"] / self.F0 * theta)
         return G
 
 
@@ -59,5 +82,6 @@ def generate_eiscat_uhf_measured():
     return EISCAT_UHF(
         azimuth=0,
         elevation=90.0,
+        frequency=930e6,
         degrees=True,
     )
