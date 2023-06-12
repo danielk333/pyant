@@ -9,7 +9,7 @@ from ..beam import Beam
 
 
 def plane_wave(k, r, p, J):
-    '''The complex plane wave function.
+    """The complex plane wave function.
 
     Parameters
     ----------
@@ -22,7 +22,7 @@ def plane_wave(k, r, p, J):
         (antenna array "pointing" direction)
     J : numpy.ndarray
         Polarization given as a Jones vector
-    '''
+    """
 
     # in this, rows are antennas and columns are wave directions
     spat_wave = np.exp(1j * np.pi * 2.0 * np.dot(r, k - p))
@@ -34,7 +34,7 @@ def plane_wave(k, r, p, J):
 
 
 class Array(Beam):
-    '''Gain pattern of an antenna array radar receiving/transmitting plane
+    """Gain pattern of an antenna array radar receiving/transmitting plane
     waves, i.e in the far field approximation regime. Assumes the same
     antenna is used throughout the array.
 
@@ -68,7 +68,7 @@ class Array(Beam):
     channels : int
         Number of sub-arrays the antenna array has, i.e the number of channels.
 
-    '''
+    """
 
     def __init__(
         self,
@@ -99,7 +99,7 @@ class Array(Beam):
         self.polarization = polarization
 
     def copy(self):
-        '''Return a copy of the current instance.'''
+        """Return a copy of the current instance."""
         return Array(
             frequency=copy.deepcopy(self.frequency),
             azimuth=copy.deepcopy(self.azimuth),
@@ -113,20 +113,16 @@ class Array(Beam):
 
     @property
     def channels(self):
-        '''Number of channels returned by complex output.'''
+        """Number of channels returned by complex output."""
         return self.antennas.shape[2]
 
     def antenna_element(self, k, polarization):
-        '''Antenna element gain pattern, azimuthally symmetric dipole response.'''
+        """Antenna element gain pattern, azimuthally symmetric dipole response."""
         ret = np.ones(polarization.shape, dtype=k.dtype)
         return ret[:, None] * k[2, :] * self.scaling
 
-    def gain(
-        self, k, ind=None, polarization=None, vectorized_parameters=False, **kwargs
-    ):
-        '''Gain of the antenna array.'''
-        if vectorized_parameters:
-            raise NotImplementedError("vectorized_parameters is not supported by Array")
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        """Gain of the antenna array."""
 
         if polarization is None:
             polarization = self.polarization
@@ -146,7 +142,7 @@ class Array(Beam):
         return np.abs(G)
 
     def signals(self, k, polarization, ind=None, channels=None, **kwargs):
-        '''Complex voltage output signals after summation of antennas.
+        """Complex voltage output signals after summation of antennas.
 
         Returns
         -------
@@ -155,31 +151,34 @@ class Array(Beam):
             requested, `2` are the two polarization axis of the Jones vector
             and `num_k` is the number of input wave vectors. If `num_k = 1`
             the returned ndarray is `(c,2)`.
-        '''
-        pointing, frequency = self.get_parameters(ind, **kwargs)
+        """
+        k_len = k.shape[1] if len(k.shape) == 2 else 0
+        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
+
+        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
 
         inds = np.arange(self.channels, dtype=np.int64)
         if channels is not None:
             inds = inds[channels]
 
+        p = params["pointing"].reshape(3, 1)
+
         chan_num = len(inds)
 
         k_ = k / np.linalg.norm(k, axis=0)
-        if len(k.shape) == 1:
-            psi = np.zeros(
-                (chan_num, 2, 1),
-                dtype=np.complex128,
-            )
-            p = pointing.reshape(3, 1)
+        if k_len == 0:
+            psi = np.zeros((chan_num, 2, 1), dtype=np.complex128)
             k_ = k_.reshape(3, 1)
         else:
             psi = np.zeros(
-                (chan_num, 2, k.shape[1]),
+                (chan_num, 2, k_len),
                 dtype=np.complex128,
             )
-            p = np.repeat(pointing.reshape(3, 1), k.shape[1], axis=1)
+            p = np.repeat(p, k_len, axis=1)
 
-        wavelength = scipy.constants.c / frequency
+        wavelength = scipy.constants.c / params["frequency"]
+        if len(wavelength.shape) > 0:
+            wavelength = wavelength[0]
 
         # r in meters, divide by lambda
         for i in range(chan_num):
