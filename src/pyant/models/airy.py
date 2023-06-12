@@ -78,6 +78,7 @@ class Airy(Beam):
                 if len(theta.shape) > 0:
                     theta.shape = G.shape
             else:
+                theta = theta.reshape(theta.size, 1)
                 theta = np.broadcast_to(theta, G.shape)
 
         lam = scipy.constants.c / params["frequency"]
