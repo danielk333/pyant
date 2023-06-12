@@ -54,7 +54,16 @@ def antenna_configuration(antennas, ax=None, color=None):
     return fig, ax
 
 
-def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, legends=None, ax=None):
+def gains(
+    beams,
+    inds=None,
+    polarizations=None,
+    resolution=1000,
+    min_elevation=0.0,
+    alpha=1,
+    legends=None,
+    ax=None,
+):
     """Plot the gain of a list of beam patterns as a function of elevation at
     :math:`0^\circ` degrees azimuth.
 
@@ -64,10 +73,10 @@ def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, lege
         from this number to :math:`90^\circ`.
     """
 
-    # set TeX interperter
-    plt.rc("text", usetex=usetex)
     if not isinstance(beams, list):
         beams = [beams]
+        inds = [inds]
+        polarizations = [polarizations]
 
     if ax is None:
         fig = plt.figure(figsize=(15, 7))
@@ -76,12 +85,14 @@ def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, lege
         fig = None
 
     theta = np.linspace(min_elevation, 90.0, num=resolution)
+    sph = np.zeros((3, resolution), dtype=np.float64)
+    sph[1, :] = theta
+    sph[2, :] = 1.0
+    k = coord.sph_to_cart(sph, degrees=True)
 
     S = np.zeros((resolution, len(beams)))
     for b, beam in enumerate(beams):
-        for ind, th in enumerate(theta):
-            k = coord.sph_to_cart(np.array([0.0, th, 1.0]), degrees=True)
-            S[ind, b] = beam.gain(k)
+        S[:, b] = beam.gain(k, polarization=polarizations[b], ind=inds[b]).flatten()
     for b in range(len(beams)):
         lg = legends[b] if legends is not None else None
         ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha, label=lg)
@@ -90,10 +101,7 @@ def gains(beams, resolution=1000, min_elevation=0.0, alpha=1, usetex=False, lege
 
     ax.set_xlabel("Zenith angle [deg]", fontsize=24)
     ax.tick_params(axis="both", labelsize=17)
-    if usetex:
-        ax.set_ylabel("Gain $G$ [dB]", fontsize=24)
-    else:
-        ax.set_ylabel("Gain [dB]", fontsize=24)
+    ax.set_ylabel("Gain [dB]", fontsize=24)
     ax.set_title("Gain patterns", fontsize=28)
 
     return fig, ax
