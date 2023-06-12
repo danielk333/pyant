@@ -22,6 +22,7 @@ beam = pyant.models.Array(
     elevation=90.0,
     frequency=46.5e6,
     antennas=antennas,
+    degrees=True,
 )
 
 beam_linp = pyant.models.Array(
@@ -30,6 +31,7 @@ beam_linp = pyant.models.Array(
     frequency=46.5e6,
     polarization=np.array([1, 0]),
     antennas=antennas,
+    degrees=True,
 )
 
 k = np.array([0, 0, 1])
