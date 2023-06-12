@@ -57,9 +57,9 @@ def e3d_array(freqeuncy, fname=None, configuration="full"):
     positions of a file.
     """
 
-    def _read_e3d_submodule_pos(byte_data):
+    def _read_e3d_submodule_pos(string_data):
         dat = []
-        file = byte_data.decode("utf-8").split("\n")
+        file = string_data.split("\n")
         for line in file:
             if len(line) == 0:
                 continue
