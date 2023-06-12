@@ -68,15 +68,27 @@ class FiniteCylindricalParabola(Beam):
         """Reflector panel width (axial/azimuth dimension) in meters."""
         return self.parameters["width"]
 
+    @width.setter
+    def width(self, val):
+        self.fill_parameter("width", val)
+
     @property
     def height(self):
         """Reflector panel height (perpendicular/elevation dimension) in meters."""
         return self.parameters["height"]
 
+    @height.setter
+    def height(self, val):
+        self.fill_parameter("height", val)
+
     @property
     def aperture(self):
         """Length of the feed in meters."""
         return self.parameters["aperture"]
+
+    @aperture.setter
+    def aperture(self, val):
+        self.fill_parameter("aperture", val)
 
     def copy(self):
         """Return a copy of the current instance."""

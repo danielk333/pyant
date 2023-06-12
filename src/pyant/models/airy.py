@@ -45,6 +45,15 @@ class Airy(Beam):
             degrees=self.degrees,
         )
 
+    @property
+    def radius(self):
+        """Radius in meters of the airy disk"""
+        return self.parameters["radius"]
+
+    @radius.setter
+    def radius(self, val):
+        self.fill_parameter("radius", val)
+
     def gain(self, k, ind=None, polarization=None, **kwargs):
         k_len = k.shape[1] if len(k.shape) == 2 else 0
         assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
