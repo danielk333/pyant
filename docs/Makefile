@@ -16,6 +16,8 @@ html:
 	sphinx-build -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
 clean:
-	rm -rv $(BUILDDIR)
-	rm -rv $(SOURCEDIR)/autogallery
-	rm -rv $(SOURCEDIR)/autosummary
+	rm -rfv $(BUILDDIR)
+	rm -rfv $(SOURCEDIR)/autogallery
+	rm -rfv $(SOURCEDIR)/autosummary
+	rm -rfv $(SOURCEDIR)/autopackages
+	rm -rfv jupyter_execute
