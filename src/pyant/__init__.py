@@ -14,7 +14,7 @@ from . import models
 from . import statistics
 
 # Classes
-from .beam import Beam
+from .beam import Beam, SummedBeams
 from .interpolated import Interpolated
 from .beams import Radars, Models
 

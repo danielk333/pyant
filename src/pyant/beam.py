@@ -2,11 +2,12 @@
 
 """Defines an antenna's or entire radar system's radiation pattern
 """
-import numpy as np
+import functools
+import operator
 from abc import ABC, abstractmethod
 import collections
 
-
+import numpy as np
 import scipy.constants
 
 from . import coordinates
@@ -518,3 +519,13 @@ class Beam(ABC):
             ind=ind,
             **kwargs,
         )
+
+
+class SummedBeams(Beam):
+    def __init__(self, beams, azimuth=0, elevation=np.pi / 2, frequency=0, degrees=False):
+        super().__init__(azimuth, elevation, frequency, degrees=False)
+        self.beams = beams
+
+    def gain(self, k, ind=None, polarization=None, **kwargs):
+        gains = [b.gain(k, ind=ind, polarization=polarization, **kwargs) for b in self.beams]
+        return functools.reduce(operator.add, gains)
