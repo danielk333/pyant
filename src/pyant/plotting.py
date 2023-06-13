@@ -55,7 +55,7 @@ def compute_k_grid(pointing, min_elevation, resolution, centered, cmin):
     k[2, not_inds] = 0
     S = np.ones((size,)) * np.nan
 
-    return S, K, k, inds
+    return S, K, k, inds, kx, ky
 
 
 def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
@@ -109,10 +109,27 @@ def gains(
     """Plot the gain of a list of beam patterns as a function of elevation at
     :math:`0^\circ` degrees azimuth.
 
-    :param beam: Beam or list of beams.
-    :param int resolution: Number of points to divide the set elevation range into.
-    :param float min_elevation: Minimum elevation in degrees, elevation range is
-        from this number to :math:`90^\circ`.
+    Parameters
+    ----------
+    beam : Beam, list(Beam)
+        Beam or list of beams.
+    inds : dict, tuple, list(dict, tuple)
+        Indexing of the beam instance, see :class:`pyant.Beam` for more details
+    polarization : numpy.ndarray, list(numpy.ndarray)
+        The Jones vector, see :class:`pyant.Beam` for more details
+    resolution : int
+        Number of points to divide the set elevation range into.
+    min_elevation : float
+        Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`.
+    alpha : float
+        The alpha with which to draw the curves
+    legends : list(str)
+        Labels to put on each curve
+
+    Returns
+    -------
+    tuple(Figure, Axis, list(Lines))
+        Returns the matplotlib figure, axis and list of drawn lines
     """
 
     if not isinstance(beams, list):
@@ -167,12 +184,33 @@ def gain_surface(
     """Creates a 3d plot of the beam-patters as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
 
-    :param BeamPattern beam: Beam pattern to plot.
-    :param int res: Number of points to devide the wave vector x and y
+    Parameters
+    ----------
+    beam : Beam
+        Beam to plot
+    inds : dict, tuple
+        Indexing of the beam instance, see :class:`pyant.Beam` for more details
+    polarization : numpy.ndarray
+        The Jones vector, see :class:`pyant.Beam` for more details
+    resolution : int
+        Number of points to devide the wave vector x and y
         component range into, total number of caluclation points is the square of this number.
-    :param float min_elevation: Minimum elevation in degrees, elevation range
+    min_elevation : float
+        Minimum elevation in degrees, elevation range
         is from this number to :math:`90^\circ`. This number defines the half
         the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
+    label : str
+        Adds this to plot title
+    centered : bool
+        Choose if plot is centered on pointing direction (:code:`True`) or zenith (:code:`False`)
+    clip_low_dB : bool
+        If :code:`True` set all gains below 0 dB to 0 dB
+
+    Returns
+    -------
+    tuple(Figure, Axis, surface)
+        Returns the matplotlib figure, axis and drawn surface
+
     """
 
     if ax is None:
@@ -188,7 +226,7 @@ def gain_surface(
         raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
 
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
     S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
     S = S.reshape(resolution, resolution)
@@ -244,16 +282,34 @@ def gain_heatmap(
     """Creates a heatmap of the beam-patterns as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
 
-    :param Beam/Beams beam: Beam pattern to plot.
-    :param numpy.ndarray polarization: The polarization in terms of a
-        Jones vector of the incoming waves.
-    :param int resolution: Number of points to divide the wave vector x and y
-        components into, total number of calculation points is the square of this number.
-    :param float min_elevation: Minimum elevation in degrees, elevation range
+
+    Parameters
+    ----------
+    beam : Beam
+        Beam to plot
+    inds : dict, tuple
+        Indexing of the beam instance, see :class:`pyant.Beam` for more details
+    polarization : numpy.ndarray
+        The Jones vector, see :class:`pyant.Beam` for more details
+    resolution : int
+        Number of points to devide the wave vector x and y
+        component range into, total number of caluclation points is the square of this number.
+    min_elevation : float
+        Minimum elevation in degrees, elevation range
         is from this number to :math:`90^\circ`. This number defines the half
         the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
-    :param int levels: Number of levels in the contour plot.
-    :return: matplotlib figure handle, axis and QuadMesh instance
+    label : str
+        Adds this to plot title
+    centered : bool
+        Choose if plot is centered on pointing direction (:code:`True`) or zenith (:code:`False`)
+    levels : int
+        Number of levels in the contour plot.
+
+    Returns
+    -------
+    tuple(Figure, Axis, pcolormesh)
+        Returns the matplotlib figure, axis and drawn pcolormesh
+
     """
 
     if ax is None:
@@ -269,7 +325,7 @@ def gain_heatmap(
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
     S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
     S = S.reshape(resolution, resolution)
@@ -355,7 +411,7 @@ def hemisphere_plot(
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
     S[inds] = func(k[:, inds]).flatten()
     S = S.reshape(resolution, resolution)
@@ -419,7 +475,7 @@ def gain_heatmap_movie(
     params, _ = beam.get_parameters(ind, named=True)
     pointing = params["pointing"]
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
 
     def run(it, fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds):
         beam = beam_update(beam, it)
