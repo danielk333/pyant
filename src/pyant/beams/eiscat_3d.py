@@ -127,7 +127,7 @@ def generate_eiscat_3d_module():
             configuration="module",
         ),
         scaling=e3d_antenna_gain,
-        radians=False,
+        degrees=True,
     )
 
 
@@ -155,7 +155,7 @@ def generate_eiscat_3d_stage1(configuration="dense"):
             configuration="half-" + configuration,
         ),
         scaling=e3d_antenna_gain,
-        radians=False,
+        degrees=True,
     )
 
 
@@ -178,7 +178,7 @@ def generate_eiscat_3d_stage2():
             configuration="full",
         ),
         scaling=e3d_antenna_gain,
-        radians=False,
+        degrees=True,
     )
 
 
@@ -202,7 +202,7 @@ def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=100
         elevation=90.0,
         frequency=e3d_frequency,
         scaling=e3d_antenna_gain,
-        radians=False,
+        degrees=True,
     )
     if not isinstance(path, pathlib.Path):
         path = pathlib.Path(path)

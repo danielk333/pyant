@@ -5,6 +5,7 @@ import scipy.interpolate
 
 from .interpolated import Interpolated
 from .array import Array
+from .. import coordinates
 
 
 def plane_wave_compund(kp, r):
@@ -44,16 +45,8 @@ class InterpolatedArray(Interpolated):
 
     """
 
-    def __init__(
-        self,
-        azimuth,
-        elevation,
-        frequency,
-        polarization=np.array([1, 1j]) / np.sqrt(2),
-        scaling=1.0,
-        **kwargs
-    ):
-        super().__init__(azimuth, elevation, frequency, **kwargs)
+    def __init__(self, polarization=np.array([1, 1j]) / np.sqrt(2), scaling=1.0, **kwargs):
+        super().__init__(azimuth=0, elevation=0, frequency=np.nan, **kwargs)
         self.interpolated = None
         self.scaling = scaling
         self.polarization = polarization
@@ -79,50 +72,77 @@ class InterpolatedArray(Interpolated):
         return bm
 
     def save(self, fname):
-        interps = {f"interp{ind}": self.interpolated[ind] for ind in range(self.channels)}
-        np.savez(
-            fname,
-            mutual_coupling_matrix=self.mutual_coupling_matrix,
-            channels=np.int64(self.channels),
-            frequency=self.frequency,
-            antennas=self.antennas,
-            **interps,
+        datas = {f"interp{ind}": self.interpolated[ind] for ind in range(self.channels)}
+        datas.update(
+            dict(
+                channels=np.int64(self.channels),
+                frequency=self.frequency,
+                antennas=self.antennas,
+            )
         )
+        if self.mutual_coupling_matrix is not None:
+            datas["mutual_coupling_matrix"] = self.mutual_coupling_matrix
+        np.savez(fname, **datas)
 
     def load(self, fname):
         data = np.load(fname, allow_pickle=True)
-        self.mutual_coupling_matrix = data["mutual_coupling_matrix"]
+        if "mutual_coupling_matrix" in data:
+            self.mutual_coupling_matrix = data["mutual_coupling_matrix"]
         self.channels = data["channels"]
         self.parameters["frequency"] = data["frequency"]
         self.antennas = data["antennas"]
         self.interpolated = [data[f"interp{ind}"].item() for ind in range(self.channels)]
 
-    def generate_interpolation(self, beam, ind=None, polarization=None, resolution=100):
+    def generate_interpolation(
+        self, beam, ind=None, polarization=None, resolution=(1000, 1000, None)
+    ):
+        """# TODO: docstring"""
         assert isinstance(beam, Array), "Can only interpolate arrays"
         self.channels = beam.channels
-        self.mutual_coupling_matrix = beam.mutual_coupling_matrix.copy()
+        if beam.mutual_coupling_matrix is not None:
+            self.mutual_coupling_matrix = beam.mutual_coupling_matrix.copy()
         self.antennas = beam.antennas.copy()
 
-        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
+        params, shape = beam.get_parameters(ind, named=True, max_vectors=0)
         self.frequency = params["frequency"]
+        p = params["pointing"].reshape(3)
+        sph = coordinates.cart_to_sph(p, degrees=beam.degrees)
+        self.degrees = beam.degrees
+        self.sph_point(sph[0], sph[1])
 
         wavelength = scipy.constants.c / params["frequency"]
         if len(wavelength.shape) > 0:
             wavelength = wavelength[0]
 
-        kpx = np.linspace(-2.0, 2.0, num=resolution)
-        kpy = np.linspace(-2.0, 2.0, num=resolution)
-        kpz = np.linspace(-2.0, 2.0, num=resolution)
+        if resolution[2] is not None:
+            size = np.prod(resolution)
+            kpx = np.linspace(-2.0, 2.0, num=resolution[0])
+            kpy = np.linspace(-2.0, 2.0, num=resolution[1])
+            kpz = np.linspace(-2.0, 2.0, num=resolution[2])
+            xv, yv, zv = np.meshgrid(kpx, kpy, kpz, sparse=False, indexing="ij")
+            kp = np.empty((3, size), dtype=np.float64)
+            kp[0, :] = xv.reshape(1, size)
+            kp[1, :] = yv.reshape(1, size)
+            kp[2, :] = zv.reshape(1, size)
 
-        size = resolution**3
-
-        xv, yv, zv = np.meshgrid(kpx, kpy, kpz, sparse=False, indexing="ij")
-        kp = np.empty((3, size), dtype=np.float64)
-        kp[0, :] = xv.reshape(1, size)
-        kp[1, :] = yv.reshape(1, size)
-        kp[2, :] = zv.reshape(1, size)
-        norm = np.linalg.norm(kp, axis=0)
-        inds = norm <= 2.0
+            norm = np.linalg.norm(kp, axis=0)
+            inds = norm <= 2.0
+        else:
+            size = np.prod(resolution[:2])
+            kpx = np.linspace(-1.0, 1.0, num=resolution[0])
+            kpy = np.linspace(-1.0, 1.0, num=resolution[1])
+            kpz = None
+            xv, yv = np.meshgrid(kpx, kpy, sparse=False, indexing="ij")
+            kp = np.empty((3, size), dtype=np.float64)
+            kp[0, :] = xv.reshape(1, size)
+            kp[1, :] = yv.reshape(1, size)
+            xy2 = kp[0, :] ** 2 + kp[1, :] ** 2
+            inds = xy2 <= 1
+            kp[2, inds] = np.sqrt(1 - xy2[inds])
+            kp[2, np.logical_not(inds)] = 0
+            kp[:, :] = kp[:, :] - p[:, None]
+            kpx -= p[0]
+            kpy -= p[1]
 
         psi = np.zeros((size,), dtype=np.complex128)
         # r in meters, divide by lambda
@@ -131,10 +151,16 @@ class InterpolatedArray(Interpolated):
             subg_response = plane_wave_compund(kp[:, inds], beam.antennas[:, :, i] / wavelength)
             psi[inds] = subg_response.sum(axis=0).T
 
-            self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
-                (kpx, kpy, kpz),
-                psi.reshape(resolution, resolution, resolution).T,
-            )
+            if resolution[2] is not None:
+                self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
+                    (kpx, kpy, kpz),
+                    psi.reshape(*resolution).T,
+                )
+            else:
+                self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
+                    (kpx, kpy),
+                    psi.reshape(*resolution[:2]).T,
+                )
 
     def signals(self, k, polarization, ind=None, **kwargs):
         """Complex voltage output signals after summation of antennas.
@@ -162,7 +188,6 @@ class InterpolatedArray(Interpolated):
                 kn[0, ...] - p[0],
                 kn[1, ...] - p[1],
                 kn[2, ...] - p[2],
-                grid=False,
             )
 
         # broadcast to polarizations

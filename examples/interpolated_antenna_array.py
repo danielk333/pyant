@@ -3,33 +3,16 @@ Interpolated Antenna array gain
 ================================
 """
 import time
-
-import numpy as np
 import matplotlib.pyplot as plt
 
 import pyant
 
-xv, yv = np.meshgrid(np.linspace(-50, 50, num=22), np.linspace(-50, 50, num=22))
-antennas = np.zeros((3, 22**2))
-antennas[0, :] = xv.flatten()
-antennas[1, :] = yv.flatten()
+beam = pyant.beam_of_radar("e3d_stage1", "array")
+print(beam)
 
-beam = pyant.models.Array(
-    azimuth=0,
-    elevation=90.0,
-    frequency=46.5e6,
-    antennas=antennas,
-    degrees=True,
-)
+interp_beam = pyant.models.InterpolatedArray()
 
-interp_beam = pyant.models.InterpolatedArray(
-    azimuth=0,
-    elevation=90.0,
-    frequency=46.5e6,
-    degrees=True,
-)
-
-interp_beam.generate_interpolation(beam, resolution=150)
+interp_beam.generate_interpolation(beam, resolution=(200, 200, None))
 
 fig, axes = plt.subplots(2, 2)
 
