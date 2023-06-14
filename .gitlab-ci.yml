@@ -23,7 +23,7 @@ default:
     # install the package and develop dependencies
     - pip install .[develop,notebooks,profiling]
     - apt update
-    - apt install -y pandoc
+    - apt install -y pandoc patchelf
 
 # Prepare the nominal usage environment
 .setup:
@@ -49,8 +49,6 @@ default:
   extends: .setup
   allow_failure: true
   script:
-    - apt update
-    - apt install -y patchelf
     - pip install pytest
     - pytest
   rules:
