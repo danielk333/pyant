@@ -60,6 +60,7 @@ develop = [
     "numpydoc >= 1.2",
     "pre-commit > 3.0.0",
     "black >= 23.3.0",
+    "auditwheel >= 5.4.0",
 ]
 notebooks = [
     "notebook >= 6.5.4",
