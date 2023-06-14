@@ -1,4 +1,2 @@
-recursive-include src/clibbeam/*.c
-recursive-include src/clibbeam/*.h
-include src/clibmet/Makefile
+graft src/clibbeam
 include README.md
