@@ -12,6 +12,7 @@ from . import coordinates
 from . import beams
 from . import models
 from . import statistics
+from . import clib
 
 # Classes
 from .beam import Beam, SummedBeams

@@ -5,6 +5,7 @@ Phase steerable Half-pipe effects
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 # from matplotlib import cm
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
@@ -105,6 +106,7 @@ if __name__ == "__main__":
         frequency=300e6,
         width=120.0,
         height=40.0,
+        degrees=True,
     )
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 6), sharex="all", sharey="all")

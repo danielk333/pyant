@@ -127,7 +127,6 @@ def l2p_hemiplots(azim, elev, check=False):
         "contourf",
         ax=ah[0, 0],
         preproc=None,
-        vectorized=True,
         p_kw=dict(levels=levels, cmap=cmap),
     )
     plt.colorbar(ph, ax=aa)
@@ -136,7 +135,6 @@ def l2p_hemiplots(azim, elev, check=False):
         "contourf",
         ax=ah[0, 1],
         preproc=None,
-        vectorized=True,
         p_kw=dict(levels=levels, cmap=cmap),
     )
     plt.colorbar(ph, ax=aa)
@@ -147,7 +145,6 @@ def l2p_hemiplots(azim, elev, check=False):
             "contourf",
             ax=ah[1, 0],
             preproc=None,
-            vectorized=True,
             p_kw=dict(levels=levels, cmap=cmap),
         )
         plt.colorbar(ph, ax=aa)
@@ -156,7 +153,6 @@ def l2p_hemiplots(azim, elev, check=False):
             "contourf",
             ax=ah[1, 1],
             preproc=None,
-            vectorized=True,
             p_kw=dict(levels=levels, cmap=cmap),
         )
         plt.colorbar(ph, ax=aa)
