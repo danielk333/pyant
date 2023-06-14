@@ -49,6 +49,8 @@ default:
   extends: .setup
   allow_failure: true
   script:
+    - apt update
+    - apt install -y patchelf
     - pip install pytest
     - pytest
   rules:
