@@ -61,6 +61,7 @@ develop = [
     "pre-commit > 3.0.0",
     "black >= 23.3.0",
     "auditwheel >= 5.4.0",
+    "patchelf >= 0.14",
 ]
 notebooks = [
     "notebook >= 6.5.4",

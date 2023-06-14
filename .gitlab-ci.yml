@@ -23,7 +23,7 @@ default:
     # install the package and develop dependencies
     - pip install .[develop,notebooks,profiling]
     - apt update
-    - apt install -y pandoc patchelf
+    - apt install -y pandoc
 
 # Prepare the nominal usage environment
 .setup:
