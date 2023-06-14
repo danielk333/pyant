@@ -21,7 +21,7 @@ default:
     - virtualenv venv
     - source venv/bin/activate
     # install the package and develop dependencies
-    - pip install .[develop]
+    - pip install .[develop,notebooks,profiling]
     - apt update
     - apt install -y pandoc
 
