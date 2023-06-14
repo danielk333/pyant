@@ -28,6 +28,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+dist/
 .Python
 develop-eggs/
 eggs/

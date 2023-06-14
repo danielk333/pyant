@@ -1,11 +1,11 @@
 // inclusion guard
-#ifndef DOA_H_
-#define DOA_H_
+#ifndef BEAM_H_
+#define BEAM_H_
 
 void
 array_sensor_response(
     double *k,
-    double complex* G,
+    double complex *G,
     size_t channels
 );
-#endif // DOA_H_
+#endif // BEAM_H_

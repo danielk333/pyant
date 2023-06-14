@@ -7,7 +7,7 @@
 void
 array_sensor_response(
     double *k,
-    double complex* G,
+    double complex *G,
     size_t channels
 )
 {
