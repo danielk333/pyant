@@ -90,6 +90,7 @@ pypi:
     - python -m build
     - python -m twine check dist/*
     - python -m auditwheel repair dist/*.whl
+    - mv -v dist/*tar.gz wheelhouse/
     - >
       TWINE_USERNAME=__token__
       TWINE_PASSWORD=$PYPI_TOKEN
