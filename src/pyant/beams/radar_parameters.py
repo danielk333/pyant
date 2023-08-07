@@ -20,6 +20,9 @@ if _data_file is not None:
 UNITS = {
     "frequency": "Hz",
     "power": "W",
+    "lat": "deg",
+    "lon": "deg",
+    "alt": "m",
 }
 
 

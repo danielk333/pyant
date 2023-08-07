@@ -36,7 +36,10 @@
     },
     "maarsy": {
         "frequency": 53.5e6,
-        "power": 0.8e6
+        "power": 0.8e6,
+        "lat": 69.29836217360676,
+        "lon": 16.04139069818655,
+        "alt": 1.0
     },
     "pansy": {
         "frequency": 47e6,
