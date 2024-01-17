@@ -6,11 +6,6 @@ stages:
   - test
   - release
 
-# Select correct runner
-default:
-  tags:
-    - generic
-
 # Prepare the development environment
 .devsetup:
   before_script:
