@@ -183,7 +183,7 @@ def generate_eiscat_3d_stage2():
 
 
 @radar_beam_generator(Radars.EISCAT_3D_stage1, Models.InterpolatedArray)
-def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=1000):
+def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=(1000, 1000, None)):
     """EISCAT 3D Gain pattern for a dense core of active sub-arrays,
     i.e stage 1 of development.
 

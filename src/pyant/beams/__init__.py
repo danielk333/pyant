@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''
+"""
 Collection of pre-defined radar beams of different Models.
 
 These instances usually correspond to a real physical system.
@@ -10,7 +10,7 @@ function that generate the specific radar beam. The function expects a
 signiature of only keyword arguments which are options for the generating
 function.
 
-'''
+"""
 
 # Top level exposed interface
 from .beams import beam_of_radar, avalible_beams
@@ -25,3 +25,4 @@ from . import eiscat_uhf
 from . import esr
 from . import tsdr
 from . import arrays
+from . import mu

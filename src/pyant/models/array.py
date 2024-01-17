@@ -124,6 +124,20 @@ class Array(Beam):
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
 
+        G = self.channel_signals(k, polarization, **kwargs)
+        G = np.sum(G, axis=0)  # coherent intergeneration over channels
+        return np.abs(G)
+
+    def channel_signals(self, k, ind=None, polarization=None, **kwargs):
+        """Complex voltage output signals after summation of antennas and polarization.
+
+        Returns
+        -------
+        numpy.ndarray
+            `(c,num_k)` ndarray where `c` is the number of channels
+            requested and `num_k` is the number of input wave vectors.
+            If `num_k = 1` the returned ndarray is `(c,)`.
+        """
         if polarization is None:
             polarization = self.polarization
         elif not np.all(np.iscomplex(polarization)):
@@ -138,8 +152,7 @@ class Array(Beam):
             G[:, 0, ...] *= pol_comp  # align polarizations
 
         G = np.sum(G, axis=1)  # coherent intergeneration over polarization
-        G = np.sum(G, axis=0)  # coherent intergeneration over channels
-        return np.abs(G)
+        return G
 
     def signals(self, k, polarization, ind=None, channels=None, **kwargs):
         """Complex voltage output signals after summation of antennas.

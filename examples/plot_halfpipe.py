@@ -5,7 +5,7 @@ Halfpipe radar
 import matplotlib.pyplot as plt
 import pyant
 
-el = 50
+el = 90
 
 beam = pyant.models.FiniteCylindricalParabola(
     azimuth=0,
@@ -25,14 +25,13 @@ pyant.plotting.gain_heatmap(
     ax=ax1,
 )
 
-# Azimuth is angle (in degrees) clockwise
-beam.azimuth = 30.0
+beam.sph_point(0, 30)
 
 pyant.plotting.gain_heatmap(
     beam,
     resolution=300,
     min_elevation=80.0,
-    label=f" - turned {beam.azimuth} deg clockwise",
+    label=f" - pointed {beam.elevation} deg elevation",
     ax=ax2,
 )
 

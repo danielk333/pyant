@@ -45,8 +45,16 @@ class InterpolatedArray(Interpolated):
 
     """
 
-    def __init__(self, polarization=np.array([1, 1j]) / np.sqrt(2), scaling=1.0, **kwargs):
-        super().__init__(azimuth=0, elevation=0, frequency=np.nan, **kwargs)
+    def __init__(
+        self,
+        polarization=np.array([1, 1j]) / np.sqrt(2),
+        scaling=1.0,
+        azimuth=0,
+        elevation=0,
+        frequency=np.nan,
+        **kwargs
+    ):
+        super().__init__(azimuth=azimuth, elevation=elevation, frequency=frequency, **kwargs)
         self.interpolated = None
         self.scaling = scaling
         self.polarization = polarization
