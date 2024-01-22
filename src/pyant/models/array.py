@@ -100,6 +100,9 @@ class Array(Beam):
 
     def copy(self):
         """Return a copy of the current instance."""
+        mem = self.mutual_coupling_matrix
+        if mem is not None:
+            mem = self.mutual_coupling_matrix.copy()
         return Array(
             frequency=copy.deepcopy(self.frequency),
             azimuth=copy.deepcopy(self.azimuth),
@@ -108,7 +111,7 @@ class Array(Beam):
             antennas=np.transpose(self.antennas, (1, 0, 2)).copy(),
             scaling=copy.deepcopy(self.scaling),
             polarization=self.polarization.copy(),
-            mutual_coupling_matrix=self.mutual_coupling_matrix.copy(),
+            mutual_coupling_matrix=mem,
         )
 
     @property
