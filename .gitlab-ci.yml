@@ -16,7 +16,7 @@ stages:
     - virtualenv venv
     - source venv/bin/activate
     # install the package and develop dependencies
-    - pip install .[develop,notebooks,profiling]
+    - pip install .[develop,profiling]
     - apt update
     - apt install -y pandoc
 
@@ -44,7 +44,7 @@ stages:
   extends: .setup
   allow_failure: true
   script:
-    - pip install pytest
+    - pip install pytest pytest-cov
     - pytest
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -64,9 +64,7 @@ pages:
   stage: release
   extends: .devsetup
   script:
-    - cd docs
-    - make html
-    - mv build ../public
+    - mkdocs build --site-dir public
   artifacts:
     paths:
       - public

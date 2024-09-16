@@ -1,0 +1,56 @@
+site_name: pyant
+
+theme:
+  name: "material"
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: "#002d72"
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: "#002d72"
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  icon:
+    repo: fontawesome/brands/github
+
+repo_url: https://github.com/danielk333/pyant
+
+extra_css:
+  - assets/style.css
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - scripts/generate_api_docs.py
+        - scripts/generate_examples_docs.py
+  - literate-nav:
+      nav_file: nav.md
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            docstring_section_style: table
+            show_docstring_functions: true
+            show_docstring_modules: true
+            show_docstring_description: true
+  - mkdocs-jupyter:
+      ignore_h1_titles: True
+      execute: true
+
+nav:
+  - Home: index.md
+  - Getting started: getting_started.md
+  - Examples: examples/
+  - Reference: reference/

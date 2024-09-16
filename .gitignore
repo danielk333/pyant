@@ -1,13 +1,8 @@
 #docs
-docs/build/
-docs/source/autosummary/
-docs/source/autogallery/
-docs/source/autopackages/
-docs/jupyter_execute/
 *_report
 
-#notebook gallery
-docs/source/notebooks/*.ipynb
+# gitlab pages
+public
 
 #Sublime
 *.sublime*
