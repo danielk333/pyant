@@ -347,7 +347,7 @@ def gain_heatmap(
         conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
     ax.axis("scaled")
-    ax.set_clip_box([[-1, -1], [1, 1]])
+    ax.set_clip_box(ax.bbox)
 
     add_circle(ax, [0, 0], 1.0, "--", linewidth=1, color="#c0c0c0")
     add_circle(ax, pointing[:2], cmin, "-.", linewidth=1, color="#c0c0c0")
