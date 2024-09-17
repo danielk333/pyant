@@ -22,6 +22,10 @@ theme:
         name: Switch to dark mode
   icon:
     repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.path
+    - navigation.indexes
 
 repo_url: https://github.com/danielk333/pyant
 
@@ -46,8 +50,8 @@ plugins:
             show_docstring_modules: true
             show_docstring_description: true
   - mkdocs-jupyter:
-      ignore_h1_titles: True
       execute: true
+      include_source: True
 
 nav:
   - Home: index.md

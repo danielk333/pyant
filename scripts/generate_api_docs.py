@@ -1,12 +1,6 @@
 import pathlib
 import mkdocs_gen_files
 
-md_doc = """
-
-# API
-
-"""
-
 root = pathlib.Path(__file__).parent.parent
 src = root / "src"
 package = src / "pyant"
@@ -23,6 +17,8 @@ for file in sorted(package.rglob("*.py")):
     parts = tuple(module_path.parts)
     if parts[-1] == "__init__":
         parts = parts[:-1]
+        doc_path = doc_path.with_name("index.md")
+        full_doc_path = full_doc_path.with_name("index.md")
     elif parts[-1] == "__main__":
         continue
 
