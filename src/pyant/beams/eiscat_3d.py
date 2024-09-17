@@ -2,6 +2,15 @@
 
 """A collection of functions and information for the EISCAT 3D Radar system.
 
+Notes
+-----
+Configuration are taken from [1]_.
+
+
+.. [1] (Technical report) Vierinen, J., Kastinen, D., Kero, J.,
+    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
+    Krag, H. (2019). EISCAT 3D Performance Analysis
+
 """
 
 # Python standard import
@@ -111,13 +120,7 @@ def e3d_array(freqeuncy, fname=None, configuration="full"):
 
 @radar_beam_generator(Radars.EISCAT_3D_module, Models.Array)
 def generate_eiscat_3d_module():
-    """EISCAT 3D Gain pattern for single antenna sub-array.
-
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
-    Krag, H. (2019). EISCAT 3D Performance Analysis
-
-    """
+    """EISCAT 3D Gain pattern for single antenna sub-array."""
     return Array(
         azimuth=0.0,
         elevation=90.0,
@@ -141,10 +144,6 @@ def generate_eiscat_3d_stage1(configuration="dense"):
     configuration : {'dense', 'sparse'}, optional
         Chooses how the stage1 antennas are distributed in the full array.
 
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
-    Krag, H. (2019). EISCAT 3D Performance Analysis
-
     """
     return Array(
         azimuth=0.0,
@@ -163,10 +162,6 @@ def generate_eiscat_3d_stage1(configuration="dense"):
 def generate_eiscat_3d_stage2():
     """EISCAT 3D Gain pattern for a full site of active sub-arrays,
     i.e stage 2 of development.
-
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
-    Krag, H. (2019). EISCAT 3D Performance Analysis
 
     """
     return Array(
@@ -191,10 +186,6 @@ def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=(10
     ----------
     configuration : {'dense', 'sparse'}, optional
         Chooses how the stage1 antennas are distributed in the full array.
-
-    **Reference:** [Technical report] Vierinen, J., Kastinen, D., Kero, J.,
-    Grydeland, T., McKay, D., Roynestad, E., Hesselbach, S., Kebschull, C., &
-    Krag, H. (2019). EISCAT 3D Performance Analysis
 
     """
     beam = InterpolatedArray(

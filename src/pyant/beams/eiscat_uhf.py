@@ -23,9 +23,10 @@ else:
 
 
 class EISCAT_UHF(Measured):
-    """Measured gain pattern of the EISCAT UHF radar.
+    """Measured gain pattern of the EISCAT UHF radar [1]_.
 
-    **Reference:** [Personal communication] Vierinen, J.
+    .. [1] (Personal communication) Vierinen, J.
+
     """
 
     def __init__(self, azimuth, elevation, frequency, **kwargs):
