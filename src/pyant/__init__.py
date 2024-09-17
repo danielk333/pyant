@@ -30,4 +30,4 @@ from .beams import (
 from .beams import UNITS
 
 # Profiling
-from .profiling import profile, profile_stop, get_profile, print_profile
+from .profiling import profile, profile_stop, get_profile, print_profile, profile_clear

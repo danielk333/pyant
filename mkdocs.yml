@@ -4,6 +4,11 @@ theme:
   name: "material"
   logo: assets/logo.png
   favicon: assets/favicon.png
+  features:
+    - navigation.instant
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
   palette:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
@@ -22,10 +27,7 @@ theme:
         name: Switch to dark mode
   icon:
     repo: fontawesome/brands/github
-  features:
-    - navigation.instant
-    - navigation.path
-    - navigation.indexes
+
 
 repo_url: https://github.com/danielk333/pyant
 
@@ -52,6 +54,7 @@ plugins:
   - mkdocs-jupyter:
       execute: true
       include_source: True
+      ignore: ["_wip*"]
 
 nav:
   - Home: index.md
