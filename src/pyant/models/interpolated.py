@@ -52,7 +52,7 @@ class Interpolated(Beam):
         pointing = params["pointing"]
 
         cmin = np.cos(np.radians(min_elevation))
-        S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+        S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
         S = np.zeros_like(S)
         S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
         S = S.reshape(resolution, resolution)
