@@ -39,10 +39,11 @@ or run `mkdocs serve` to live view the docs.
 
 ## Notebooks
 
-To develop notebooks for documentation in Jupyter-lab, install the following development requirements.
+To develop notebooks for documentation in Jupyter-lab, install the above development requirements as well as `jupyter-lab`.
 
-Then run notebooks in the appropriate folder `./notebooks` using `jupyter-notebook` and
-pair the new notebook with a MyST file.
+Then run Jupyter-lab in the appropriate folder `./docs/notebooks` using `jupyter-lab` and
+open a new plain-text version file using `jupytext`, e.g. a `light` py file or a `MyST` md file.
+You can also pair notebooks with the plain-text files which will keep both in synch.
 
 For more information on how to pair notebooks in order to have persistent plain-text versions,
 see the [jupytext docs](https://jupytext.readthedocs.io/en/latest/paired-notebooks.html).
