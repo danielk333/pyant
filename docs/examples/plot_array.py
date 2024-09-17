@@ -1,12 +1,26 @@
-"""
-Antenna array gain
-===========================
-"""
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# # Antenna array gain
+
+
 # import time
 import numpy as np
 import matplotlib.pyplot as plt
-
 import pyant
+
 
 antenna_num = 100
 beam = pyant.beams.arrays.equidistant_archimedian_spiral(
@@ -28,6 +42,7 @@ M[off_diags] = M[off_diags] * (1 / D[off_diags]) ** 0.2
 
 beam.mutual_coupling_matrix = M
 
+
 # Uncomment these to try the speed up for more complex gain calculations
 
 # start_time = time.time()
@@ -38,7 +53,9 @@ beam.mutual_coupling_matrix = M
 # pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=True)
 # print(f'"gain_heatmap" ({100**2}) vectorized performance: {time.time() - start_time:.1e} seconds')
 
-fig = plt.figure()
+
+# +
+fig = plt.figure(figsize=(8, 8))
 axes = [
     fig.add_subplot(2, 2, 1, projection="3d"),
     fig.add_subplot(2, 2, 2),

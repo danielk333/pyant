@@ -1,14 +1,26 @@
-"""
-Vectorized gain functions
-================================
-"""
-import time
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
 
+# # Vectorized gain functions
+
+import time
 import numpy as np
 import pyant
 
-kn = 500
 
+kn = 500
 beam = pyant.models.Airy(
     azimuth=45.0,
     elevation=75.0,
@@ -18,11 +30,10 @@ beam = pyant.models.Airy(
     degrees=True,
 )
 
+
 kx = np.linspace(-1, 1, num=kn)
 ky = np.linspace(-1, 1, num=kn)
-
 size = kn**2
-
 xv, yv = np.meshgrid(kx, ky, sparse=False, indexing="ij")
 k = np.zeros((3, size), dtype=np.float64)
 k[0, :] = xv.reshape(1, size)
@@ -38,7 +49,7 @@ start_time = time.time()
 G = np.full((size,), np.nan, dtype=np.float64)
 for i in range(size):
     if inds[i]:
-        G[i] = beam.gain(k[:, i])
+        G[i] = beam.gain(k[:, i])[0]
 G = G.reshape(kn, kn)
 
 loop_time = time.time() - start_time

@@ -1,14 +1,26 @@
-"""
-Phased paracyl plots
-===========================
-"""
-import numpy as np
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
 
+
+# # Phased paracyl plots
+
+import numpy as np
 from matplotlib import pyplot as plt
 
 import pyant
 from pyant.plotting import gain_heatmap, hemisphere_plot
-
 from pyant.models import FiniteCylindricalParabola
 from pyant.models import PhasedFiniteCylindricalParabola
 
@@ -280,9 +292,8 @@ def compare(az=30, el=60, frq=60e6, with_old=False, **kw):
     plt.show()
 
 
-if __name__ == "__main__":
-    az, el = 15.0, 70.0
-    l2p_hemiplots(azim=az, elev=el)
-    l2p_hemiplots(azim=az, elev=el, check=1)
-    l2p_hemiplots(azim=az, elev=el, check=2)
-    compare(az=az, el=el, frq=120e6, resolution=401)
+az, el = 15.0, 70.0
+l2p_hemiplots(azim=az, elev=el)
+l2p_hemiplots(azim=az, elev=el, check=1)
+l2p_hemiplots(azim=az, elev=el, check=2)
+compare(az=az, el=el, frq=120e6, resolution=401)

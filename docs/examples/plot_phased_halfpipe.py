@@ -1,13 +1,23 @@
-"""
-Phase steerable Half-pipe
-============================
-"""
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# # Phase steerable Half-pipe
 
 import itertools as it
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 import pyant
 
 
@@ -33,6 +43,8 @@ beam = pyant.models.PhasedFiniteCylindricalParabola(
     degrees=True,
 )
 
+
+# +
 fig, axes = plt.subplots(2, 2, figsize=(10, 6), dpi=80)
 axes = axes.flatten()
 for i in range(beam.named_shape["phase_steering"]):
@@ -47,6 +59,7 @@ for i in range(beam.named_shape["phase_steering"]):
     )
     axes[i].plot(*pa)
     axes[i].set_title(f"{int(beam.phase_steering[i])} deg steering")
+
 
 beam_two = pyant.models.PhasedFiniteCylindricalParabola(
     azimuth=0,
@@ -86,5 +99,6 @@ for i in range(beam_two.named_shape["phase_steering"]):
 
         axes[i, j].plot(*pa)
         axes[i, j].set_title(f"{int(phi)} ph-st | {int(beam_two.elevation[j])} el")
+
 
 plt.show()

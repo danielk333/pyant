@@ -1,9 +1,24 @@
-"""
-Profiling
-==========
-"""
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# # Profiling
+
+
 import numpy as np
 import pyant
+
 
 beam = pyant.models.Airy(
     azimuth=0,
@@ -13,8 +28,8 @@ beam = pyant.models.Airy(
     radius=23.0,
     degrees=True,
 )
-
 num = 10000
+
 
 # Does not work if yappi is not installed
 pyant.profile()

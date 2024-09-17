@@ -1,10 +1,25 @@
-"""
-Collection of beams
-===================
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
 
-This assumes that the signals in incoherently integrated between beams,
-i.e. gain in linearly additive.
-"""
+
+# # Collection of beams
+#
+# This assumes that the signals in incoherently integrated between beams,
+# i.e. gain in linearly additive.
+
+
 import pyant
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,8 +37,8 @@ beams = [
     )
     for el in [90.0, 80.0, 70.0, 60.0]
 ]
-
 k = np.array([0, 0, 1])
+
 
 gains = [b.gain(k) for b in beams]
 print(f"Individual gains {np.log10(gains)*10} dB")
@@ -33,14 +48,15 @@ print(f"Summed gains {np.log10(gain_sum)*10} dB")
 
 print(f"Gain of beam 2 {beams[1].gain(k)}")
 
+# +
 fig, axes = plt.subplots(2, 2, figsize=(10, 6), dpi=80)
 for beam, ax in zip(beams, axes.flatten()):
     pyant.plotting.gain_heatmap(beam, min_elevation=60, ax=ax)
 
-
 summed_beam = pyant.SummedBeams(beams)
 
+
+# +
 fig, ax = plt.subplots(figsize=(10, 6), dpi=80)
 pyant.plotting.gain_heatmap(summed_beam, min_elevation=0, ax=ax)
-
 plt.show()

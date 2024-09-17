@@ -1,7 +1,20 @@
-"""
-Complex response of array
-===========================
-"""
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# # Complex response of array
+
 import numpy as np
 
 import pyant
@@ -45,28 +58,28 @@ print(f"Gain |H>: {beam_linp.gain(k)}")
 print(f"Gain |H>: {beam_linp.gain(km)}")
 
 print(
-    f"signals response from {k} of LHCP analysis when signal is |H>: \
-    {beam.signals(k=k, polarization=np.array([1,0]))}"
+    f"\nsignals response from {k} of LHCP analysis when signal is |H>:\n"
+    f"{beam.signals(k=k, polarization=np.array([1, 0]))}"
 )
 print(
-    f"signals response from {k} of LHCP analysis when signal is LHCP: \
-    {beam.signals(k=k, polarization=beam.polarization)}"
-)
-
-print(
-    f"Gain from {k} of LHCP analysis when signal is |H>: \
-    {beam.gain(k=k, polarization=np.array([1,0]))}"
-)
-print(
-    f"Gain from {k} of LHCP analysis when signal is LHCP: \
-    {beam.gain(k=k, polarization=beam.polarization)}"
+    f"signals response from {k} of LHCP analysis when signal is LHCP:\n"
+    f"{beam.signals(k=k, polarization=beam.polarization)}\n"
 )
 
 print(
-    f"Gain from {k} of |H> analysis when signal is |H>: \
-    {beam_linp.gain(k=k, polarization=np.array([1,0]))}"
+    f"\nGain from {k} of LHCP analysis when signal is |H>:\n"
+    f"{beam.gain(k=k, polarization=np.array([1, 0]))}"
 )
 print(
-    f"Gain from {k} of |H> analysis when signal is LHCP: \
-    {beam_linp.gain(k=k, polarization=beam.polarization)}"
+    f"Gain from {k} of LHCP analysis when signal is LHCP:\n"
+    f"{beam.gain(k=k, polarization=beam.polarization)}\n"
+)
+
+print(
+    f"\nGain from {k} of |H> analysis when signal is |H>:\n"
+    f"{beam_linp.gain(k=k, polarization=np.array([1, 0]))}"
+)
+print(
+    f"Gain from {k} of |H> analysis when signal is LHCP:\n"
+    f"{beam_linp.gain(k=k, polarization=beam.polarization)}\n"
 )

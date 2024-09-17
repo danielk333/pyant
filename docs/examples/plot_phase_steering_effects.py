@@ -1,7 +1,19 @@
-"""
-Phase steerable Half-pipe effects
-==================================
-"""
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# # Phase steerable Half-pipe effects
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -97,24 +109,21 @@ def steering_plot(
     )
 
 
-if __name__ == "__main__":
-    beam = pyant.models.PhasedFiniteCylindricalParabola(
-        azimuth=0,
-        elevation=90.0,
-        depth=18,
-        phase_steering=0.0,
-        frequency=300e6,
-        width=120.0,
-        height=40.0,
-        degrees=True,
-    )
+beam = pyant.models.PhasedFiniteCylindricalParabola(
+    azimuth=0,
+    elevation=90.0,
+    depth=18,
+    phase_steering=0.0,
+    frequency=300e6,
+    width=120.0,
+    height=40.0,
+    degrees=True,
+)
 
-    fig, ax = plt.subplots(1, 2, figsize=(10, 6), sharex="all", sharey="all")
 
-    steering_plot(beam, symmetric=False, corrected=False, ax=ax[0])
-    steering_plot(beam, symmetric=False, corrected=True, ax=ax[1])
-
-    ax[0].set_title("Phase steering (nominal)")
-    ax[1].set_title("Phase steering (corrected)")
-
-    plt.show()
+fig, ax = plt.subplots(1, 2, figsize=(10, 6), sharex="all", sharey="all")
+steering_plot(beam, symmetric=False, corrected=False, ax=ax[0])
+steering_plot(beam, symmetric=False, corrected=True, ax=ax[1])
+ax[0].set_title("Phase steering (nominal)")
+ax[1].set_title("Phase steering (corrected)")
+plt.show()
