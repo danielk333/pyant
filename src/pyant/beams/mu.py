@@ -5,6 +5,7 @@
 """
 import pathlib
 import numpy as np
+import scipy.interpolate
 
 from ..models import Array, InterpolatedArray
 from .beams import radar_beam_generator
@@ -17,6 +18,21 @@ if _data_file is not None:
     _mu_antennas = np.load(_data_file)
 else:
     _mu_antennas = None
+
+_yagi_data_file = DATA["mu_yagi_gain.npz"] if "mu_yagi_gain.npz" in DATA else None
+if _yagi_data_file is not None:
+    _mu_yagi = np.load(_yagi_data_file)
+else:
+    _mu_yagi = None
+
+
+def generate_yagi_pattern():
+    _ = scipy.interpolate.RectBivariateSpline(
+        _mu_yagi["az_deg"],
+        _mu_yagi["el_deg"],
+        _mu_yagi["gain_dB"],
+    )
+    raise NotImplementedError()
 
 
 @radar_beam_generator(Radars.MU, Models.Array)
