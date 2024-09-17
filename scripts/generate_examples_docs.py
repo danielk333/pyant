@@ -1,21 +1,28 @@
 import pathlib
-import mkdocs_gen_files
 
 root = pathlib.Path(__file__).parent.parent
 docs = root / "docs"
 examples = docs / "examples"
+notebooks = docs / "notebooks"
 
-nav = mkdocs_gen_files.Nav()
+base = ["  - Examples:", "    - examples/index.md"]
 
-for file in sorted(examples.rglob("*.py")):
-    example_file = file.relative_to(examples).with_suffix("")
-    example_path = file.relative_to(docs)
 
-    if file.parent.name.startswith("."):
-        continue
+def add_tree(base, folder):
+    for file in sorted(folder.rglob("*.py")):
+        example_path = file.relative_to(docs)
 
-    parts = tuple(example_file.parts)
-    nav[parts] = example_file.as_posix()
+        if file.parent.name.startswith("."):
+            continue
+        if file.name.startswith("_wip"):
+            continue
 
-with mkdocs_gen_files.open("examples/nav.md", "w") as nav_file:
-    nav_file.writelines(nav.build_literate_nav())
+        base.append(f"    - {file.stem}: {str(example_path)}")
+
+
+add_tree(base, examples)
+base.append("  - Notebooks:")
+base.append("    - notebooks/index.md")
+add_tree(base, notebooks)
+
+print("\n".join(base))

@@ -64,6 +64,7 @@ develop = [
     "mkdocs-jupyter",
     "mkdocs-gen-files",
     "mkdocs-literate-nav",
+    "mkdocs-section-index",
 ]
 profiling = [
     "yappi",
