@@ -24,7 +24,7 @@ def add_circle(ax, c, r, fmt="k--", *args, **kw):
     ax.plot(c[0] + np.cos(th), c[1] + np.sin(th), fmt, *args, **kw)
 
 
-def compute_k_grid(pointing, min_elevation, resolution, centered, cmin):
+def compute_k_grid(pointing, resolution, centered, cmin):
     if centered:
         kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
         ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
@@ -107,7 +107,7 @@ def gains(
     ax=None,
 ):
     """Plot the gain of a list of beam patterns as a function of elevation at
-    :math:`0^\circ` degrees azimuth.
+    :math:`0^\\circ` degrees azimuth.
 
     Parameters
     ----------
@@ -120,7 +120,7 @@ def gains(
     resolution : int
         Number of points to divide the set elevation range into.
     min_elevation : float
-        Minimum elevation in degrees, elevation range is from this number to :math:`90^\circ`.
+        Minimum elevation in degrees, elevation range is from this number to :math:`90^\\circ`.
     alpha : float
         The alpha with which to draw the curves
     legends : list(str)
@@ -197,8 +197,8 @@ def gain_surface(
         component range into, total number of caluclation points is the square of this number.
     min_elevation : float
         Minimum elevation in degrees, elevation range
-        is from this number to :math:`90^\circ`. This number defines the half
-        the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
+        is from this number to :math:`90^\\circ`. This number defines the half
+        the length of the square that the gain is calculated over, i.e. :math:`\\cos(el_{min})`.
     label : str
         Adds this to plot title
     centered : bool
@@ -226,7 +226,7 @@ def gain_surface(
         raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
 
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
     S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
     S = S.reshape(resolution, resolution)
@@ -296,8 +296,8 @@ def gain_heatmap(
         component range into, total number of caluclation points is the square of this number.
     min_elevation : float
         Minimum elevation in degrees, elevation range
-        is from this number to :math:`90^\circ`. This number defines the half
-        the length of the square that the gain is calculated over, i.e. :math:`\cos(el_{min})`.
+        is from this number to :math:`90^\\circ`. This number defines the half
+        the length of the square that the gain is calculated over, i.e. :math:`\\cos(el_{min})`.
     label : str
         Adds this to plot title
     centered : bool
@@ -325,7 +325,7 @@ def gain_heatmap(
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
     S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
     S = S.reshape(resolution, resolution)
@@ -383,20 +383,31 @@ def hemisphere_plot(
     """
     Create a hemispherical plot of some function of pointing direction
 
-    :param callable func: Some function that maps from a pointing vector in the
-                upper hemisphere to a scalar
-    :param callable plotfunc: a function with call signature like `contourf` or
-                `pcolormesh`, i.e.  plotfunc(xval, yval, zval, *args, **kw)
-    :param list f_args: extra arguments to `func`
-    :param list f_kw  : estra keyword arguments to `func`
-    :param list p_args: extra arguments to `plotfunc`
-    :param list p_kw  : estra keyword arguments to `plotfunc`
-    :keyword int resolution: Number of points to divide the wave vector x and y
-                components into, total number of calculation points is the
-                square of this number.
-    :keyword plot_axis ax: Axis in which to make the plot.
-                If not given, one will be created in a new figure window
-    :keyword: string preproc, in ['none', 'abs', 'dba', 'dbp']
+    Parameters
+    ----------
+    func : callable
+        Some function that maps from a pointing vector in the upper hemisphere to a scalar
+    plotfunc : callable
+        a function with call signature like `contourf` or
+        `pcolormesh`, i.e.  plotfunc(xval, yval, zval, *args, **kw)
+    f_args : list
+        extra arguments to `func`
+    f_kw : dict
+        extra keyword arguments to `func`
+    p_args : list
+        extra arguments to `plotfunc`
+    p_kw : dict
+        extra keyword arguments to `plotfunc`
+    resolution : int
+        Number of points to divide the wave vector x and y
+        components into, total number of calculation points is the
+        square of this number.
+    plot_axis : matplotlib.Axis
+        Axis in which to make the plot.
+        If not given, one will be created in a new figure window
+    preproc : string
+        in ['none', 'abs', 'dba', 'dbp']
+
     """
     if ax is None:
         fig, ax = plt.subplots()
@@ -411,7 +422,7 @@ def hemisphere_plot(
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
     S[inds] = func(k[:, inds]).flatten()
     S = S.reshape(resolution, resolution)
@@ -475,7 +486,7 @@ def gain_heatmap_movie(
     params, _ = beam.get_parameters(ind, named=True)
     pointing = params["pointing"]
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = compute_k_grid(pointing, min_elevation, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
     def run(it, fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds):
         beam = beam_update(beam, it)
