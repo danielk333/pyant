@@ -7,13 +7,15 @@ from .interpolated import Interpolated
 from .array import Array
 from .. import coordinates
 
+# import matplotlib.pyplot as plt
+
 
 def plane_wave_compund(kp, r):
     """The complex plane wave function.
 
     Parameters
     ----------
-    k : numpy.ndarray
+    kp : numpy.ndarray
         Wave-vectors minus pointing direction (wave propagation directions)
     r : numpy.ndarray
         Spatial locations normalized by wavelength (Antenna positions in space)
@@ -109,12 +111,18 @@ class InterpolatedArray(Interpolated):
         self.interp_dims = data["interp_dims"]
 
     def generate_interpolation(
-        self, beam, ind=None, polarization=None, resolution=(1000, 1000, None)
+        self,
+        beam,
+        ind=None,
+        polarization=None,
+        min_elevation=0.0,
+        resolution=1000,
     ):
         """Generate an interpolated version of Array
 
         # TODO: docstring
         """
+        raise NotImplementedError("This function is not yet tested and stable")
 
         assert isinstance(beam, Array), "Can only interpolate arrays"
         self.channels = beam.channels
@@ -132,18 +140,19 @@ class InterpolatedArray(Interpolated):
         wavelength = scipy.constants.c / params["frequency"]
         if len(wavelength.shape) > 0:
             wavelength = wavelength[0]
+        cmin = np.cos(np.radians(min_elevation))
 
         if resolution[2] is None:
             size = np.prod(resolution[:2])
-            kpx = np.linspace(-1.0, 1.0, num=resolution[0])
-            kpy = np.linspace(-1.0, 1.0, num=resolution[1])
+            kpx = np.linspace(-cmin, cmin, num=resolution[0])
+            kpy = np.linspace(-cmin, cmin, num=resolution[1])
             kpz = None
             xv, yv = np.meshgrid(kpx, kpy, sparse=False, indexing="ij")
             kp = np.empty((3, size), dtype=np.float64)
             kp[0, :] = xv.reshape(1, size)
             kp[1, :] = yv.reshape(1, size)
             xy2 = kp[0, :] ** 2 + kp[1, :] ** 2
-            inds = xy2 <= 1
+            inds = xy2 <= cmin
             kp[2, inds] = np.sqrt(1 - xy2[inds])
             kp[2, np.logical_not(inds)] = 0
             kp[:, :] = kp[:, :] - p[:, None]
@@ -161,6 +170,8 @@ class InterpolatedArray(Interpolated):
             kp[1, :] = yv.reshape(1, size)
             kp[2, :] = zv.reshape(1, size)
 
+            xy2 = kp[0, :] ** 2 + kp[1, :] ** 2
+
             norm = np.linalg.norm(kp, axis=0)
             inds = norm <= 2.0
             self.interp_dims = 3
@@ -171,16 +182,23 @@ class InterpolatedArray(Interpolated):
         for i in range(self.channels):
             subg_response = plane_wave_compund(kp[:, inds], beam.antennas[:, :, i] / wavelength)
             psi[inds] = subg_response.sum(axis=0)
+            # breakpoint()
 
             if resolution[2] is None:
+                # fig, ax = plt.subplots()
+                # ax.pcolormesh(kpx, kpy, np.log10(np.abs(psi.reshape(*resolution[:2]).T)), vmin=0)
+                # plt.show()
+
                 self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy),
                     psi.reshape(*resolution[:2]).T,
+                    bounds_error=False,
                 )
             else:
                 self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy, kpz),
                     psi.reshape(*resolution).T,
+                    bounds_error=False,
                 )
 
     def signals(self, k, polarization, ind=None, **kwargs):
