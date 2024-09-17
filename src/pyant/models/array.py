@@ -126,8 +126,7 @@ class Array(Beam):
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
-
-        G = self.channel_signals(k, polarization, **kwargs)
+        G = self.channel_signals(k, ind=ind, polarization=polarization, **kwargs)
         G = np.sum(G, axis=0)  # coherent intergeneration over channels
         return np.abs(G)
 
