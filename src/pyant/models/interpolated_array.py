@@ -133,8 +133,6 @@ class InterpolatedArray(Beam):
 
         # Transfer meta-data and parameters
         self.channels = beam.channels
-        self.antennas = beam.antennas.copy()
-        self.polarization = beam.polarization.copy()
 
         if polarization is None:
             polarization = self.polarization
@@ -200,7 +198,11 @@ class InterpolatedArray(Beam):
         )
         # r in meters, divide by lambda
         for i in range(self.channels):
-            subg_response = plane_wave_compund(kp[:, inds], beam.antennas[i][:, :].T / wavelength)
+            if isinstance(self.antennas, list):
+                grp = beam.antennas[i][:, :].T
+            else:
+                grp = beam.antennas[:, :, i].T
+            subg_response = plane_wave_compund(kp[:, inds], grp / wavelength)
             psi[i, inds] = subg_response.sum(axis=0).T
 
         ant_response = beam.antenna_element(k, polarization) * beam.scaling
