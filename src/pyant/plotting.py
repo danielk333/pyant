@@ -76,7 +76,10 @@ def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
     else:
         style_ = "." + color
 
-    stacked_antennas = np.concatenate(antennas, axis=1)
+    if isinstance(antennas, list):
+        stacked_antennas = np.concatenate(antennas, axis=1)
+    else:
+        stacked_antennas = antennas.reshape(3, -1)
 
     if z_axis:
         ax.plot(

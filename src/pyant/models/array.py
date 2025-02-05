@@ -97,7 +97,6 @@ class Array(Beam):
             assert len(antennas.shape) == 3
             assert antennas.shape[0] == 3
             assert isinstance(antennas, np.ndarray)
-            antennas = [antennas[:, :, ind] for ind in range(antennas.shape[2])]
 
         if not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
@@ -113,12 +112,16 @@ class Array(Beam):
         mem = self.mutual_coupling_matrix
         if mem is not None:
             mem = self.mutual_coupling_matrix.copy()
+        if isinstance(self.antennas, list):
+            antennas = [x.copy() for x in self.antennas]
+        else:
+            antennas = self.antennas.copy()
         return Array(
             frequency=copy.deepcopy(self.frequency),
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
             degrees=self.degrees,
-            antennas=[x.copy() for x in self.antennas],
+            antennas=antennas,
             scaling=copy.deepcopy(self.scaling),
             polarization=self.polarization.copy(),
             mutual_coupling_matrix=mem,
@@ -128,7 +131,10 @@ class Array(Beam):
     @property
     def channels(self):
         """Number of channels returned by complex output."""
-        return len(self.antennas)
+        if isinstance(self.antennas, list):
+            return len(self.antennas)
+        else:
+            return self.antennas.shape[2]
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
@@ -203,9 +209,11 @@ class Array(Beam):
 
         # r in meters, divide by lambda
         for i in range(chan_num):
-            subg_response = plane_wave(
-                k_, self.antennas[inds[i]][:, :].T / wavelength, p, polarization
-            )
+            if isinstance(self.antennas, list):
+                grp = self.antennas[inds[i]][:, :].T
+            else:
+                grp = self.antennas[:, :, inds[i]].T
+            subg_response = plane_wave(k_, grp / wavelength, p, polarization)
             psi[i, :, ...] = subg_response.sum(axis=0).T
 
         # This is an approximation assuming that the summed response of the subgroup
