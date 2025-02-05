@@ -225,7 +225,7 @@ class InterpolatedArray(Beam):
         ant_response = np.abs(np.sum(ant_response, axis=0)).astype(np.float64)
         self.interpolated_antenna = scipy.interpolate.RegularGridInterpolator(
             (kx, ky),
-            ant_response.reshape(*resolution[:2]).T,
+            ant_response.reshape(*resolution[:2]),
             bounds_error=False,
         )
 
