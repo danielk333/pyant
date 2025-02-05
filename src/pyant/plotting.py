@@ -69,6 +69,8 @@ def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
     else:
         fig = None
 
+    z_axis = ax.name == "3d"
+
     if color is None:
         style_ = "."
     else:
