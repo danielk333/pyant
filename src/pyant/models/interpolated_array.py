@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import scipy.interpolate
 
-from .interpolated import Interpolated
+from ..beam import Beam
 from .array import Array
 from .. import coordinates
 
@@ -20,20 +20,24 @@ def plane_wave_compund(kp, r):
     r : numpy.ndarray
         Spatial locations normalized by wavelength (Antenna positions in space)
     """
-
     # in this, rows are antennas and columns are wave directions
-    spat_wave = np.exp(1j * np.pi * 2.0 * np.dot(r, kp))
+    wave = np.exp(1j * np.pi * 2.0 * np.dot(r, kp))
+    return wave
 
-    return spat_wave
 
+class InterpolatedArray(Beam):
+    """Interpolated gain pattern of array and each subgroup.
+    DOES NOT REPRODUCE COMPLEX VOLTAGES.
 
-class InterpolatedArray(Interpolated):
-    """Interpolated gain pattern. Assumes that the gain as a function of the
-    incoming/outgoing wave vector and pointing vector can be substituted by
-    :math:`\\mathbf{q} = \\mathbf{k} - \\mathbf{p}`, turning the 4D problem
+    Assumes that the gain as a function of the incoming/outgoing wave vector
+    and pointing vector can be substituted by
+    $\\mathbf{q} = \\mathbf{k} - \\mathbf{p}$, turning the 4D problem
     into a 3D problem. Because of how the plane wave equation scales with
     wavelength one can *not* use different frequencies with the same
-    interpolation. However, scaling and polarization can be set freely.
+    interpolation. As complex voltages are not interpolated, one cannot
+    set polarization or change the antenna element. Mutual coupling is not
+    supported. Only scaling can be set freely. If the pointing is fixed
+    the problem is again a 2D one and a 2D interpolation can be made.
 
     Parameters
     ----------
@@ -47,43 +51,44 @@ class InterpolatedArray(Interpolated):
 
     """
 
-    def __init__(
-        self,
-        polarization=np.array([1, 1j]) / np.sqrt(2),
-        scaling=1.0,
-        azimuth=0,
-        elevation=0,
-        frequency=np.nan,
-        **kwargs
-    ):
-        super().__init__(azimuth=azimuth, elevation=elevation, frequency=frequency, **kwargs)
+    def __init__(self, scaling=1.0, azimuth=0, elevation=0, **kwargs):
+        super().__init__(azimuth=azimuth, elevation=elevation, frequency=np.nan, **kwargs)
         self.interpolated = None
+        self.interpolated_channels = []
+        self.interpolated_antenna = None
         self.scaling = scaling
-        self.polarization = polarization
+        self.polarization = np.array([1, 1j]) / np.sqrt(2)
         self.channels = None
-        self.mutual_coupling_matrix = None
         self.antennas = None
         self.interp_dims = None
 
-    def antenna_element(self, k, polarization):
-        """Antenna element gain pattern, azimuthally symmetric dipole response."""
-        ret = np.ones(polarization.shape, dtype=k.dtype)
-        return ret[:, None] * k[2, :] * self.scaling
-
     def copy(self):
         """Return a copy of the current instance."""
-        bm = Interpolated(
+        bm = InterpolatedArray(
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
-            frequency=copy.deepcopy(self.frequency),
             scaling=copy.deepcopy(self.scaling),
             degrees=self.degrees,
         )
-        bm.interpolated = self.interpolated
+        bm.frequency = self.frequency
+        bm.pointing = self.pointing
+        bm.channels = self.channels
+        bm.polarization = self.polarization
+        bm.antennas = self.antennas.copy()
+        bm.interp_dims = self.interp_dims
+        bm.interpolated = copy.deepcopy(self.interpolated)
+        bm.interpolated_antenna = copy.deepcopy(self.interpolated_antenna)
+        bm.interpolated_channels = [copy.deepcopy(x) for x in self.interpolated_channels]
         return bm
 
     def save(self, fname):
-        datas = {f"interp{ind}": self.interpolated[ind] for ind in range(self.channels)}
+        datas = {
+            f"interp_chan{ind}": self.interpolated_channels[ind]
+            for ind in range(self.channels)
+            if self.interpolated_channels[ind] is not None
+        }
+        datas["interpolated"] = self.interpolated
+        datas["interpolated_antenna"] = self.interpolated_antenna
         datas.update(
             dict(
                 channels=np.int64(self.channels),
@@ -92,23 +97,28 @@ class InterpolatedArray(Interpolated):
                 pointing=self.pointing,
                 degrees=self.degrees,
                 interp_dims=self.interp_dims,
+                polarization=self.polarization,
             )
         )
-        if self.mutual_coupling_matrix is not None:
-            datas["mutual_coupling_matrix"] = self.mutual_coupling_matrix
         np.savez(fname, **datas)
 
     def load(self, fname):
         data = np.load(fname, allow_pickle=True)
-        if "mutual_coupling_matrix" in data:
-            self.mutual_coupling_matrix = data["mutual_coupling_matrix"]
         self.channels = data["channels"]
-        self.parameters["frequency"] = data["frequency"]
+        self.frequency = data["frequency"]
         self.antennas = data["antennas"]
-        self.interpolated = [data[f"interp{ind}"].item() for ind in range(self.channels)]
         self.degrees = data["degrees"]
         self.pointing = data["pointing"]
         self.interp_dims = data["interp_dims"]
+        self.polarization = data["polarization"]
+
+        self.interpolated_channels = [None] * self.channels
+        for ind in range(self.channels):
+            if f"interp_chan{ind}" not in data:
+                continue
+            self.interpolated_channels[ind] = data[f"interp_chan{ind}"].item()
+        self.interpolated = data["interpolated"].item()
+        self.interpolated_antenna = data["interpolated_antenna"].item()
 
     def generate_interpolation(
         self,
@@ -116,19 +126,28 @@ class InterpolatedArray(Interpolated):
         ind=None,
         polarization=None,
         min_elevation=0.0,
+        interpolate_channels=None,
         resolution=1000,
     ):
         """Generate an interpolated version of Array
 
-        # TODO: docstring
-        """
-        raise NotImplementedError("This function is not yet tested and stable")
+        Parameters
+        ----------
+        channels : optional, list of int
+            Index for which channels to save interpolations from.
 
+        """
         assert isinstance(beam, Array), "Can only interpolate arrays"
+
+        # Transfer meta-data and parameters
         self.channels = beam.channels
-        if beam.mutual_coupling_matrix is not None:
-            self.mutual_coupling_matrix = beam.mutual_coupling_matrix.copy()
         self.antennas = beam.antennas.copy()
+        self.polarization = beam.polarization.copy()
+
+        if polarization is None:
+            polarization = self.polarization
+        elif not np.all(np.iscomplex(polarization)):
+            polarization = polarization.astype(np.complex128)
 
         params, shape = beam.get_parameters(ind, named=True, max_vectors=0)
         self.frequency = params["frequency"]
@@ -142,22 +161,23 @@ class InterpolatedArray(Interpolated):
             wavelength = wavelength[0]
         cmin = np.cos(np.radians(min_elevation))
 
+        size_k = np.prod(resolution[:2])
+        k = np.empty((3, size_k), dtype=np.float64)
+        kx = np.linspace(-cmin, cmin, num=resolution[0])
+        ky = np.linspace(-cmin, cmin, num=resolution[1])
+        xv, yv = np.meshgrid(kx, ky, sparse=False, indexing="ij")
+        k[0, :] = xv.reshape(1, size_k)
+        k[1, :] = yv.reshape(1, size_k)
+        xy2 = k[0, :] ** 2 + k[1, :] ** 2
+        inds = xy2 <= cmin
+        k[2, inds] = np.sqrt(1 - xy2[inds])
+        k[2, np.logical_not(inds)] = 0
+
         if resolution[2] is None:
-            size = np.prod(resolution[:2])
-            kpx = np.linspace(-cmin, cmin, num=resolution[0])
-            kpy = np.linspace(-cmin, cmin, num=resolution[1])
-            kpz = None
-            xv, yv = np.meshgrid(kpx, kpy, sparse=False, indexing="ij")
-            kp = np.empty((3, size), dtype=np.float64)
-            kp[0, :] = xv.reshape(1, size)
-            kp[1, :] = yv.reshape(1, size)
-            xy2 = kp[0, :] ** 2 + kp[1, :] ** 2
-            inds = xy2 <= cmin
-            kp[2, inds] = np.sqrt(1 - xy2[inds])
-            kp[2, np.logical_not(inds)] = 0
-            kp[:, :] = kp[:, :] - p[:, None]
-            kpx -= p[0]
-            kpy -= p[1]
+            size = size_k
+            kp = k[:, :] - p[:, None]
+            kpx = kx - p[0]
+            kpy = ky - p[1]
             self.interp_dims = 2
         else:
             size = np.prod(resolution)
@@ -176,41 +196,87 @@ class InterpolatedArray(Interpolated):
             inds = norm <= 2.0
             self.interp_dims = 3
 
-        psi = np.zeros((size,), dtype=np.complex128)
+        sum_psi = np.zeros((size,), dtype=np.complex128)
+        G_subgrp = np.zeros((size,), dtype=np.float64)
+        self.interpolated_channels = [None] * self.channels
+        self.interpolated = None
+        self.interpolated_antenna = None
+
+        psi = np.zeros(
+            (self.channels, size),
+            dtype=np.complex128,
+        )
         # r in meters, divide by lambda
-        self.interpolated = [None] * self.channels
         for i in range(self.channels):
             subg_response = plane_wave_compund(kp[:, inds], beam.antennas[:, :, i] / wavelength)
-            psi[inds] = subg_response.sum(axis=0)
-            # breakpoint()
+            psi[i, inds] = subg_response.sum(axis=0).T
+
+        ant_response = beam.antenna_element(k, polarization) * beam.scaling
+
+        # broadcast over input polarization
+        ant_response = ant_response[:, :] * polarization[:, None]
+
+        # align according to receiving polarizations
+        pol_comp = self.polarization[0] * self.polarization[1].conj()
+        pol_comp = pol_comp.conj() / np.abs(pol_comp)
+        ant_response[0, ...] *= pol_comp
+
+        # coherent intergeneration over polarization
+        ant_response = np.abs(np.sum(ant_response, axis=0)).astype(np.float64)
+        self.interpolated_antenna = scipy.interpolate.RegularGridInterpolator(
+            (kx, ky),
+            ant_response.reshape(*resolution[:2]).T,
+            bounds_error=False,
+        )
+
+        for i in range(self.channels):
+            G_subgrp[inds] = np.abs(psi[i, inds])
+            # coherent intergeneration over channels
+            sum_psi[inds] += psi[i, inds]
+
+            if interpolate_channels is None or i not in interpolate_channels:
+                continue
 
             if resolution[2] is None:
-                # fig, ax = plt.subplots()
-                # ax.pcolormesh(kpx, kpy, np.log10(np.abs(psi.reshape(*resolution[:2]).T)), vmin=0)
-                # plt.show()
-
-                self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
+                self.interpolated_channels[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy),
-                    psi.reshape(*resolution[:2]).T,
+                    G_subgrp.reshape(*resolution[:2]),
                     bounds_error=False,
                 )
             else:
-                self.interpolated[i] = scipy.interpolate.RegularGridInterpolator(
+                self.interpolated_channels[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy, kpz),
-                    psi.reshape(*resolution).T,
+                    G_subgrp.reshape(*resolution),
                     bounds_error=False,
                 )
+        G = np.abs(sum_psi).astype(np.float64)
+        if resolution[2] is None:
+            self.interpolated = scipy.interpolate.RegularGridInterpolator(
+                (kpx, kpy),
+                G.reshape(*resolution[:2]),
+                bounds_error=False,
+            )
+        else:
+            self.interpolated = scipy.interpolate.RegularGridInterpolator(
+                (kpx, kpy, kpz),
+                G.reshape(*resolution),
+                bounds_error=False,
+            )
 
-    def signals(self, k, polarization, ind=None, **kwargs):
-        """Complex voltage output signals after summation of antennas.
+    def channel_gain(self, k, channels=None, ind=None, **kwargs):
+        """Interpolated gain of each channel.
+
+        Parameters
+        ----------
+        channels : optional, list of int
+            Index for which channels to get gains from. If none, get all available.
 
         Returns
         -------
         numpy.ndarray
-            `(c,2,num_k)` ndarray where `c` is the number of channels
-            requested, `2` are the two polarization axis of the Jones vector
-            and `num_k` is the number of input wave vectors. If `num_k = 1`
-            the returned ndarray is `(c,2)`.
+            `(c,num_k)` ndarray where `c` is the number of channels
+            requested and `num_k` is the number of input wave vectors.
+            If `num_k = 1` the returned ndarray is `(c,)`.
         """
         k_len = k.shape[1] if len(k.shape) == 2 else 1
         assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
@@ -222,48 +288,46 @@ class InterpolatedArray(Interpolated):
         kn = k / np.linalg.norm(k, axis=0)
         kpn = kn - p[:, None]
 
-        wave = np.zeros((self.channels, k_len), dtype=np.complex128)
+        if channels is None:
+            channels = np.arange(self.channels)
+        gains = np.full((len(channels), k_len), np.nan, dtype=np.float64)
 
-        for i in range(self.channels):
+        for ind, ci in enumerate(channels):
+            if self.interpolated_channels[ci] is None:
+                continue
             if self.interp_dims == 3:
-                wave[i, :] = self.interpolated[i](kpn[:3, ...].T)
+                gains[ind, :] = self.interpolated_channels[ci](kpn[:3, ...].T)
             else:
-                wave[i, :] = self.interpolated[i](kpn[:2, ...].T)
+                gains[ind, :] = self.interpolated_channels[ci](kpn[:2, ...].T)
 
-        # broadcast to polarizations
-        psi = wave[..., None] * polarization[None, None, :]
-        psi = np.transpose(psi, (0, 2, 1))
+        ant_response = self.interpolated_antenna(kn[:2, ...].T)
 
-        if self.mutual_coupling_matrix is not None:
-            psi[:, 0, ...] = self.mutual_coupling_matrix @ psi[:, 0, ...]
-            psi[:, 1, ...] = self.mutual_coupling_matrix @ psi[:, 1, ...]
-
-        ant_response = self.antenna_element(kn, polarization)
-
-        psi[:, 0, ...] *= ant_response[None, 0, ...]
-        psi[:, 1, ...] *= ant_response[None, 1, ...]
-
+        gains *= ant_response[None, :]
         if len(k.shape) == 1:
-            psi = psi.reshape(psi.shape[:-1])
+            gains = gains.reshape(gains.shape[:-1])
 
-        return psi
+        return gains
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
+        k_len = k.shape[1] if len(k.shape) == 2 else 1
+        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
+        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
+        if k_len == 1:
+            k = k.reshape(3, 1)
+        p = params["pointing"].reshape(3)
 
-        if polarization is None:
-            polarization = self.polarization
-        elif not np.all(np.iscomplex(polarization)):
-            polarization = polarization.astype(np.complex128)
+        kn = k / np.linalg.norm(k, axis=0)
+        kpn = kn - p[:, None]
 
-        psi = self.signals(k, polarization, ind=ind, **kwargs)
+        if self.interp_dims == 3:
+            G = self.interpolated(kpn[:3, ...].T)
+        else:
+            G = self.interpolated(kpn[:2, ...].T)
 
-        lin_pol_check = np.abs(self.polarization) < 1e-6
-        if not np.any(lin_pol_check):
-            pol_comp = self.polarization[0] * self.polarization[1].conj()
-            pol_comp = pol_comp.conj() / np.abs(pol_comp)
-            psi[:, 0, ...] *= pol_comp  # align polarizations
+        ant_response = self.interpolated_antenna(kn[:2, ...].T)
 
-        G = np.sum(psi, axis=1)  # coherent intergeneration over polarization
-        G = np.sum(G, axis=0)  # coherent intergeneration over channels
-        return np.abs(G)
+        G *= ant_response
+        if len(k.shape) == 1:
+            G = G.reshape(G.shape[:-1])
+        return G

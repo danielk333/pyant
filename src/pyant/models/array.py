@@ -8,6 +8,12 @@ import scipy.special
 from ..beam import Beam
 
 
+def default_element(k, polarization):
+    """Antenna element gain pattern, azimuthally symmetric dipole response."""
+    ret = np.ones((2,), dtype=k.dtype)
+    return ret[:, None] * k[2, :]
+
+
 def plane_wave(k, r, p, J):
     """The complex plane wave function.
 
@@ -77,6 +83,7 @@ class Array(Beam):
         frequency,
         antennas,
         mutual_coupling_matrix=None,
+        antenna_element=default_element,
         polarization=np.array([1, 1j]) / np.sqrt(2),
         scaling=1.0,
         **kwargs
@@ -97,6 +104,7 @@ class Array(Beam):
         self.antennas = antennas
         self.scaling = scaling
         self.polarization = polarization
+        self.antenna_element = antenna_element
 
     def copy(self):
         """Return a copy of the current instance."""
@@ -112,17 +120,13 @@ class Array(Beam):
             scaling=copy.deepcopy(self.scaling),
             polarization=self.polarization.copy(),
             mutual_coupling_matrix=mem,
+            antenna_element=self.antenna_element,
         )
 
     @property
     def channels(self):
         """Number of channels returned by complex output."""
         return self.antennas.shape[2]
-
-    def antenna_element(self, k, polarization):
-        """Antenna element gain pattern, azimuthally symmetric dipole response."""
-        ret = np.ones(polarization.shape, dtype=k.dtype)
-        return ret[:, None] * k[2, :] * self.scaling
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
@@ -145,16 +149,16 @@ class Array(Beam):
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        G = self.signals(k, polarization, channels=None, ind=ind, **kwargs)
+        psi = self.signals(k, polarization, channels=None, ind=ind, **kwargs)
 
         lin_pol_check = np.abs(self.polarization) < 1e-6
         if not np.any(lin_pol_check):
             pol_comp = self.polarization[0] * self.polarization[1].conj()
             pol_comp = pol_comp.conj() / np.abs(pol_comp)
-            G[:, 0, ...] *= pol_comp  # align polarizations
+            psi[:, 0, ...] *= pol_comp  # align polarizations
 
-        G = np.sum(G, axis=1)  # coherent intergeneration over polarization
-        return G
+        psi = np.sum(psi, axis=1)  # coherent intergeneration over polarization
+        return psi
 
     def signals(self, k, polarization, ind=None, channels=None, **kwargs):
         """Complex voltage output signals after summation of antennas.
@@ -208,7 +212,7 @@ class Array(Beam):
             psi[:, 0, ...] = self.mutual_coupling_matrix @ psi[:, 0, ...]
             psi[:, 1, ...] = self.mutual_coupling_matrix @ psi[:, 1, ...]
 
-        ant_response = self.antenna_element(k_, polarization)
+        ant_response = self.antenna_element(k_, polarization) * self.scaling
 
         psi[:, 0, ...] *= ant_response[None, 0, ...]
         psi[:, 1, ...] *= ant_response[None, 1, ...]
