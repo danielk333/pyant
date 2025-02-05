@@ -16,6 +16,8 @@
 # # Interpolated arbitrary beam
 #
 # For use when models need to be evaluated often but the model computation is slow
+# Here the Gaussian model is one of the fastest available and the speed is comparable
+# with the interpolated beam.
 
 import time
 import matplotlib.pyplot as plt
