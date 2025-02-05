@@ -191,8 +191,7 @@ def generate_eiscat_3d_stage1_interp(path=None, configuration="dense", **interpo
     beam = InterpolatedArray(
         azimuth=0.0,
         elevation=90.0,
-        frequency=e3d_frequency,
-        scaling=e3d_antenna_gain,
+        scaling=1.0,  # scaling comes from array model
         degrees=True,
     )
     if path is None:
@@ -220,8 +219,7 @@ def generate_eiscat_3d_stage2_interp(path=None, **interpolation_kwargs):
     beam = InterpolatedArray(
         azimuth=0.0,
         elevation=90.0,
-        frequency=e3d_frequency,
-        scaling=e3d_antenna_gain,
+        scaling=1.0,  # scaling comes from array model
         degrees=True,
     )
     if path is None:

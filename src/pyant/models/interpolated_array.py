@@ -119,7 +119,7 @@ class InterpolatedArray(Beam):
         polarization=None,
         min_elevation=0.0,
         interpolate_channels=None,
-        resolution=1000,
+        resolution=(1000, 1000, None),
     ):
         """Generate an interpolated version of Array
 
@@ -135,7 +135,7 @@ class InterpolatedArray(Beam):
         self.channels = beam.channels
 
         if polarization is None:
-            polarization = self.polarization
+            polarization = beam.polarization
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
@@ -198,7 +198,7 @@ class InterpolatedArray(Beam):
         )
         # r in meters, divide by lambda
         for i in range(self.channels):
-            if isinstance(self.antennas, list):
+            if isinstance(beam.antennas, list):
                 grp = beam.antennas[i][:, :].T
             else:
                 grp = beam.antennas[:, :, i].T
@@ -211,9 +211,11 @@ class InterpolatedArray(Beam):
         ant_response = ant_response[:, :] * polarization[:, None]
 
         # align according to receiving polarizations
-        pol_comp = self.polarization[0] * self.polarization[1].conj()
-        pol_comp = pol_comp.conj() / np.abs(pol_comp)
-        ant_response[0, ...] *= pol_comp
+        lin_pol_check = np.abs(beam.polarization) < 1e-6
+        if not np.any(lin_pol_check):
+            pol_comp = beam.polarization[0] * beam.polarization[1].conj()
+            pol_comp = pol_comp.conj() / np.abs(pol_comp)
+            ant_response[0, ...] *= pol_comp
 
         # coherent intergeneration over polarization
         ant_response = np.abs(np.sum(ant_response, axis=0)).astype(np.float64)
