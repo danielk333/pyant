@@ -57,9 +57,7 @@ class InterpolatedArray(Beam):
         self.interpolated_channels = []
         self.interpolated_antenna = None
         self.scaling = scaling
-        self.polarization = np.array([1, 1j]) / np.sqrt(2)
         self.channels = None
-        self.antennas = None
         self.interp_dims = None
 
     def copy(self):
@@ -73,8 +71,6 @@ class InterpolatedArray(Beam):
         bm.frequency = self.frequency
         bm.pointing = self.pointing
         bm.channels = self.channels
-        bm.polarization = self.polarization
-        bm.antennas = self.antennas.copy()
         bm.interp_dims = self.interp_dims
         bm.interpolated = copy.deepcopy(self.interpolated)
         bm.interpolated_antenna = copy.deepcopy(self.interpolated_antenna)
@@ -93,11 +89,9 @@ class InterpolatedArray(Beam):
             dict(
                 channels=np.int64(self.channels),
                 frequency=self.frequency,
-                antennas=self.antennas,
                 pointing=self.pointing,
                 degrees=self.degrees,
                 interp_dims=self.interp_dims,
-                polarization=self.polarization,
             )
         )
         np.savez(fname, **datas)
@@ -106,11 +100,9 @@ class InterpolatedArray(Beam):
         data = np.load(fname, allow_pickle=True)
         self.channels = data["channels"]
         self.frequency = data["frequency"]
-        self.antennas = data["antennas"]
         self.degrees = data["degrees"]
         self.pointing = data["pointing"]
         self.interp_dims = data["interp_dims"]
-        self.polarization = data["polarization"]
 
         self.interpolated_channels = [None] * self.channels
         for ind in range(self.channels):
@@ -208,7 +200,7 @@ class InterpolatedArray(Beam):
         )
         # r in meters, divide by lambda
         for i in range(self.channels):
-            subg_response = plane_wave_compund(kp[:, inds], beam.antennas[:, :, i] / wavelength)
+            subg_response = plane_wave_compund(kp[:, inds], beam.antennas[i][:, :].T / wavelength)
             psi[i, inds] = subg_response.sum(axis=0).T
 
         ant_response = beam.antenna_element(k, polarization) * beam.scaling

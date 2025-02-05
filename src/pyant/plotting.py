@@ -76,17 +76,19 @@ def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
     else:
         style_ = "." + color
 
+    stacked_antennas = np.concatenate(antennas, axis=1)
+
     if z_axis:
         ax.plot(
-            antennas[:, 0, :].flatten(),
-            antennas[:, 1, :].flatten(),
-            antennas[:, 2, :].flatten(),
+            stacked_antennas[0, :],
+            stacked_antennas[1, :],
+            stacked_antennas[2, :],
             style_,
         )
     else:
         ax.plot(
-            antennas[:, 0, :].flatten(),
-            antennas[:, 1, :].flatten(),
+            stacked_antennas[0, :],
+            stacked_antennas[1, :],
             style_,
         )
     ax.set_title("Antennas", fontsize=22)

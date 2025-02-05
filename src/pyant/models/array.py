@@ -89,13 +89,15 @@ class Array(Beam):
         **kwargs
     ):
         super().__init__(azimuth, elevation, frequency, **kwargs)
-        assert len(antennas.shape) in [2, 3]
-        assert antennas.shape[0] == 3
-        assert isinstance(antennas, np.ndarray)
-
-        if len(antennas.shape) == 2:
-            antennas = antennas.reshape(antennas.shape[0], antennas.shape[1], 1)
-        antennas = np.transpose(antennas, (1, 0, 2))
+        if isinstance(antennas, list):
+            for arr in antennas:
+                assert arr.shape[0] == 3
+                assert len(arr.shape) == 2
+        else:
+            assert len(antennas.shape) == 3
+            assert antennas.shape[0] == 3
+            assert isinstance(antennas, np.ndarray)
+            antennas = [antennas[:, :, ind] for ind in range(antennas.shape[2])]
 
         if not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
@@ -116,7 +118,7 @@ class Array(Beam):
             azimuth=copy.deepcopy(self.azimuth),
             elevation=copy.deepcopy(self.elevation),
             degrees=self.degrees,
-            antennas=np.transpose(self.antennas, (1, 0, 2)).copy(),
+            antennas=[x.copy() for x in self.antennas],
             scaling=copy.deepcopy(self.scaling),
             polarization=self.polarization.copy(),
             mutual_coupling_matrix=mem,
@@ -126,7 +128,7 @@ class Array(Beam):
     @property
     def channels(self):
         """Number of channels returned by complex output."""
-        return self.antennas.shape[2]
+        return len(self.antennas)
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
@@ -202,7 +204,7 @@ class Array(Beam):
         # r in meters, divide by lambda
         for i in range(chan_num):
             subg_response = plane_wave(
-                k_, self.antennas[:, :, inds[i]] / wavelength, p, polarization
+                k_, self.antennas[inds[i]][:, :].T / wavelength, p, polarization
             )
             psi[i, :, ...] = subg_response.sum(axis=0).T
 
