@@ -86,9 +86,9 @@ def e3d_array(freqeuncy, fname=None, configuration="full"):
 
     if configuration == "full":
         pass
-    elif configuration == "half-dense":
+    elif configuration == "dense":
         dat = dat[(np.sum(dat**2.0, axis=1) < 27.0**2.0), :]
-    elif configuration == "half-sparse":
+    elif configuration == "sparse":
         dat = dat[
             np.logical_or(
                 np.logical_or(
@@ -151,7 +151,7 @@ def generate_eiscat_3d_stage1(configuration="dense"):
         frequency=e3d_frequency,
         antennas=e3d_array(
             e3d_frequency,
-            configuration="half-" + configuration,
+            configuration=configuration,
         ),
         scaling=e3d_antenna_gain,
         degrees=True,
@@ -178,7 +178,7 @@ def generate_eiscat_3d_stage2():
 
 
 @radar_beam_generator(Radars.EISCAT_3D_stage1, Models.InterpolatedArray)
-def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=(1000, 1000, None)):
+def generate_eiscat_3d_stage1_interp(path=None, configuration="dense", **interpolation_kwargs):
     """EISCAT 3D Gain pattern for a dense core of active sub-arrays,
     i.e stage 1 of development.
 
@@ -195,6 +195,11 @@ def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=(10
         scaling=e3d_antenna_gain,
         degrees=True,
     )
+    if path is None:
+        array = generate_eiscat_3d_stage1(configuration=configuration)
+        beam.generate_interpolation(array, **interpolation_kwargs)
+        return beam
+
     if not isinstance(path, pathlib.Path):
         path = pathlib.Path(path)
 
@@ -202,6 +207,35 @@ def generate_eiscat_3d_stage1_interp(path, configuration="dense", resolution=(10
         beam.load(path)
     else:
         array = generate_eiscat_3d_stage1(configuration=configuration)
-        beam.generate_interpolation(array, resolution=resolution)
+        beam.generate_interpolation(array, **interpolation_kwargs)
+        beam.save(path)
+    return beam
+
+
+@radar_beam_generator(Radars.EISCAT_3D_stage2, Models.InterpolatedArray)
+def generate_eiscat_3d_stage2_interp(path=None, **interpolation_kwargs):
+    """EISCAT 3D Gain pattern for a full set of active sub-arrays,
+    i.e stage 2 of development.
+    """
+    beam = InterpolatedArray(
+        azimuth=0.0,
+        elevation=90.0,
+        frequency=e3d_frequency,
+        scaling=e3d_antenna_gain,
+        degrees=True,
+    )
+    if path is None:
+        array = generate_eiscat_3d_stage2()
+        beam.generate_interpolation(array, **interpolation_kwargs)
+        return beam
+
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
+    if path.is_file():
+        beam.load(path)
+    else:
+        array = generate_eiscat_3d_stage2()
+        beam.generate_interpolation(array, **interpolation_kwargs)
         beam.save(path)
     return beam
