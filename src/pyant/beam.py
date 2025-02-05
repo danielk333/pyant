@@ -43,6 +43,8 @@ class Beam(ABC):
         else they are in radians.
     pointing : numpy.ndarray
         Cartesian vector in local coordinates describing pointing direction.
+    meta : dict
+        Dict for storing relevant meta data about the beam that is not a parameter
 
     Notes
     ------
@@ -70,6 +72,7 @@ class Beam(ABC):
 
         self.frequency = frequency
         self.sph_point(azimuth, elevation)
+        self.meta = {}
 
     @property
     def pointing(self):
