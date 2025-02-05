@@ -62,7 +62,10 @@ nav:
     - examples/index.md
     - complex_response_arrays: examples/complex_response_arrays.py
     - copying_instances: examples/copying_instances.py
+    - interpolated_MU_radar: examples/interpolated_MU_radar.py
+    - interpolated_antenna_array: examples/interpolated_antenna_array.py
     - interpolated_beam: examples/interpolated_beam.py
+    - irregular_array: examples/irregular_array.py
     - measured_beams: examples/measured_beams.py
     - multi_beams: examples/multi_beams.py
     - phased_paracyl_plots: examples/phased_paracyl_plots.py

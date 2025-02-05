@@ -26,9 +26,9 @@ xv, yv = np.meshgrid(
     np.arange(-ant_n // 2, ant_n // 2) * dr,
     np.arange(-ant_n // 2, ant_n // 2) * dr,
 )
-antennas = np.zeros((3, ant_n**2))
-antennas[0, :] = xv.flatten()
-antennas[1, :] = yv.flatten()
+antennas = np.zeros((3, ant_n**2, 1))
+antennas[0, :, 0] = xv.flatten()
+antennas[1, :, 0] = yv.flatten()
 
 beam = pyant.models.Array(
     azimuth=0,

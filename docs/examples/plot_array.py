@@ -31,7 +31,7 @@ beam = pyant.beams.arrays.equidistant_archimedian_spiral(
 )
 
 x = beam.antennas[0, 0, :]
-y = beam.antennas[0, 1, :]
+y = beam.antennas[1, 0, :]
 D = np.sqrt((x[None, :] - x[:, None]) ** 2 + (y[None, :] - y[:, None]) ** 2)
 
 M = np.exp(1j * np.pi * 2.0 * D / beam.wavelength)

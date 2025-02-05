@@ -23,8 +23,8 @@ np.random.seed(1234)
 ant_n = 300
 
 
-antennas = np.zeros((3, ant_n))
-antennas[:2, :] = np.random.rand(2, ant_n) * 50 - 25
+antennas = np.zeros((3, ant_n, 1))
+antennas[:2, :, 0] = np.random.rand(2, ant_n) * 50 - 25
 beam = pyant.models.Array(
     azimuth=0,
     elevation=90.0,
