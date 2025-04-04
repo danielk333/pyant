@@ -1,6 +1,6 @@
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
-image: python:3.8.10
+image: python:3.11.11
 
 stages:
   - test
@@ -20,41 +20,27 @@ stages:
     - apt update
     - apt install -y pandoc
 
-# Prepare the nominal usage environment
-.setup:
-  before_script:
-    - python -V
-    # Prepare and activate virtualenv
-    - pip install -U pip
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
-    # install the package
-    - pip install .
-
 
 #######################
 ## Platforms testing ##
 
-#Template for testing on python images,
-# extend this for each python-platform
-# the package is intended to work on
-.pytest:
-  stage: test
-  extends: .setup
+pytest:
+  image: ghcr.io/astral-sh/uv:0.6.12
   allow_failure: true
   script:
-    - pip install pytest pytest-cov
+    - uv venv -p 3.10 venv3.10
+    - source venv3.10/bin/activate
+    - pip install .
+    - pip install pytest
+    - pytest
+    - uv venv -p 3.11 venv3.11
+    - source venv3.11/bin/activate
+    - pip install .
+    - pip install pytest
     - pytest
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
-python:
-  extends: .pytest
-
-python3.10:
-  extends: .pytest
-  image: python:3.10
 
 ###############
 ## Releasing ##
