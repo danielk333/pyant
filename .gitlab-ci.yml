@@ -25,19 +25,10 @@ stages:
 ## Platforms testing ##
 
 pytest:
-  image: ghcr.io/astral-sh/uv:0.6.12
+  image: ghcr.io/astral-sh/uv:alpine
   allow_failure: true
   script:
-    - uv venv -p 3.10 --seed venv3.10
-    - source venv3.10/bin/activate
-    - pip install .
-    - pip install pytest
-    - pytest
-    - uv venv -p 3.11 --seed venv3.11
-    - source venv3.11/bin/activate
-    - pip install .
-    - pip install pytest
-    - pytest
+    - ./test.sh
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
