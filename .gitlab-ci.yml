@@ -1,6 +1,6 @@
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
-image: python:3.11.11
+image: python:3.11
 
 stages:
   - test
@@ -25,12 +25,15 @@ stages:
 ## Platforms testing ##
 
 pytest:
-  image: ghcr.io/astral-sh/uv:alpine
+  image: python:3.11
   allow_failure: true
   before_script:
-    - apk add --no-cache clang lld musl-dev
+    - pip install -U pip
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install .[tests]
   script:
-    - ./test.sh
+    - tox run
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
