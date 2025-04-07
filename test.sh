@@ -2,7 +2,7 @@
 
 uv --version
 uv python list
-for ver in "3.7.9" "3.8.20" "3.9.21" "3.10.16" "3.11.11" "3.12.9" "3.13.2"
+for ver in "3.9" "3.10" "3.11" "3.12" "3.13"
 do
     uv venv -p "$ver" --seed "venv$ver"
     source "venv$ver/bin/activate"
