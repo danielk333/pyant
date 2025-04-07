@@ -1,4 +1,0 @@
-[report]
-exclude_also =
-    raise AssertionError
-    raise NotImplementedError

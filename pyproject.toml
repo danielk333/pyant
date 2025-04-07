@@ -4,76 +4,88 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyant"
+version = "0.13.1"
 description = "Radar antenna models in python"
-readme = {file = "README.md", content-type = "text/markdown"}
+readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
-    {name = "Daniel Kastinen", email = "daniel.kastinen@irf.se"},
-    {name = "Tom Grydeland", email = "tgry@norceresearch.no"},
-    {name = "Juha Vierinen", email = "juha-pekka.vierinen@uit.no"},
+  { name = "Daniel Kastinen", email = "daniel.kastinen@irf.se" },
+  { name = "Tom Grydeland", email = "tgry@norceresearch.no" },
+  { name = "Juha Vierinen", email = "juha-pekka.vierinen@uit.no" },
 ]
-maintainers = [
-    {name = "Daniel Kastinen", email = "daniel.kastinen@irf.se"},
-]
-license = {file = "LICENSE"}
+maintainers = [{ name = "Daniel Kastinen", email = "daniel.kastinen@irf.se" }]
+license = { file = "LICENSE" }
 classifiers = [
-    "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3",
-    "Topic :: Scientific/Engineering :: Physics",
-    "Operating System :: OS Independent",
-    "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: MIT License",
 ]
 requires-python = ">=3.5"
-dependencies = [
-    "numpy >= 1.14.3",
-    "scipy >= 1.1.0",
-    "matplotlib >= 3.2.0",
-]
-dynamic = ["version"]
+dependencies = ["numpy >= 1.14.3", "scipy >= 1.1.0", "matplotlib >= 3.2.0"]
 
-[tool.setuptools]
-include-package-data = true
-license-files = ["LICENSE"]
-
-[tool.setuptools.dynamic]
-version = {attr = "pyant.version.__version__"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-"pyant.beams" = ["data/*"]
-
-[project.optional-dependencies]
-develop = [
-    "pytest",
-    "flake8",
-    "wheel",
-    "build",
-    "twine",
-    "pytest-cov",
-    "matplotlib",
-    "ipykernel",
-    "radon",
-    "numpydoc",
-    "pre-commit",
-    "black",
-    "auditwheel",
-    "patchelf",
-    "mkdocs-material",
-    "mkdocstrings[python]",
-    "mkdocs-jupyter",
-    "mkdocs-gen-files",
-    "mkdocs-literate-nav",
-    "mkdocs-section-index",
-]
-profiling = [
-    "yappi",
-]
 
 [project.urls]
 Documentation = "https://danielk.developer.irf.se/pyant/"
 Repository = "https://github.com/danielk333/pyant"
 
+
+[project.optional-dependencies]
+develop = [
+  "pytest",
+  "flake8",
+  "wheel",
+  "build",
+  "twine",
+  "pytest-cov",
+  "matplotlib",
+  "ipykernel",
+  "radon",
+  "numpydoc",
+  "pre-commit",
+  "black",
+  "auditwheel",
+  "patchelf",
+  "mkdocs-material",
+  "mkdocstrings[python]",
+  "mkdocs-jupyter",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-section-index",
+]
+profiling = ["yappi"]
+
+[tool.setuptools]
+include-package-data = true
+license-files = ["LICENSE"]
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.setuptools.package-data]
+"pyant.beams" = ["data/*"]
+
+
 [tool.black]
 line-length = 100
-target_version = ['py35', 'py36', 'py37', 'py38', 'py39', 'py310']
+
+
+[tool.pytest.ini_options]
+addopts = "-v --cov=pyant"
+testpaths = ["tests"]
+
+[tool.coverage.report]
+exclude_also = [
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
+
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
+
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+]
