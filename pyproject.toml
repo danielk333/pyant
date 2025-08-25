@@ -42,7 +42,6 @@ develop = [
   "ipykernel",
   "radon",
   "numpydoc",
-  "pre-commit",
   "black",
   "auditwheel",
   "patchelf",

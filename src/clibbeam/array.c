@@ -3,7 +3,8 @@
 #include <math.h>
 #include "beam.h"
 
-
+// todo: test if this is actually faster or not
+// do we really need this??
 void
 array_sensor_response(
     double *k,
