@@ -15,7 +15,7 @@ from . import statistics
 from . import clib
 
 # Classes
-from .beam import Beam, SummedBeams
+from .beam import Beam
 from .beams import Radars, Models
 
 # Functions
