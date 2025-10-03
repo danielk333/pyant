@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""Useful coordinate related functions.
-"""
+"""Useful coordinate related functions."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -281,7 +280,6 @@ def gain_heatmap(
     min_elevation=0.0,
     levels=20,
     ax=None,
-    ind=None,
     label=None,
     centered=True,
     cmap=None,
@@ -324,17 +322,20 @@ def gain_heatmap(
     else:
         fig = None
 
-    if isinstance(beam, Beam):
-        params, shape = beam.get_parameters(ind, named=True)
-        pointing = params["pointing"]
-    else:
-        raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
+    if not isinstance(beam, Beam):
+        raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
+    if beam.size > 0:
+        raise ValueError(
+            "Can only plot beam with scalar parameters -"
+            f"dont know which of the {beam.size} options to pick"
+        )
+    pointing = beam.parameters["pointing"]
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
     S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
-    S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
+    S[inds] = beam.gain(k[:, inds], polarization=polarization)
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
