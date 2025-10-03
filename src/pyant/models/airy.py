@@ -82,7 +82,7 @@ class Airy(Beam):
         if scalar_output:
             g = np.empty((1,), dtype=np.float64)
         else:
-            g = np.empty(len(alph), dtype=np.float64)
+            g = np.empty((len(alph),), dtype=np.float64)
         g[not_inds] = self.peak_gain
         g[inds] = self.peak_gain * ((2.0 * jn_val[inds] / alph[inds])) ** 2.0
 

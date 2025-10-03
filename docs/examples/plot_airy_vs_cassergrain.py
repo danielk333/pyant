@@ -15,27 +15,23 @@
 
 # # Airy disk antenna gain
 
-
+import numpy as np
 import matplotlib.pyplot as plt
 import pyant
 
 
 beam = pyant.models.Airy(
-    azimuth=0,
-    elevation=90.0,
+    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
     frequency=930e6,
-    I0=10**4.81,
     radius=23.0,
-    degrees=True,
+    peak_gain=10**4.81,
 )
 beam_c = pyant.models.Cassegrain(
-    azimuth=0,
-    elevation=90.0,
+    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
     frequency=930e6,
-    I0=10**4.81,
     outer_radius=40.0,
     inner_radius=23.0,
-    degrees=True,
+    peak_gain=10**4.81,
 )
 
 # +
