@@ -11,6 +11,7 @@ from .. import coordinates
 
 class Gaussian(Beam):
     """Gaussian tapered planar array model
+    TODO: docstring
 
     Parameters
     ----------
@@ -37,57 +38,20 @@ class Gaussian(Beam):
         Elevation of pointing direction in degrees.
     """
 
-    def __init__(
-        self, azimuth, elevation, frequency, I0, radius, normal_azimuth, normal_elevation, **kwargs
-    ):
-        super().__init__(azimuth, elevation, frequency, **kwargs)
-        self.I0 = I0
-        self.min_off_axis = 1e-6
+    def __init__(self, pointing, frequency, radius, normal_pointing, peak_gain=1):
+        super().__init__()
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
+        self.parameters["frequency"] = frequency
+        self.parameters["radius"] = radius
+        self.parameters["normal_pointing"] = normal_pointing
+        self.parameters_shape["normal_pointing"] = (3,)
 
         # Random number in case pointing and planar normal align
         # Used to determine basis vectors in the plane perpendicular to pointing
         self.__randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
-
-        self.register_parameter("radius")
-        self.register_parameter("normal", numpy_parameter_axis=1)
-
-        normal_sph = Beam._azel_to_numpy(normal_azimuth, normal_elevation)
-        normal = coordinates.sph_to_cart(normal_sph, degrees=self.degrees)
-        self._normal_azimuth = normal_azimuth
-        self._normal_elevation = normal_elevation
-
-        self.fill_parameter("radius", radius)
-        self.fill_parameter("normal", normal)
-
-    @property
-    def normal(self):
-        return self.parameters["normal"]
-
-    @normal.setter
-    def normal(self, val):
-        self.fill_parameter("normal", val)
-
-    @property
-    def normal_azimuth(self):
-        """Azimuth, east of north, of planar array normal vector"""
-        return self._normal_azimuth
-
-    @normal_azimuth.setter
-    def normal_azimuth(self, val):
-        sph = Beam._azel_to_numpy(val, self._normal_elevation)
-        self._normal_azimuth = sph[0, ...]
-        self.normal = coordinates.sph_to_cart(sph, degrees=self.degrees)
-
-    @property
-    def normal_elevation(self):
-        """Elevation from horizon of pointing planar array normal vector"""
-        return self._normal_elevation
-
-    @normal_elevation.setter
-    def normal_elevation(self, val):
-        sph = Beam._azel_to_numpy(self._normal_azimuth, val)
-        self._normal_elevation = sph[1, ...]
-        self.normal = coordinates.sph_to_cart(sph, degrees=self.degrees)
+        self.peak_gain = peak_gain
+        self.min_off_axis = 1e-6
 
     def copy(self):
         """Return a copy of the current instance."""
