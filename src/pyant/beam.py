@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 """Defines an antenna's or entire radar system's radiation pattern"""
-from typing import Any
-import functools
-import operator
 from abc import ABC, abstractmethod
 import collections
 
@@ -21,17 +18,32 @@ class Beam(ABC):
 
     Notes
     ------
-    Parameters
-        #todo
+    There are four possible ways of broadcasting input arrays over the parameters:
+
+    The additional axis of all parameters lines up with the input wave vectors additional
+    axis size, in which case each input k-vector gets evaluated versus each set of
+    parameters.
+    Input size (3, n), parameter shapes (..., n), output size (n,).
+
+    The parameters are all scalars and the input k-vector gets evaluated over this single set.
+    Input size (3, n), parameter shapes (...), output size (n,).
+
+    The additional axis of all parameters line up and the input k-vector is a single vector,
+    in which case this vector gets computed for all sets of parameters.
+    Input size (3,), parameter shapes (..., n), output size (n,).
+
+    The parameters are all scalars and the input k-vector is a single vector.
+    Input size (3,), parameter shapes (...), output size ().
+
+    These ways allow for any set of computations and broadcasts (although they need to be prepared
+    outside the scope of this class) to be set-up using the Beam interface.
 
     """
 
-    def __init__(self, parameters: dict[str, NDArray | float] | None = None):
+    def __init__(self):
         """Basic constructor."""
         self.parameters = collections.OrderedDict()
-        if parameters is not None:
-            self.parameters.update(parameters)
-        self.meta: dict[str, Any] = {}
+        self.parameters_shape = {}
 
     @property
     def frequency(self):
@@ -53,17 +65,53 @@ class Beam(ABC):
         self.frequency = scipy.constants.c / val
 
     def _get_parameter_len(self, key: str):
-        """Get the length of a parameter axis"""
+        """Get the length of a parameter axis, its always the last array dimension"""
         obj = self.parameters[key]
-        if isinstance(obj, float):
-            return 0
+        if isinstance(obj, np.ndarray):
+            if key in self.parameters_shape:
+                shape = self.parameters_shape[key]
+                if len(obj.shape) == len(shape):
+                    return 0
+                else:
+                    return obj.shape[-1]
+            else:
+                return obj.shape[-1]
         else:
-            return obj.shape[0]
+            return 0
 
     @property
-    def shape(self):
+    def size(self):
         """The additional dimensions added to the output Gain if broadcasting is enabled."""
-        return tuple(self._get_parameter_len(key) for key in self.parameters)
+        shape = [self._get_parameter_len(key) for key in self.parameters]
+        assert all(x == shape[0] for x in shape), "all parameter shapes must line up"
+        return shape[0]
+
+    def validate_parameter_shapes(self):
+        """Helper function to validate the input parameter shapes are correct"""
+        size = None
+        for key, p in self.parameters.items():
+            if size is None:
+                size = self._get_parameter_len(key)
+            assert size == self._get_parameter_len(key), "all parameter shapes must line up"
+            if key in self.parameters_shape:
+                shape = self.parameters_shape[key]
+                assert len(p.shape) <= len(shape) + 1 and len(p.shape) >= len(
+                    shape
+                ), f"{key} can only have {len(shape)} or {len(shape) + 1} axis, not {len(p.shape)}"
+                assert (
+                    p.shape[: len(shape)] == shape
+                ), f"{key} needs at least {shape} dimensions, not {p.shape}"
+
+    def validate_k_shape(self, k):
+        size = self.size
+        k_len = k.shape[1] if len(k.shape) > 1 else 0
+        if size > 0:
+            assert size == k_len or k_len == 0, (
+                "input k vector must either be single vector or line up with parameter dimensions"
+            )
+        assert len(k.shape) <= 2, "k vector can only be vectorized along one extra axis"
+        assert k.shape[0] == 3, f"pointing vector must at least be a 3-vector, not {k.shape[0]}"
+        return k_len
 
     @property
     def keys(self):
@@ -105,6 +153,15 @@ class Beam(ABC):
 
     def copy(self):
         """Return a copy of the current instance."""
+        raise NotImplementedError("")
+
+    def to_h5(self, path):
+        """Write defining parameters to a h5 file"""
+        raise NotImplementedError("")
+
+    @classmethod
+    def from_h5(cls):
+        """Load defining parameters from a h5 file and instantiate a beam"""
         raise NotImplementedError("")
 
     def sph_point(
@@ -159,9 +216,6 @@ class Beam(ABC):
             Angle between pointing and given direction.
 
         """
-        if degrees is None:
-            degrees = self.degrees
-
         sph = Beam._azel_to_numpy(azimuth, elevation)
         k = coordinates.sph_to_cart(sph, degrees=degrees)
         return self.angle(k, degrees=degrees)
@@ -184,23 +238,8 @@ class Beam(ABC):
             Angle between pointing and given direction.
 
         """
-        if degrees is None:
-            degrees = self.degrees
-
         pt: NDArray = self.parameters["pointing"]
-
-        if len(pt.shape) > 1:
-            if len(k.shape) > 1:
-                theta = np.empty((k.shape[1], pt.shape[1]), dtype=k.dtype)
-            else:
-                theta = np.empty((pt.shape[1],), dtype=k.dtype)
-
-            for ind in range(pt.shape[1]):
-                theta[..., ind] = coordinates.vector_angle(pt[ind, :], k, degrees=degrees)
-        else:
-            theta = coordinates.vector_angle(pt, k, degrees=degrees)
-
-        return theta
+        return coordinates.vector_angle(pt, k, degrees=degrees)
 
     @abstractmethod
     def gain(self, k: NDArray, polarization: NDArray | None = None):
@@ -253,9 +292,6 @@ class Beam(ABC):
             vector, output is a float. If input is a `(3,n)` matrix output
             is a `(n,)` vector of gains.
         """
-        if degrees is None:
-            degrees = self.degrees
-
         sph = Beam._azel_to_numpy(azimuth, elevation)
 
         k = coordinates.sph_to_cart(sph, degrees=degrees)
