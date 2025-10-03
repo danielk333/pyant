@@ -13,17 +13,15 @@ function.
 """
 
 # Top level exposed interface
-from .beams import beam_of_radar, avalible_beams
-from .radar_parameters import parameters_of_radar, avalible_radar_info
-from .radar_parameters import UNITS
-from ..registry import Radars, Models
+from .radar_parameters import RADAR_PARAMETERS, UNITS
 
 # Remember to always import the modules here so that they are executed
 # on load of pyant
-from . import eiscat_3d
-from . import eiscat_uhf
-from . import esr
-from . import tsdr
-from . import arrays
-from . import mu
-from . import pansy
+# from . import eiscat_3d
+# from . import eiscat_uhf
+# from . import esr
+# from . import tsdr
+# from . import arrays
+# from . import mu
+# from . import pansy
+# from . import eiscat_vhf

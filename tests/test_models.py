@@ -6,6 +6,7 @@ Test beam models
 
 import pytest
 import numpy as np
+import numpy.testing as nt
 
 import pyant
 
@@ -51,7 +52,18 @@ models_scalar = [
 
 
 def beam_name(beam):
-    return f"[{beam.__class__}]"
+    return f"[{beam.__class__.__name__}]"
+
+
+@pytest.mark.parametrize("beam", models_vector + models_scalar, ids=beam_name)
+def test_copy(beam):
+    b2 = beam.copy()
+    for key, p in beam.parameters.items():
+        assert key in b2.parameters
+        if isinstance(p, np.ndarray):
+            nt.assert_array_almost_equal(p, b2.parameters[key])
+        else:
+            nt.assert_almost_equal(p, b2.parameters[key])
 
 
 @pytest.mark.parametrize("beam", models_vector, ids=beam_name)

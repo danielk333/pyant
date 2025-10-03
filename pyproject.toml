@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyant"
-version = "0.13.1"
+version = "1.0.0"
 description = "Radar antenna models in python"
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
@@ -21,8 +21,8 @@ classifiers = [
   "Operating System :: OS Independent",
   "License :: OSI Approved :: MIT License",
 ]
-requires-python = ">=3.5"
-dependencies = ["numpy >= 1.14.3", "scipy >= 1.1.0", "matplotlib >= 3.2.0"]
+requires-python = ">=3.7"
+dependencies = ["numpy >= 1.14.3", "scipy >= 1.1.0"]
 
 
 [project.urls]
@@ -31,6 +31,9 @@ Repository = "https://github.com/danielk333/pyant"
 
 
 [project.optional-dependencies]
+plotting = [
+    "matplotlib >= 3.2.0",
+]
 develop = [
   "pytest",
   "flake8",
@@ -53,7 +56,6 @@ develop = [
   "mkdocs-section-index",
 ]
 tests = ["tox", "pytest", "pytest-cov"]
-profiling = ["yappi"]
 
 [tool.setuptools]
 include-package-data = true
