@@ -20,56 +20,56 @@ import pyant
 import numpy as np
 
 
-k_num = 100
-f_num = 100
-size = (k_num, f_num)
-num = np.prod(size)
-
-ks = np.zeros((3, k_num), dtype=np.float64)
-ks[0, :] = np.linspace(-0.5, 0.5, num=k_num)
-ks[2, :] = np.sqrt(1 - ks[0, :] ** 2 - ks[1, :] ** 2)
-fs = np.linspace(200e6, 930e6, num=f_num)
-
-
-start_time = time.time()
+num = 500
+fs = np.linspace(200e6, 930e6, num=num)
 
 beam = pyant.models.Airy(
-    azimuth=45,
-    elevation=75.0,
+    pointing=pyant.coordinates.sph_to_cart(np.array([0, 80.0, 1]), degrees=True),
     frequency=930e6,
-    I0=10**4.81,
     radius=23.0,
+    peak_gain=10**4.81,
 )
-g = np.empty(size, dtype=np.float64)
-for k_ind in range(k_num):
-    for f_ind in range(f_num):
-        beam.frequency = fs[f_ind]
-        g[k_ind, f_ind] = beam.gain(ks[:, k_ind])
+beam_vector_params = pyant.models.Airy(
+    pointing=np.broadcast_to(
+        pyant.coordinates.sph_to_cart(np.array([0, 80.0, 1]), degrees=True).reshape(3, 1), (3, num)
+    ),
+    frequency=fs,
+    radius=np.full((num,), 23.0, dtype=np.float64),
+    peak_gain=10**4.81,
+)
 
-print(f"g.shape={g.shape}")
+sph = np.stack(
+    [
+        np.full((num,), 0, dtype=np.float64),
+        np.linspace(90.0, 45, num=num),
+        np.full((num,), 1, dtype=np.float64),
+    ]
+)
+k = pyant.coordinates.sph_to_cart(sph, degrees=True)
+
+start_time = time.time()
+g = np.empty(num, dtype=np.float64)
+for ind in range(num):
+    beam.parameters["frequency"] = fs[ind]
+    g[ind] = beam.gain(k[:, ind])
 ex_time_loop = time.time() - start_time
 print(f'"gain calculations" ({num}) loop       performance: {ex_time_loop:.1e} seconds')
 
 start_time = time.time()
+g = beam_vector_params.gain(k)
+ex_time_vectorized = time.time() - start_time
+print(f'"gain calculations" ({num}) param-loop performance: {ex_time_vectorized:.1e} seconds')
 
-g = np.empty(size, dtype=np.float64)
-for f_ind in range(f_num):
-    beam.frequency = fs[f_ind]
-    g[:, f_ind] = beam.gain(ks).flatten()
-
-print(f"g.shape={g.shape}")
-ex_time_half_loop = time.time() - start_time
-print(f'"gain calculations" ({num}) param-loop performance: {ex_time_half_loop:.1e} seconds')
-
+# If we want to check only one direction, its the same time as the loop case
+# however it can also be computed with the vectorized version
 
 start_time = time.time()
-
-beam.frequency = fs
-g = beam.gain(ks)
+g = beam_vector_params.gain(k[:, 0])
 print(f"g.shape={g.shape}")
-ex_time_vectorized = time.time() - start_time
-print(f'"gain calculations" ({num}) vectorized performance: {ex_time_vectorized:.1e} seconds')
+ex_time_single_vectorized = time.time() - start_time
+print(
+    f'"gain calculations" ({num}) vectorized performance: {ex_time_single_vectorized:.1e} seconds'
+)
 
-print(f"loop           vs parameter-loop speedup = {ex_time_loop/ex_time_half_loop:.2f}")
-print(f"parameter-loop vs vectorized     speedup = {ex_time_half_loop/ex_time_vectorized:.2f}")
-print(f"loop           vs vectorized     speedup = {ex_time_loop/ex_time_vectorized:.2f}")
+print(f"loop set    vs vectorized speedup = {ex_time_loop/ex_time_vectorized:.2f}")
+print(f"loop single vs vectorized speedup = {ex_time_loop/ex_time_single_vectorized:.2f}")

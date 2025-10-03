@@ -22,63 +22,44 @@ import pyant
 
 kn = 500
 beam = pyant.models.Airy(
-    azimuth=45.0,
-    elevation=75.0,
+    pointing=pyant.coordinates.sph_to_cart(np.array([0, 80.0, 1]), degrees=True),
     frequency=930e6,
-    I0=10**4.81,
+    peak_gain=10**4.81,
     radius=23.0,
-    degrees=True,
 )
 
-
-kx = np.linspace(-1, 1, num=kn)
-ky = np.linspace(-1, 1, num=kn)
-size = kn**2
-xv, yv = np.meshgrid(kx, ky, sparse=False, indexing="ij")
-k = np.zeros((3, size), dtype=np.float64)
-k[0, :] = xv.reshape(1, size)
-k[1, :] = yv.reshape(1, size)
-xy2 = k[0, :] ** 2 + k[1, :] ** 2
-inds = xy2 <= 1
-k[2, inds] = np.sqrt(1.0 - xy2[inds])
+sph = np.stack(
+    [
+        np.full((kn,), 0, dtype=np.float64),
+        np.linspace(90.0, 45, num=kn),
+        np.full((kn,), 1, dtype=np.float64),
+    ]
+)
+k = pyant.coordinates.sph_to_cart(sph, degrees=True)
 
 
 # loop version
 start_time = time.time()
-
-G = np.full((size,), np.nan, dtype=np.float64)
-for i in range(size):
-    if inds[i]:
-        G[i] = beam.gain(k[:, i])[0]
-G = G.reshape(kn, kn)
-
+gain = np.full((kn,), np.nan, dtype=np.float64)
+for ind in range(kn):
+    gain[ind] = beam.gain(k[:, ind])
 loop_time = time.time() - start_time
 
 # vectorized version
 start_time = time.time()
-
-G = np.full((size,), np.nan, dtype=np.float64)
-G[inds] = beam.gain(k[:, inds]).flatten()
-G = G.reshape(kn, kn)
-
+gain = beam.gain(k)
 vector_time = time.time() - start_time
 
-print(f'"Airy.gain" ({size}) loop       performance: {loop_time:.1e} seconds')
-print(f'"Airy.gain" ({size}) vectorized performance: {vector_time:.1e} seconds')
+print(f'"Airy.gain" ({kn}) loop       performance: {loop_time:.1e} seconds')
+print(f'"Airy.gain" ({kn}) vectorized performance: {vector_time:.1e} seconds')
 print(f"Speedup = {loop_time/vector_time}")
 
 
 # Can also do vectorized spherical arguments, there is some extra overhead for this feature
 start_time = time.time()
-G_sph = beam.sph_gain(azimuth=np.linspace(0, 360, num=size), elevation=np.ones((size,)) * 75.0)
-vector_time = time.time() - start_time
+gain_sph = beam.sph_gain(azimuth=np.linspace(0, 360, num=kn), elevation=np.ones((kn,)) * 75.0)
+sph_vector_time = time.time() - start_time
 
 
-start_time = time.time()
-for az in np.linspace(0, 360, num=size):
-    G_sph = beam.sph_gain(azimuth=az, elevation=75.0)
-loop_time = time.time() - start_time
-
-print(f'"Airy.sph_gain" ({size}) loop       performance: {loop_time:.1e} seconds')
-print(f'"Airy.sph_gain" ({size}) vectorized performance: {vector_time:.1e} seconds')
-print(f"Speedup = {loop_time/vector_time}")
+print(f'"Airy.sph_gain" ({kn}) vectorized performance: {sph_vector_time:.1e} seconds')
+print(f"Speedup = {vector_time/sph_vector_time}")

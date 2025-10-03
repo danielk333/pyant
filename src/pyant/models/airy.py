@@ -6,6 +6,7 @@ import numpy as np
 import scipy.constants
 import scipy.special
 
+from numpy.typing import NDArray
 from ..beam import Beam
 from .. import coordinates
 
@@ -15,9 +16,13 @@ class Airy(Beam):
 
     Parameters
     ----------
-    I0 : float
+    pointing : np.ndarray
+        Pointing direction of the boresight
+    frequency : float | np.ndarray
+        Frequency of the radar
+    peak_gain : float | np.ndarray
         Peak gain (linear scale) in the pointing direction.
-    radius : float
+    radius : float | np.ndarray
         Radius in meters of the airy disk
 
     Notes
@@ -28,73 +33,59 @@ class Airy(Beam):
 
     """
 
-    def __init__(self, azimuth, elevation, frequency, I0, radius, **kwargs):
-        super().__init__(azimuth, elevation, frequency, **kwargs)
-        self.I0 = I0
-        self.register_parameter("radius")
-        self.fill_parameter("radius", radius)
+    def __init__(self, pointing, frequency, radius, peak_gain=1):
+        super().__init__()
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
+        self.parameters["frequency"] = frequency
+        self.parameters["radius"] = radius
+
+        self.peak_gain = peak_gain
+        self.zero_limit_eps = 1e-9
+
+        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""
-        return Airy(
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            frequency=copy.deepcopy(self.frequency),
-            I0=copy.deepcopy(self.I0),
+        beam = Airy(
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            frequency=copy.deepcopy(self.parameters["frequency"]),
             radius=copy.deepcopy(self.parameters["radius"]),
-            degrees=self.degrees,
+            peak_gain=self.peak_gain,
         )
+        beam.zero_limit_eps = self.zero_limit_eps
+        return beam
 
-    @property
-    def radius(self):
-        """Radius in meters of the airy disk"""
-        return self.parameters["radius"]
+    def gain(self, k: NDArray, polarization: NDArray | None = None):
+        k_len = self.validate_k_shape(k)
+        size = self.size
+        scalar_output = size == 0 and k_len == 0
 
-    @radius.setter
-    def radius(self, val):
-        self.fill_parameter("radius", val)
+        p = self.parameters["pointing"]
+        # size of theta is always k_len or size or a scalar
+        theta = coordinates.vector_angle(p, k, degrees=False)
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        k_len = k.shape[1] if len(k.shape) == 2 else 0
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
-
-        params, shape = self.get_parameters(ind, named=True, max_vectors=1)
-        params, G = self.broadcast_params(params, shape, k_len)
-
-        p_len = params["pointing"].shape[1] if len(params["pointing"].shape) == 2 else 0
-        if p_len > 1 and k_len > 1:
-            theta = np.empty_like(G)
-            for ind in range(p_len):
-                theta[:, ind] = coordinates.vector_angle(
-                    params["pointing"][:, ind],
-                    k,
-                    degrees=False,
-                )
-        else:
-            if p_len == 1:
-                params["pointing"] = params["pointing"].reshape(3)
-            theta = coordinates.vector_angle(params["pointing"], k, degrees=False)
-            if theta.size == G.size:
-                if len(theta.shape) > 0:
-                    theta.shape = G.shape
-            else:
-                theta = theta.reshape(theta.size, 1)
-                theta = np.broadcast_to(theta, G.shape)
-
-        lam = scipy.constants.c / params["frequency"]
+        lam = scipy.constants.c / self.parameters["frequency"]
         k_n = 2.0 * np.pi / lam
-        alph = k_n * params["radius"] * np.sin(theta)
-        jn_val = scipy.special.jn(1, alph)
-        inds = alph < 1e-9
+        radius = self.parameters["radius"]
 
-        if len(G.shape) == 0:
-            if inds:
-                G = self.I0
-            else:
-                G = self.I0 * ((2.0 * jn_val / alph)) ** 2.0
+        alph = k_n * radius * np.sin(theta)
+        if scalar_output:
+            alph = np.array([alph])
+
+        inds = alph > self.zero_limit_eps
+        not_inds = np.logical_not(inds)
+
+        jn_val = np.empty_like(alph)
+        jn_val[inds] = scipy.special.jn(1, alph[inds])
+
+        if scalar_output:
+            g = np.empty((1,), dtype=np.float64)
         else:
-            not_inds = np.logical_not(inds)
-            G[inds] = self.I0
-            G[not_inds] = self.I0 * ((2.0 * jn_val[not_inds] / alph[not_inds])) ** 2.0
+            g = np.empty(len(alph), dtype=np.float64)
+        g[not_inds] = self.peak_gain
+        g[inds] = self.peak_gain * ((2.0 * jn_val[inds] / alph[inds])) ** 2.0
 
-        return G
+        if scalar_output:
+            g = g[0]
+        return g
