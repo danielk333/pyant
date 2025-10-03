@@ -11,4 +11,5 @@ from .. import coordinates
 
 
 class Isotropic(Beam):
-    pass
+    def __init__(self):
+        raise NotImplementedError("todo")
