@@ -64,7 +64,7 @@ class Beam(ABC):
     def size(self):
         """The additional dimensions added to the output Gain if broadcasting is enabled."""
         shape = [self._get_parameter_len(key) for key in self.parameters]
-        assert all(x == shape[0] for x in shape), "all parameter shapes must line up"
+        assert all(x == shape[0] for x in shape), f"all parameter shapes must line up: {shape}"
         return shape[0]
 
     def validate_parameter_shapes(self):
@@ -180,7 +180,7 @@ class Beam(ABC):
         self.parameters["pointing"] = coordinates.sph_to_cart(sph, degrees=degrees)
 
     def point(self, k: NDArray):
-        """Point beam in local cartesian direction.
+        """Point beam in local Cartesian direction.
 
         Parameters
         ----------
