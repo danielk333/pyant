@@ -1,25 +1,29 @@
 #!/usr/bin/env python
 
 """
-Test basic kepler functions
+Test basic Beam utils
 """
 
 import unittest
+import scipy.constants
 import numpy as np
 import numpy.testing as nt
 
 import pyant
 
 
+class MockBeam(pyant.Beam):
+    def gain(self):
+        pass
+
+
 class TestBeam(unittest.TestCase):
     def setUp(self):
         self.data = {
-            "azimuth": [0, 45.0, 0],
-            "elevation": [90.0, 80.0, 60.0],
-            "frequency": [930e6, 230e6],
-            "radius": 23.0,
+            "azimuth": np.array([0, 90, 180], dtype=np.float64),
+            "elevation": np.array([90, 0, 0], dtype=np.float64),
         }
-        self.k = pyant.coordinates.sph_to_cart(
+        self.data["k_all"] = pyant.coordinates.sph_to_cart(
             np.array(
                 [
                     self.data["azimuth"],
@@ -29,188 +33,122 @@ class TestBeam(unittest.TestCase):
             ),
             degrees=True,
         )
+        self.data["k"] = self.data["k_all"][:, :2]
+        self.data["param_sizes"] = {
+            "a": 0,
+            "b": 2,
+            "c": 0,
+            "d": 2,
+        }
+        self.data["vec_size"] = 2
+        self.data["frequency"] = 1e8
+        self.data["wavelength"] = scipy.constants.c / 1e8
 
-        class TestBeam(pyant.Beam):
-            def gain(self):
-                pass
+    def make_test_beam(self):
+        beam = MockBeam()
+        return beam
 
-            def sph_gain(self):
-                pass
+    def make_test_beam_params_variaty(self):
+        beam = MockBeam()
+        beam.parameters["a"] = 0
+        beam.parameters["b"] = np.arange(2)
+        beam.parameters["c"] = np.arange(2)
+        beam.parameters["d"] = np.ones((2, 2))
+        beam.parameters_shape["c"] = (2,)
+        beam.parameters_shape["d"] = (2,)
+        return beam
 
-        self.beam1 = TestBeam(
-            azimuth=self.data["azimuth"],
-            elevation=self.data["elevation"],
-            frequency=self.data["frequency"],
-            degrees=True,
-        )
+    def make_test_beam_params_vector(self):
+        beam = MockBeam()
+        beam.parameters["c"] = np.arange(2)
+        beam.parameters["d"] = np.ones((2, 2))
+        beam.parameters_shape["d"] = (2,)
+        return beam
 
-        class TestBeam2(pyant.Beam):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.register_parameter("radius")
-                self.fill_parameter("radius", kwargs["radius"])
+    def make_test_beam_params_scalar(self):
+        beam = MockBeam()
+        beam.parameters["frequency"] = self.data["frequency"]
+        return beam
 
-            def gain(self):
-                pass
+    def make_test_beam_params_point(self):
+        beam = MockBeam()
+        beam.parameters["pointing"] = self.data["k"][:, 0]
+        return beam
 
-            def sph_gain(self):
-                pass
-
-        self.beam2 = TestBeam2(
-            azimuth=self.data["azimuth"],
-            elevation=self.data["elevation"],
-            frequency=self.data["frequency"],
-            radius=self.data["radius"],
-            degrees=True,
-        )
-
-    def test_get_parameters(self):
-        params, shape = self.beam1.get_parameters()
-        nt.assert_array_almost_equal(
-            self.data["frequency"],
-            params[self.beam1._inds["frequency"]],
-        )
-
-        params, shape = self.beam2.get_parameters()
-        nt.assert_array_almost_equal(
-            self.data["radius"],
-            params[self.beam2._inds["radius"]],
-        )
-
-    def test_get_parameters_ind(self):
-        params, shape = self.beam1.get_parameters(ind=(0, 0))
-        nt.assert_array_almost_equal(params[0], self.k[:, 0])
-        nt.assert_almost_equal(params[1], self.data["frequency"][0])
-
-        params, shape = self.beam1.get_parameters(ind=(0, 0), named=True)
-        nt.assert_array_almost_equal(params["pointing"], self.k[:, 0])
-        nt.assert_almost_equal(params["frequency"], self.data["frequency"][0])
-
-    def test_broadcast_params(self):
-        base_params, shape = self.beam1.get_parameters(named=True)
-        with self.assertRaises(AssertionError):
-            params, G = self.beam1.broadcast_params(base_params, shape, 0)
-        base_params, shape = self.beam1.get_parameters(ind=(slice(None), 0), named=True)
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 0)
-        assert G.shape == (len(self.data["azimuth"]),)
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 10)
-        assert G.shape == (10, len(self.data["azimuth"]))
-
-        base_params, shape = self.beam1.get_parameters(ind=(0, 0), named=True)
-        params, G = self.beam1.broadcast_params(base_params, shape, 0)
-        assert len(G.shape) == 0
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 10)
-        assert G.shape == (10,)
-
-        base_params, shape = self.beam1.get_parameters(ind=(0, slice(None)), named=True)
-        params, G = self.beam1.broadcast_params(base_params, shape, 0)
-        assert G.shape == (len(self.data["frequency"]),)
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 10)
-        assert G.shape == (10, len(self.data["frequency"]))
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 0)
-        for key in params:
-            if key == "pointing":
-                assert params[key].shape == (3,)
-            else:
-                assert params[key].shape == G.shape
-
-        params, G = self.beam1.broadcast_params(base_params, shape, 10)
-        for key in params:
-            if key == "pointing":
-                assert params[key].shape == (3,)
-            else:
-                assert params[key].shape == G.shape
-
-    def test_set_parameters_property(self):
-        f = np.array([2.0])
-        self.beam1.frequency = f
-        nt.assert_array_almost_equal(
-            f,
-            self.beam1.frequency,
-        )
-
-        r = np.array([1.0, 2.0])
-        self.beam2.parameters["radius"] = r
-        nt.assert_array_almost_equal(
-            r,
-            self.beam2.parameters["radius"],
-        )
-        rp = 3.0
-        self.beam2.fill_parameter("radius", rp)
-        nt.assert_array_almost_equal(
-            r * 0 + rp,
-            self.beam2.parameters["radius"],
-        )
-
-    def test_wavelength(self):
-        self.beam1.frequency = [1]
-        c = self.beam1.wavelength
-        self.beam1.wavelength = 1
-        nt.assert_almost_equal(self.beam1.frequency[0], c)
-
-    def test_get_pointing(self):
-        nt.assert_array_almost_equal(self.beam1.pointing, self.k)
-        nt.assert_array_almost_equal(self.beam1.azimuth, self.data["azimuth"])
-        nt.assert_array_almost_equal(self.beam1.elevation, self.data["elevation"])
-
-    def test_set_sph_pointing(self):
-        k = np.array([1, 0, 0], dtype=np.float64)
-        k.shape = (3, 1)
-        az = np.array([90.0])
-        el = np.array([0.0])
-
-        self.beam1.sph_point(az, el, degrees=True)
-        nt.assert_array_almost_equal(self.beam1.pointing, k)
-        nt.assert_array_almost_equal(self.beam1.azimuth, az)
-        nt.assert_array_almost_equal(self.beam1.elevation, el)
-
-        self.beam1.sph_point(self.data["azimuth"], self.data["elevation"], degrees=True)
-        nt.assert_array_almost_equal(self.beam1.pointing, self.k)
-        nt.assert_array_almost_equal(self.beam1.azimuth, self.data["azimuth"])
-        nt.assert_array_almost_equal(self.beam1.elevation, self.data["elevation"])
-
-        self.beam1.point(k)
-        nt.assert_array_almost_equal(self.beam1.pointing, k)
-        nt.assert_array_almost_equal(self.beam1.azimuth, az)
-        nt.assert_array_almost_equal(self.beam1.elevation, el)
-
-    def test_angle(self):
-        k = np.array([1, 0, 0], dtype=np.float64)
-        th = self.beam1.angle(k, degrees=True)
-        nt.assert_almost_equal(th[0], 90.0)
-
-        th = self.beam1.angle(k, degrees=False)
-        nt.assert_almost_equal(th[0], np.pi / 2)
-
-        th = self.beam1.sph_angle(90, 0, degrees=True)
-        nt.assert_almost_equal(th[0], 90.0)
-
-    def test_get_parameter_len(self):
-        assert self.beam1._get_parameter_len("frequency") == 2
-
-    def test_shape(self):
-        shape = self.beam2.named_shape
-        assert list(shape.keys()) == ["pointing", "frequency", "radius"]
-        assert list(shape.values()) == [3, 2, 1]
-        assert self.beam2.shape == (3, 2, 1)
+    def test_init(self):
+        beam = self.make_test_beam()
+        beam.gain()
 
     def test_keys(self):
-        assert self.beam2.keys == tuple(self.beam2.parameters.keys())
+        beam = self.make_test_beam_params_variaty()
+        keys = beam.keys
+        for key in self.data["param_sizes"]:
+            assert key in keys
+        for key in keys:
+            assert key in self.data["param_sizes"]
 
-    def test_ind_to_dict(self):
-        inds = self.beam1.ind_to_dict(None)
-        assert inds["pointing"] == (slice(None), slice(None))
-        assert inds["frequency"] == (slice(None),)
+    def test_get_parameters_len(self):
+        beam = self.make_test_beam_params_variaty()
+        for key in beam.keys:
+            assert self.data["param_sizes"][key] == beam._get_parameter_len(key), key
 
-        inds = self.beam1.ind_to_dict({"pointing": 0})
-        assert inds["pointing"] == (slice(None), 0)
-        assert inds["frequency"] == (slice(None),)
+    def test_size(self):
+        beam = self.make_test_beam_params_vector()
+        self.assertEqual(beam.size, self.data["vec_size"])
+        beam = self.make_test_beam_params_scalar()
+        self.assertEqual(beam.size, 0)
 
-        inds = self.beam1.ind_to_dict((slice(1, None), 1))
-        assert inds["pointing"] == (slice(None), slice(1, None))
-        assert inds["frequency"] == (1,)
+    def test_param_validator(self):
+        beam = self.make_test_beam_params_vector()
+        beam.validate_parameter_shapes()
+        beam = self.make_test_beam_params_variaty()
+        with self.assertRaises(AssertionError):
+            beam.validate_parameter_shapes()
+
+    def test_k_validator(self):
+        beam = self.make_test_beam_params_vector()
+        beam.validate_k_shape(self.data["k"])
+        beam.validate_k_shape(self.data["k"][:, 0])
+        with self.assertRaises(AssertionError):
+            beam.validate_k_shape(self.data["k_all"])
+
+    def test_freq_lam(self):
+        beam = self.make_test_beam_params_scalar()
+        self.assertAlmostEqual(beam.frequency, self.data["frequency"])
+        self.assertAlmostEqual(beam.wavelength, self.data["wavelength"])
+        beam.frequency = 1e7
+        newlam = scipy.constants.c / beam.frequency
+        self.assertAlmostEqual(beam.frequency, 1e7)
+        self.assertAlmostEqual(beam.wavelength, newlam)
+        newlam = scipy.constants.c / 5e7
+        beam.wavelength = newlam
+        self.assertAlmostEqual(beam.frequency, 5e7)
+        self.assertAlmostEqual(beam.wavelength, newlam)
+
+    def test_angle(self):
+        beam = self.make_test_beam_params_point()
+        k = np.array([1, 0, 0], dtype=np.float64)
+        th = beam.angle(k, degrees=True)
+        nt.assert_almost_equal(th, 90.0)
+
+        th = beam.angle(k, degrees=False)
+        nt.assert_almost_equal(th, np.pi / 2)
+
+        th = beam.sph_angle(90, 0, degrees=True)
+        nt.assert_almost_equal(th, 90.0)
+
+    def test_azel_to_numpy(self):
+        azelr = pyant.Beam._azel_to_numpy(self.data["azimuth"], self.data["elevation"])
+        nt.assert_equal(azelr[0, :], self.data["azimuth"])
+        nt.assert_equal(azelr[1, :], self.data["elevation"])
+        nt.assert_equal(azelr[2, :], np.ones_like(self.data["azimuth"]))
+
+        azelr = pyant.Beam._azel_to_numpy(0, self.data["elevation"])
+        nt.assert_equal(azelr[0, :], 0)
+        nt.assert_equal(azelr[1, :], self.data["elevation"])
+        nt.assert_equal(azelr[2, :], np.ones_like(self.data["azimuth"]))
+
+        azelr = pyant.Beam._azel_to_numpy(self.data["azimuth"], 0)
+        nt.assert_equal(azelr[0, :], self.data["azimuth"])
+        nt.assert_equal(azelr[1, :], 0)
+        nt.assert_equal(azelr[2, :], np.ones_like(self.data["azimuth"]))

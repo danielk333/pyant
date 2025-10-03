@@ -45,25 +45,6 @@ class Beam(ABC):
         self.parameters = collections.OrderedDict()
         self.parameters_shape = {}
 
-    @property
-    def frequency(self):
-        """The radar wavelength."""
-        assert "frequency" in self.parameters
-        return self.parameters["frequency"]
-
-    @frequency.setter
-    def frequency(self, val: NDArray | float):
-        self.parameters["frequency"] = val
-
-    @property
-    def wavelength(self):
-        """The radar wavelength."""
-        return scipy.constants.c / self.frequency
-
-    @wavelength.setter
-    def wavelength(self, val: NDArray | float):
-        self.frequency = scipy.constants.c / val
-
     def _get_parameter_len(self, key: str):
         """Get the length of a parameter axis, its always the last array dimension"""
         obj = self.parameters[key]
@@ -88,6 +69,7 @@ class Beam(ABC):
 
     def validate_parameter_shapes(self):
         """Helper function to validate the input parameter shapes are correct"""
+        # TODO: maybe change to raise custom exceptions?
         size = None
         for key, p in self.parameters.items():
             if size is None:
@@ -103,12 +85,14 @@ class Beam(ABC):
                 ), f"{key} needs at least {shape} dimensions, not {p.shape}"
 
     def validate_k_shape(self, k):
+        """Helper function to validate the input direction vector shape is correct"""
+        # TODO: maybe change to raise custom exceptions?
         size = self.size
         k_len = k.shape[1] if len(k.shape) > 1 else 0
         if size > 0:
-            assert size == k_len or k_len == 0, (
-                "input k vector must either be single vector or line up with parameter dimensions"
-            )
+            assert (
+                size == k_len or k_len == 0
+            ), "input k vector must either be single vector or line up with parameter dimensions"
         assert len(k.shape) <= 2, "k vector can only be vectorized along one extra axis"
         assert k.shape[0] == 3, f"pointing vector must at least be a 3-vector, not {k.shape[0]}"
         return k_len
@@ -124,15 +108,8 @@ class Beam(ABC):
         i.e a `shape=(3,n)` numpy array.
         """
 
-        if isinstance(azimuth, float):
-            az_len = None
-        else:
-            az_len = azimuth.size
-
-        if isinstance(elevation, float):
-            el_len = None
-        else:
-            el_len = elevation.size
+        az_len = azimuth.size if isinstance(azimuth, np.ndarray) else None
+        el_len = elevation.size if isinstance(elevation, np.ndarray) else None
 
         if el_len is not None and az_len is not None:
             assert el_len == az_len, f"azimuth {az_len} and elevation {el_len} sizes must agree"
@@ -163,6 +140,24 @@ class Beam(ABC):
     def from_h5(cls):
         """Load defining parameters from a h5 file and instantiate a beam"""
         raise NotImplementedError("")
+
+    @property
+    def frequency(self):
+        """The radar wavelength."""
+        return self.parameters["frequency"]
+
+    @frequency.setter
+    def frequency(self, val):
+        self.parameters["frequency"] = val
+
+    @property
+    def wavelength(self):
+        """The radar wavelength."""
+        return scipy.constants.c / self.frequency
+
+    @wavelength.setter
+    def wavelength(self, val):
+        self.frequency = scipy.constants.c / val
 
     def sph_point(
         self, azimuth: NDArray | float, elevation: NDArray | float, degrees: bool = False
