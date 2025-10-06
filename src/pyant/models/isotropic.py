@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 
-import copy
-
 import numpy as np
-import scipy.constants
-import scipy.special
+from numpy.typing import NDArray
 
 from ..beam import Beam
-from .. import coordinates
 
 
 class Isotropic(Beam):
     def __init__(self):
-        raise NotImplementedError("todo")
+        super().__init__()
+
+    def gain(self, k: NDArray, polarization: NDArray | None = None):
+        k_len = k.shape[1] if len(k.shape) > 1 else 0
+        if k_len == 0:
+            return np.float64(1.0)
+        else:
+            return np.ones((k_len,), dtype=np.float64)
+
+    def copy(self):
+        return Isotropic()
