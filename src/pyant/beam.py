@@ -64,6 +64,8 @@ class Beam(ABC):
     def size(self):
         """The additional dimensions added to the output Gain if broadcasting is enabled."""
         shape = [self._get_parameter_len(key) for key in self.parameters]
+        if len(shape) == 0:
+            return 0
         assert all(x == shape[0] for x in shape), f"all parameter shapes must line up: {shape}"
         return shape[0]
 
