@@ -67,6 +67,19 @@ models_scalar = [
         radius=100.0,
         normal_pointing=zenith,
     ),
+    pyant.models.Isotropic(),
+    pyant.models.MeasuredAzimuthallySymmetric(
+        elevations=np.linspace(0, 90, 100),
+        gains=np.linspace(0, 1, 100),
+        interpolation_method="linear",
+        degrees=True,
+    ),
+    pyant.models.MeasuredAzimuthallySymmetric(
+        elevations=np.linspace(0, 90, 100),
+        gains=np.linspace(0, 1, 100),
+        interpolation_method="cubic_spline",
+        degrees=True,
+    ),
 ]
 
 
