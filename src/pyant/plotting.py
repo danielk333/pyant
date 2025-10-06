@@ -157,7 +157,7 @@ def gains(
 
     S = np.zeros((resolution, len(beams)))
     for b, beam in enumerate(beams):
-        S[:, b] = beam.gain(k, polarization=polarizations[b], ind=inds[b]).flatten()
+        S[:, b] = beam.gain(k, polarization=polarizations[b])
     lns = []
     for b in range(len(beams)):
         lg = legends[b] if legends is not None else None
@@ -166,10 +166,10 @@ def gains(
     if legends is not None:
         ax.legend()
 
-    ax.set_xlabel("Zenith angle [deg]", fontsize=24)
-    ax.tick_params(axis="both", labelsize=17)
-    ax.set_ylabel("Gain [dB]", fontsize=24)
-    ax.set_title("Gain patterns", fontsize=28)
+    ax.set_xlabel("Zenith angle [deg]")
+    ax.tick_params(axis="both")
+    ax.set_ylabel("Gain [dB]")
+    ax.set_title("Gain patterns")
 
     return fig, ax, lns
 
@@ -329,7 +329,10 @@ def gain_heatmap(
             "Can only plot beam with scalar parameters -"
             f"dont know which of the {beam.size} options to pick"
         )
-    pointing = beam.parameters["pointing"]
+    if "pointing" not in beam.parameters:
+        pointing = np.array([0, 0, 1], dtype=np.float64)
+    else:
+        pointing = beam.parameters["pointing"]
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
@@ -350,7 +353,7 @@ def gain_heatmap(
     else:
         # Recipe at
         # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
-        bins = MaxNLocator(nbins=levels).tick_values(0, np.nanmax(SdB))
+        bins = MaxNLocator(nbins=levels).tick_values(np.nanmin(SdB), np.nanmax(SdB))
         norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
         conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
