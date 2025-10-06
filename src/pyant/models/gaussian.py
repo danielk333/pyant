@@ -2,6 +2,7 @@
 import copy
 
 import numpy as np
+from numpy.typing import NDArray
 import scipy.constants
 import scipy.special
 
@@ -49,66 +50,74 @@ class Gaussian(Beam):
 
         # Random number in case pointing and planar normal align
         # Used to determine basis vectors in the plane perpendicular to pointing
-        self.__randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
+        self._randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
         self.peak_gain = peak_gain
         self.min_off_axis = 1e-6
 
     def copy(self):
         """Return a copy of the current instance."""
-        return Gaussian(
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            frequency=copy.deepcopy(self.frequency),
-            I0=copy.deepcopy(self.I0),
+        beam = Gaussian(
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            frequency=copy.deepcopy(self.parameters["frequency"]),
             radius=copy.deepcopy(self.parameters["radius"]),
-            normal_azimuth=copy.deepcopy(self.normal_azimuth),
-            normal_elevation=copy.deepcopy(self.normal_elevation),
-            degrees=self.degrees,
+            normal_pointing=copy.deepcopy(self.parameters["normal_pointing"]),
+            peak_gain=self.peak_gain,
         )
+        beam._randn_point = self._randn_point.copy()
+        beam.min_off_axis = self.min_off_axis
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        k_len = k.shape[1] if len(k.shape) == 2 else 0
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
+        return beam
 
-        params, shape = self.get_parameters(ind, named=True, max_vectors=1)
-        assert params["normal"].size == 3, "Cannot vectorize on normal vector"
-        assert params["pointing"].size == 3, "Cannot vectorize on pointing"
-        if len(params["pointing"].shape) == 2:
-            params["pointing"] = params["pointing"].reshape(3)
+    def gain(self, k: NDArray, polarization: NDArray | None = None):
+        k_len = self.validate_k_shape(k)
+        size = self.size
 
-        params, G = self.broadcast_params(params, shape, k_len)
+        pointing = self.parameters["pointing"]
+        normal = self.parameters["normal_pointing"]
+        lam = scipy.constants.c / self.parameters["frequency"]
+        radius = self.parameters["radius"]
 
-        lam = scipy.constants.c / params["frequency"]
-
-        pn_dot = np.dot(params["pointing"], params["normal"])
-        if np.abs(1 - pn_dot) < self.min_off_axis:
-            ct = np.cross(self.__randn_point, params["normal"])
+        pn_dot = np.sum(pointing * normal, axis=0)
+        inds = np.abs(1 - pn_dot) < self.min_off_axis
+        if size == 0:
+            if inds:
+                ct = np.cross(self._randn_point, normal)
+            else:
+                ct = np.cross(pointing, normal)
         else:
-            ct = np.cross(params["pointing"], params["normal"])
+            not_inds = np.logical_not(inds)
+            ct = np.empty_like(normal)
+            ct[:, inds] = np.linalg.cross(self._randn_point, normal[:, inds], axis=0)
+            ct[:, not_inds] = np.linalg.cross(pointing[:, not_inds], normal[:, not_inds], axis=0)
 
-        ct = ct / np.sqrt(np.dot(ct, ct))
+        ct = ct / np.linalg.norm(ct, axis=0)
 
-        ht = np.cross(params["normal"], ct)
-        ht = ht / np.sqrt(np.dot(ht, ht))
-        angle = coordinates.vector_angle(params["pointing"], ht, degrees=False)
+        ht = np.linalg.cross(normal, ct, axis=0)
+        ht = ht / np.linalg.norm(ht, axis=0)
+        angle = coordinates.vector_angle(pointing, ht, degrees=False)
 
-        ot = np.cross(params["pointing"], ct)
-        ot = ot / np.sqrt(np.dot(ot, ot))
+        ot = np.cross(pointing, ct, axis=0)
+        ot = ot / np.linalg.norm(ot, axis=0)
 
-        I_1 = np.sin(angle) * self.I0
-        a0p = np.sin(angle) * params["radius"]
+        peak_1 = np.sin(angle) * self.peak_gain
+        a0p = np.sin(angle) * radius
 
         sigma1 = 0.7 * a0p / lam
-        sigma2 = 0.7 * params["radius"] / lam
+        sigma2 = 0.7 * radius / lam
 
-        k0 = (k / np.linalg.norm(k, axis=0)).T
+        k0 = k / np.linalg.norm(k, axis=0)
+        if size > 0 and k_len == 0:
+            k0 = np.broadcast_to(k0.reshape(3, 1), (3, size))
+        elif k_len > 0 and size == 0:
+            ct = np.broadcast_to(ct.reshape(3, 1), (3, k_len))
+            ot = np.broadcast_to(ot.reshape(3, 1), (3, k_len))
 
-        l1 = np.dot(k0, ct).reshape(G.shape)
-        m1 = np.dot(k0, ot).reshape(G.shape)
+        l1 = np.sum(k0 * ct, axis=0)
+        m1 = np.sum(k0 * ot, axis=0)
 
-        G = (
-            I_1
+        g = (
+            peak_1
             * np.exp(-np.pi * l1 * l1 * 2.0 * np.pi * sigma1**2.0)
             * np.exp(-np.pi * m1 * m1 * 2.0 * np.pi * sigma2**2.0)
         )
-        return G
+        return g

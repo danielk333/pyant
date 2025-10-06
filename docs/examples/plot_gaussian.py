@@ -15,29 +15,61 @@
 
 # # Gaussian planar array gain
 
-
+import numpy as np
 import matplotlib.pyplot as plt
 import pyant
 
 
 beam = pyant.models.Gaussian(
-    azimuth=0,
-    elevation=90.0,
+    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
     frequency=46.5e6,
-    I0=10**4.81,
     radius=100.0,
-    normal_azimuth=0,
-    normal_elevation=90.0,
-    degrees=True,
+    normal_pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
+    peak_gain=10**4.81,
 )
+
+# +
+# # Plot the gain pattern in zenith for two different planar tilts
+fig, (ax1, ax2) = plt.subplots(1, 2)
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax1)
+ax1.set_title("Plane normal-elevation = 90 deg")
+
+beam.parameters["normal_pointing"] = pyant.coordinates.sph_to_cart(
+    np.array([0, 45.0, 1]), degrees=True
+)
+
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax2)
+ax2.set_title("Plane normal-elevation = 45 deg")
 
 
 # +
-fig, (ax1, ax2) = plt.subplots(1, 2)
-pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax1)
-ax1.set_title(f"normal-elevation {beam.normal_elevation}")
+# # Plot the gain 1 degree off bore-sight as a function of frequency and radius
+# This is an example of setting up a larger vectorized calculation using `pyant`
+# and then evaluating that calculation and formatting it back to its intended
+# shape and parameter space
 
-beam.normal_elevation = 45.0
-pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax2)
-ax2.set_title(f"normal-elevation {beam.normal_elevation}")
+num = 100
+tnum = num**2
+freq = np.linspace(50e6, 900e6, num)
+radius = np.linspace(23, 100, num)
+fmat, rmat = np.meshgrid(freq, radius)
+
+beam.parameters["normal_pointing"] = np.zeros((3, tnum), dtype=np.float64)
+beam.parameters["normal_pointing"][2, :] = 1
+beam.parameters["pointing"] = beam.parameters["normal_pointing"]
+beam.parameters["frequency"] = fmat.reshape((tnum,))
+beam.parameters["radius"] = rmat.reshape((tnum,))
+
+k_in = pyant.coordinates.sph_to_cart(np.array([0, 89.0, 1]), degrees=True)
+
+g = beam.gain(k_in)
+
+fig, ax = plt.subplots()
+pm = ax.pcolormesh(fmat * 1e-6, rmat, 10 * np.log10(g.reshape(fmat.shape)))
+ax.set_xlabel("Frequency [MHz]")
+ax.set_ylabel("Radius [m]")
+ax.set_title("1-degree off bore-sight gain")
+cb = fig.colorbar(pm, ax=ax)
+cb.set_label("Gain [dB]")
+
 plt.show()

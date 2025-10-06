@@ -58,7 +58,7 @@ class Cassegrain(Beam):
             frequency=copy.deepcopy(self.parameters["frequency"]),
             outer_radius=copy.deepcopy(self.parameters["outer_radius"]),
             inner_radius=copy.deepcopy(self.parameters["inner_radius"]),
-            peak_gain=self.peak_gain
+            peak_gain=self.peak_gain,
         )
         beam.eps = self.eps
         beam.min_off_axis = self.min_off_axis

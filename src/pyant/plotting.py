@@ -363,8 +363,6 @@ def gain_heatmap(
     ax.set_xlabel("kx [1]")
     ax.set_ylabel("ky [1]")
 
-    plt.xticks()
-    plt.yticks()
     cbar = plt.colorbar(conf, ax=ax)
     cbar.ax.set_ylabel("Gain [dB]")
     tit = "Gain pattern"
