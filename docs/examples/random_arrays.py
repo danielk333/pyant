@@ -26,11 +26,9 @@ ant_n = 300
 antennas = np.zeros((3, ant_n, 1))
 antennas[:2, :, 0] = np.random.rand(2, ant_n) * 50 - 25
 beam = pyant.models.Array(
-    azimuth=0,
-    elevation=90.0,
+    pointing=np.array([0, 0, 1.0]),
     frequency=46.5e6,
     antennas=antennas,
-    degrees=True,
 )
 
 

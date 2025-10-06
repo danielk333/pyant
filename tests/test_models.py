@@ -10,6 +10,15 @@ import numpy.testing as nt
 
 import pyant
 
+grp_num = 10
+ant_num = 5
+antennas = np.zeros((3, ant_num, grp_num))
+antx = np.linspace(-50, 50, grp_num)
+anty = np.linspace(-50, 50, ant_num)
+for ind in range(grp_num):
+    antennas[0, :, ind] = antx[ind]
+    antennas[1, :, ind] = anty
+
 num = 11
 zenith = np.array([0, 0, 1], dtype=np.float64)
 pointing = pyant.coordinates.sph_to_cart(np.array([0, 80.0, 1]), degrees=True)
@@ -47,6 +56,14 @@ models_vector = [
             (3, num),
         ).copy(),
     ),
+    pyant.models.Array(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+        frequency=np.full((num,), 50e6, dtype=np.float64),
+        antennas=antennas,
+    )
 ]
 
 models_scalar = [
@@ -80,6 +97,11 @@ models_scalar = [
         interpolation_method="cubic_spline",
         degrees=True,
     ),
+    pyant.models.Array(
+        pointing=np.array([0, 0, 1.0]),
+        frequency=46.5e6,
+        antennas=antennas,
+    )
 ]
 
 

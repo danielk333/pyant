@@ -2,6 +2,7 @@
 import copy
 
 import numpy as np
+from numpy.typing import NDArray
 import scipy.constants
 import scipy.special
 
@@ -12,31 +13,6 @@ def default_element(k, polarization):
     """Antenna element gain pattern, azimuthally symmetric dipole response."""
     ret = np.ones((2,), dtype=k.dtype)
     return ret[:, None] * k[2, :]
-
-
-def plane_wave(k, r, p, J):
-    """The complex plane wave function.
-
-    Parameters
-    ----------
-    k : numpy.ndarray
-        Wave-vectors (wave propagation directions)
-    r : numpy.ndarray
-        Spatial locations (Antenna positions in space)
-    p : numpy.ndarray
-        Beam-forming direction by phase offsets
-        (antenna array "pointing" direction)
-    J : numpy.ndarray
-        Polarization given as a Jones vector
-    """
-
-    # in this, rows are antennas and columns are wave directions
-    spat_wave = np.exp(1j * np.pi * 2.0 * np.dot(r, k - p))
-
-    # broadcast to polarizations
-    wave = spat_wave[..., None] * J[None, None, :]
-
-    return wave
 
 
 class Array(Beam):
@@ -78,17 +54,19 @@ class Array(Beam):
 
     def __init__(
         self,
-        azimuth,
-        elevation,
+        pointing,
         frequency,
         antennas,
         mutual_coupling_matrix=None,
         antenna_element=default_element,
         polarization=np.array([1, 1j]) / np.sqrt(2),
-        scaling=1.0,
-        **kwargs
+        peak_gain=1.0,
     ):
-        super().__init__(azimuth, elevation, frequency, **kwargs)
+        super().__init__()
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
+        self.parameters["frequency"] = frequency
+
         if isinstance(antennas, list):
             for arr in antennas:
                 assert arr.shape[0] == 3
@@ -103,7 +81,7 @@ class Array(Beam):
 
         self.mutual_coupling_matrix = mutual_coupling_matrix
         self.antennas = antennas
-        self.scaling = scaling
+        self.peak_gain = peak_gain
         self.polarization = polarization
         self.antenna_element = antenna_element
 
@@ -117,12 +95,10 @@ class Array(Beam):
         else:
             antennas = self.antennas.copy()
         return Array(
-            frequency=copy.deepcopy(self.frequency),
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            degrees=self.degrees,
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            frequency=copy.deepcopy(self.parameters["frequency"]),
+            peak_gain=self.peak_gain,
             antennas=antennas,
-            scaling=copy.deepcopy(self.scaling),
             polarization=self.polarization.copy(),
             mutual_coupling_matrix=mem,
             antenna_element=self.antenna_element,
@@ -136,13 +112,13 @@ class Array(Beam):
         else:
             return self.antennas.shape[2]
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
+    def gain(self, k: NDArray, polarization: NDArray | None = None):
         """Gain of the antenna array."""
-        G = self.channel_signals(k, ind=ind, polarization=polarization, **kwargs)
-        G = np.sum(G, axis=0)  # coherent intergeneration over channels
-        return np.abs(G)
+        g = self.channel_signals(k, polarization=polarization)
+        g = np.sum(g, axis=0)  # coherent intergeneration over channels
+        return np.abs(g)
 
-    def channel_signals(self, k, ind=None, polarization=None, **kwargs):
+    def channel_signals(self, k, polarization=None):
         """Complex voltage output signals after summation of antennas and polarization.
 
         Returns
@@ -157,7 +133,7 @@ class Array(Beam):
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        psi = self.signals(k, polarization, channels=None, ind=ind, **kwargs)
+        psi = self.signals(k, polarization, channels=None)
 
         lin_pol_check = np.abs(self.polarization) < 1e-6
         if not np.any(lin_pol_check):
@@ -174,46 +150,53 @@ class Array(Beam):
         Returns
         -------
         numpy.ndarray
-            `(c,2,num_k)` ndarray where `c` is the number of channels
+            `(c,2,n)` ndarray where `c` is the number of channels
             requested, `2` are the two polarization axis of the Jones vector
-            and `num_k` is the number of input wave vectors. If `num_k = 1`
-            the returned ndarray is `(c,2)`.
+            and `n` is the number of input wave vectors (i.e. a `(3,n)` matrix).
+            If `n = 0`, i.e. the size is `(3,)`, the returned ndarray is
+            `(c,2)`. If the parameters size is `n`, the return is `(c,2,n)`
+            if k-vector size is 0, otherwise both has to be `n`.
         """
-        k_len = k.shape[1] if len(k.shape) == 2 else 0
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
-
-        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
+        k_len = self.validate_k_shape(k)
+        size = self.size
+        scalar_output = size == 0 and k_len == 0
 
         inds = np.arange(self.channels, dtype=np.int64)
         if channels is not None:
             inds = inds[channels]
 
-        p = params["pointing"].reshape(3, 1)
-
+        p = self.parameters["pointing"]
         chan_num = len(inds)
 
-        k_ = k / np.linalg.norm(k, axis=0)
-        if k_len == 0:
+        k = k / np.linalg.norm(k, axis=0)
+        if size > 0 and k_len == 0:
+            psi = np.zeros((chan_num, 2, size), dtype=np.complex128)
+            k = np.broadcast_to(k.reshape((3, 1)), (3, size))
+        elif size == 0 and k_len == 0:
             psi = np.zeros((chan_num, 2, 1), dtype=np.complex128)
-            k_ = k_.reshape(3, 1)
-        else:
-            psi = np.zeros(
-                (chan_num, 2, k_len),
-                dtype=np.complex128,
-            )
-            p = np.repeat(p, k_len, axis=1)
+            k = k.reshape((3, 1))
+            p = p.reshape((3, 1))
+        elif size == 0 and k_len > 0:
+            psi = np.zeros((chan_num, 2, k_len), dtype=np.complex128)
+            p = np.broadcast_to(p.reshape((3, 1)), (3, k_len))
+        elif size > 0 and k_len > 0:
+            psi = np.zeros((chan_num, 2, k_len), dtype=np.complex128)
 
-        wavelength = scipy.constants.c / params["frequency"]
-        if len(wavelength.shape) > 0:
-            wavelength = wavelength[0]
+        wavelength = scipy.constants.c / self.parameters["frequency"]
 
         # r in meters, divide by lambda
         for i in range(chan_num):
             if isinstance(self.antennas, list):
-                grp = self.antennas[inds[i]][:, :].T
+                grp = self.antennas[inds[i]][:, :]
             else:
-                grp = self.antennas[:, :, inds[i]].T
-            subg_response = plane_wave(k_, grp / wavelength, p, polarization)
+                grp = self.antennas[:, :, inds[i]]
+
+            kp = (k - p) / wavelength
+            spat_wave = np.exp(1j * np.pi * 2.0 * np.sum(grp[:, :, None] * kp[:, None, :], axis=0))
+
+            # broadcast to polarizations
+            subg_response = spat_wave[:, :, None] * polarization[None, None, :]
+
             psi[i, :, ...] = subg_response.sum(axis=0).T
 
         # This is an approximation assuming that the summed response of the subgroup
@@ -222,12 +205,11 @@ class Array(Beam):
             psi[:, 0, ...] = self.mutual_coupling_matrix @ psi[:, 0, ...]
             psi[:, 1, ...] = self.mutual_coupling_matrix @ psi[:, 1, ...]
 
-        ant_response = self.antenna_element(k_, polarization) * self.scaling
+        ant_response = self.antenna_element(k, polarization) * self.peak_gain
 
         psi[:, 0, ...] *= ant_response[None, 0, ...]
         psi[:, 1, ...] *= ant_response[None, 1, ...]
 
-        if len(k.shape) == 1:
+        if scalar_output:
             psi = psi.reshape(psi.shape[:-1])
-
         return psi
