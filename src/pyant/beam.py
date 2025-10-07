@@ -66,7 +66,10 @@ class Beam(ABC):
         shape = [self._get_parameter_len(key) for key in self.parameters]
         if len(shape) == 0:
             return 0
-        assert all(x == shape[0] for x in shape), f"all parameter shapes must line up: {shape}"
+        assert all(x == shape[0] for x in shape), (
+            "all parameter shapes must line up:"
+            f"{list(self.parameters.keys())} -> {shape}"
+        )
         return shape[0]
 
     def validate_parameter_shapes(self):
@@ -121,7 +124,7 @@ class Beam(ABC):
         elif el_len is not None:
             shape = (3, el_len)
         else:
-            shape = (3, 1)
+            shape = (3, )
 
         sph = np.empty(shape, dtype=np.float64)
         sph[0, ...] = azimuth
