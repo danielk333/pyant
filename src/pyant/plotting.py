@@ -551,7 +551,6 @@ def gain_heatmap_movie(
     min_elevation=0.0,
     levels=20,
     ax=None,
-    ind=None,
     label=None,
     centered=True,
     cmap=None,
@@ -569,20 +568,21 @@ def gain_heatmap_movie(
         resolution=resolution,
         min_elevation=min_elevation,
         levels=levels,
-        ind=ind,
         label=label,
         centered=centered,
         cmap=cmap,
     )
 
-    params, _ = beam.get_parameters(ind, named=True)
-    pointing = params["pointing"]
+    if "pointing" not in beam.parameters:
+        pointing = np.array([0, 0, 1], dtype=np.float64)
+    else:
+        pointing = beam.parameters["pointing"]
     cmin = np.cos(np.radians(min_elevation))
     S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
-    def run(it, fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds):
+    def run(it, fig, ax, mesh, beam, polarization, resolution, S, k, inds):
         beam = beam_update(beam, it)
-        S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
+        S[inds] = beam.gain(k[:, inds], polarization=polarization).flatten()
         S = S.reshape(resolution, resolution)
 
         old = np.seterr(invalid="ignore")
@@ -602,7 +602,7 @@ def gain_heatmap_movie(
         blit=blit,
         interval=1.0e3 / float(fps),
         repeat=True,
-        fargs=(fig, ax, mesh, beam, ind, polarization, resolution, S, k, inds),
+        fargs=(fig, ax, mesh, beam, polarization, resolution, S, k, inds),
     )
 
     return fig, ax, mesh, ani

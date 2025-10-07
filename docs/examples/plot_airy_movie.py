@@ -12,7 +12,6 @@
 #     language: python
 #     name: python3
 # ---
-raise NotImplementedError()
 
 # # Airy disk movie
 
@@ -23,21 +22,24 @@ import pyant
 
 
 beam = pyant.models.Airy(
-    azimuth=0,
-    elevation=90.0,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=50e6,
-    I0=10**4.81,
     radius=10.0,
-    degrees=True,
+    peak_gain=10**4.81,
 )
 num = 100
-el = np.linspace(90, 30, num=num)
-r = np.linspace(10, 20, num=num)
+el = np.concatenate(
+    [
+        np.linspace(90, 30, num=num),
+        np.linspace(30, 90, num=num),
+    ]
+)
+r = np.linspace(10, 20, num=num * 2)
 
 
 def update(beam, item):
-    beam.parameters["radius"][0] = r[item]
-    beam.elevation = el[item]
+    beam.parameters["radius"] = r[item]
+    beam.sph_point(azimuth=0, elevation=el[item], degrees=True)
     return beam
 
 
@@ -48,8 +50,9 @@ def update(beam, item):
 # +
 fig, ax, mesh, ani = pyant.plotting.gain_heatmap_movie(
     beam,
-    iterable=range(num),
+    iterable=range(num * 2),
     beam_update=update,
     centered=False,
+    fps=40,
 )
 plt.show()
