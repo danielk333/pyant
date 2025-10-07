@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-'''
+"""
 Test basic kepler functions
-'''
+"""
 
 import unittest
 import numpy as np
@@ -15,27 +15,33 @@ import pyant.coordinates as coord
 class TestCartSph(unittest.TestCase):
 
     def setUp(self):
-        self.X = np.array([
-            [1, 0, 0],
-            [0, 1, 0],
-            [-1, 0, 0],
-            [0, -1, 0],
-            [0, 0, 1],
-            [0, 0, -1],
-            [1, 1, 1],
-            [0, 1, 1],
-        ], dtype=np.float64)
+        self.X = np.array(
+            [
+                [1, 0, 0],
+                [0, 1, 0],
+                [-1, 0, 0],
+                [0, -1, 0],
+                [0, 0, 1],
+                [0, 0, -1],
+                [1, 1, 1],
+                [0, 1, 1],
+            ],
+            dtype=np.float64,
+        )
         self.X = self.X.T
-        self.Y = np.array([
-            [pi/2, 0, 1],
-            [0, 0, 1],
-            [-pi/2, 0, 1],
-            [pi, 0, 1],
-            [0, pi/2, 1],
-            [0, -pi/2, 1],
-            [pi/4, np.arccos(np.sqrt(2/3)), np.sqrt(3)],
-            [0, pi/4, np.sqrt(2)],
-        ], dtype=np.float64)
+        self.Y = np.array(
+            [
+                [pi / 2, 0, 1],
+                [0, 0, 1],
+                [-pi / 2, 0, 1],
+                [pi, 0, 1],
+                [0, pi / 2, 1],
+                [0, -pi / 2, 1],
+                [pi / 4, np.arccos(np.sqrt(2 / 3)), np.sqrt(3)],
+                [0, pi / 4, np.sqrt(2)],
+            ],
+            dtype=np.float64,
+        )
         self.Y = self.Y.T
         self.num = self.X.shape[1]
 
@@ -45,13 +51,13 @@ class TestCartSph(unittest.TestCase):
     def test_cart_to_sph(self):
         for ind in range(self.num):
             y = coord.cart_to_sph(self.X[:, ind], degrees=False)
-            print(f'T({self.X[:, ind]}) = {y} == {self.Y[:, ind]}')
+            print(f"T({self.X[:, ind]}) = {y} == {self.Y[:, ind]}")
             nt.assert_array_almost_equal(self.Y[:, ind], y)
 
     def test_sph_to_cart(self):
         for ind in range(self.num):
             x = coord.sph_to_cart(self.Y[:, ind], degrees=False)
-            print(f'T^-1({self.Y[:, ind]}) = {x} == {self.X[:, ind]}')
+            print(f"T^-1({self.Y[:, ind]}) = {x} == {self.X[:, ind]}")
             nt.assert_array_almost_equal(self.X[:, ind], x)
 
     def test_cart_to_sph_vectorized(self):
@@ -73,7 +79,7 @@ class TestCartSph(unittest.TestCase):
         num = 100
         [az, el] = np.meshgrid(
             np.linspace(-pi, pi, num),
-            np.linspace(-pi/2, pi/2, num),
+            np.linspace(-pi / 2, pi / 2, num),
         )
         az = az.flatten()
         el = el.flatten()
@@ -90,10 +96,13 @@ class TestCartSph(unittest.TestCase):
             nt.assert_array_almost_equal(vec, ang)
 
     def test_inverse_edge_cases(self):
-        Y = np.array([
-            [np.pi, 0, 1],
-            [-np.pi, 0, 1],
-        ], dtype=np.float64).T
+        Y = np.array(
+            [
+                [np.pi, 0, 1],
+                [-np.pi, 0, 1],
+            ],
+            dtype=np.float64,
+        ).T
 
         for ind in range(Y.shape[1]):
             X = coord.sph_to_cart(Y[:, ind], degrees=False)
@@ -104,48 +113,63 @@ class TestCartSph(unittest.TestCase):
 class TestAngles(unittest.TestCase):
 
     def setUp(self):
-        self.A = np.array([
-            [1, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [1, 0, 0],
-            [0, 0, 1],
-            [1, 1, 0],
-            [1, 1, 0],
-        ], dtype=np.float64)
+        self.A = np.array(
+            [
+                [1, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [1, 0, 0],
+                [0, 0, 1],
+                [1, 1, 0],
+                [1, 1, 0],
+            ],
+            dtype=np.float64,
+        )
         self.A = self.A.T
-        self.B = np.array([
-            [1, 0, 0],
-            [0, 1, 0],
-            [1, 0, 0],
-            [-1, 0, 0],
-            [0, 0, -1],
-            [1, 0, 0],
-            [0, 1, 0],
-        ], dtype=np.float64)
+        self.B = np.array(
+            [
+                [1, 0, 0],
+                [0, 1, 0],
+                [1, 0, 0],
+                [-1, 0, 0],
+                [0, 0, -1],
+                [1, 0, 0],
+                [0, 1, 0],
+            ],
+            dtype=np.float64,
+        )
         self.B = self.B.T
-        self.theta = np.array([
-            0,
-            pi/2,
-            pi/2,
-            pi,
-            pi,
-            pi/4,
-            pi/4,
-        ], dtype=np.float64)
+        self.theta = np.array(
+            [
+                0,
+                pi / 2,
+                pi / 2,
+                pi,
+                pi,
+                pi / 4,
+                pi / 4,
+            ],
+            dtype=np.float64,
+        )
         self.p = np.array([0, 1, 0], dtype=np.float64)
-        self.P = np.array([
-            [1, 0, 0],
-            [1, 1, 0],
-            [1, 0, 0],
-            [1, 1, 0],
-        ], dtype=np.float64).T
-        self.phi = np.array([
-            pi/2,
-            pi/4,
-            pi/2,
-            pi/4,
-        ], dtype=np.float64)
+        self.P = np.array(
+            [
+                [1, 0, 0],
+                [1, 1, 0],
+                [1, 0, 0],
+                [1, 1, 0],
+            ],
+            dtype=np.float64,
+        ).T
+        self.phi = np.array(
+            [
+                pi / 2,
+                pi / 4,
+                pi / 2,
+                pi / 4,
+            ],
+            dtype=np.float64,
+        )
 
     def test_vector_angle(self):
         for ind in range(len(self.theta)):
@@ -173,41 +197,74 @@ class TestRotations(unittest.TestCase):
 
     def setUp(self):
         self.basis = np.eye(3, dtype=np.float64)
-        self.basis_x_90deg = np.array([
-            [1, 0, 0],
-            [0, 0, -1],
-            [0, 1, 0],
-        ], dtype=np.float64)
-        self.basis_y_90deg = np.array([
-            [0, 0, 1],
-            [0, 1, 0],
-            [-1, 0, 0],
-        ], dtype=np.float64)
-        self.basis_z_90deg = np.array([
-            [0, -1, 0],
-            [1, 0, 0],
-            [0, 0, 1],
-        ], dtype=np.float64)
+        self.basis_x_90deg = np.array(
+            [
+                [1, 0, 0],
+                [0, 0, -1],
+                [0, 1, 0],
+            ],
+            dtype=np.float64,
+        )
+        self.basis_y_90deg = np.array(
+            [
+                [0, 0, 1],
+                [0, 1, 0],
+                [-1, 0, 0],
+            ],
+            dtype=np.float64,
+        )
+        self.basis_z_90deg = np.array(
+            [
+                [0, -1, 0],
+                [1, 0, 0],
+                [0, 0, 1],
+            ],
+            dtype=np.float64,
+        )
 
     def test_rot_mat_x(self):
-        R = coord.rot_mat_x(pi/2)
+        R = coord.rot_mat_x(pi / 2)
         r_basis = R @ self.basis
         nt.assert_array_almost_equal(r_basis, self.basis_x_90deg)
         basis = R.T @ r_basis
         nt.assert_array_almost_equal(basis, self.basis)
 
     def test_rot_mat_y(self):
-        R = coord.rot_mat_y(pi/2)
+        R = coord.rot_mat_y(pi / 2)
         r_basis = R @ self.basis
         nt.assert_array_almost_equal(r_basis, self.basis_y_90deg)
         basis = R.T @ r_basis
         nt.assert_array_almost_equal(basis, self.basis)
 
     def test_rot_mat_z(self):
-        R = coord.rot_mat_z(pi/2)
+        R = coord.rot_mat_z(pi / 2)
         r_basis = R @ self.basis
         nt.assert_array_almost_equal(r_basis, self.basis_z_90deg)
         basis = R.T @ r_basis
+        nt.assert_array_almost_equal(basis, self.basis)
+
+    def test_rot_mat_x_vector(self):
+        th = np.full((3,), np.pi / 2)
+        R = coord.rot_mat_x(th)
+        r_basis = np.einsum("ijk,jk->ik", R, self.basis)
+        nt.assert_array_almost_equal(r_basis, self.basis_x_90deg)
+        basis = np.einsum("ijk,jk->ik", np.einsum("ijk->jik", R), r_basis)
+        nt.assert_array_almost_equal(basis, self.basis)
+
+    def test_rot_mat_y_vector(self):
+        th = np.full((3,), np.pi / 2)
+        R = coord.rot_mat_y(th)
+        r_basis = np.einsum("ijk,jk->ik", R, self.basis)
+        nt.assert_array_almost_equal(r_basis, self.basis_y_90deg)
+        basis = np.einsum("ijk,jk->ik", np.einsum("ijk->jik", R), r_basis)
+        nt.assert_array_almost_equal(basis, self.basis)
+
+    def test_rot_mat_z_vector(self):
+        th = np.full((3,), np.pi / 2)
+        R = coord.rot_mat_z(th)
+        r_basis = np.einsum("ijk,jk->ik", R, self.basis)
+        nt.assert_array_almost_equal(r_basis, self.basis_z_90deg)
+        basis = np.einsum("ijk,jk->ik", np.einsum("ijk->jik", R), r_basis)
         nt.assert_array_almost_equal(basis, self.basis)
 
 

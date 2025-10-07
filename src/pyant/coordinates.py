@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""Useful coordinate related functions.
-"""
+"""Useful coordinate related functions."""
 
 import numpy as np
 
@@ -163,7 +162,7 @@ def rot_mat_x(theta, dtype=np.float64, degrees=False):
 
     Parameters
     ----------
-    theta : float
+    theta : float or ndarray
         Angle to rotate.
     dtype : numpy.dtype
         Numpy datatype of the rotation matrix.
@@ -173,14 +172,24 @@ def rot_mat_x(theta, dtype=np.float64, degrees=False):
     Returns
     -------
     numpy.ndarray
-        (3, 3) Rotation matrix.
+        (3, 3) Rotation matrix, or (3, 3, n) tensor if theta is vector input.
 
     """
     if degrees:
         theta = np.radians(theta)
+    if isinstance(theta, np.ndarray) and theta.ndim > 0:
+        size = (3, 3, len(theta))
+    else:
+        size = (3, 3)
 
     ca, sa = np.cos(theta), np.sin(theta)
-    return np.array([[1.0, 0.0, 0.0], [0.0, ca, -sa], [0.0, sa, ca]], dtype=dtype)
+    rot = np.zeros(size, dtype=dtype)
+    rot[0, 0, ...] = 1
+    rot[1, 1, ...] = ca
+    rot[1, 2, ...] = -sa
+    rot[2, 1, ...] = sa
+    rot[2, 2, ...] = ca
+    return rot
 
 
 def rot_mat_y(theta, dtype=np.float64, degrees=False):
@@ -189,7 +198,7 @@ def rot_mat_y(theta, dtype=np.float64, degrees=False):
 
     Parameters
     ----------
-    theta : float
+    theta : float or ndarray
         Angle to rotate.
     dtype : numpy.dtype
         Numpy datatype of the rotation matrix.
@@ -199,14 +208,24 @@ def rot_mat_y(theta, dtype=np.float64, degrees=False):
     Returns
     -------
     numpy.ndarray
-        (3, 3) Rotation matrix.
+        (3, 3) Rotation matrix, or (3, 3, n) tensor if theta is vector input.
 
     """
     if degrees:
         theta = np.radians(theta)
+    if isinstance(theta, np.ndarray) and theta.ndim > 0:
+        size = (3, 3, len(theta))
+    else:
+        size = (3, 3)
 
     ca, sa = np.cos(theta), np.sin(theta)
-    return np.array([[ca, 0.0, sa], [0.0, 1.0, 0.0], [-sa, 0.0, ca]], dtype=dtype)
+    rot = np.zeros(size, dtype=dtype)
+    rot[0, 0, ...] = ca
+    rot[0, 2, ...] = sa
+    rot[1, 1, ...] = 1
+    rot[2, 0, ...] = -sa
+    rot[2, 2, ...] = ca
+    return rot
 
 
 def rot_mat_z(theta, dtype=np.float64, degrees=False):
@@ -215,7 +234,7 @@ def rot_mat_z(theta, dtype=np.float64, degrees=False):
 
     Parameters
     ----------
-    theta : float
+    theta : float or np.ndarray
         Angle to rotate.
     dtype : numpy.dtype
         Numpy datatype of the rotation matrix.
@@ -225,14 +244,24 @@ def rot_mat_z(theta, dtype=np.float64, degrees=False):
     Returns
     -------
     numpy.ndarray
-        (3, 3) Rotation matrix.
+        (3, 3) Rotation matrix, or (3, 3, n) tensor if theta is vector input.
 
     """
     if degrees:
         theta = np.radians(theta)
+    if isinstance(theta, np.ndarray) and theta.ndim > 0:
+        size = (3, 3, len(theta))
+    else:
+        size = (3, 3)
 
     ca, sa = np.cos(theta), np.sin(theta)
-    return np.array([[ca, -sa, 0.0], [sa, ca, 0.0], [0.0, 0.0, 1.0]], dtype=dtype)
+    rot = np.zeros(size, dtype=dtype)
+    rot[0, 0, ...] = ca
+    rot[0, 1, ...] = -sa
+    rot[1, 0, ...] = sa
+    rot[1, 1, ...] = ca
+    rot[2, 2, ...] = 1
+    return rot
 
 
 def rot_mat_2d(theta, dtype=np.float64, degrees=True):
