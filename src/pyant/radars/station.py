@@ -1,34 +1,39 @@
+import typing
+import numpy as np
+
+from ..beam import Beam
+from .. import coordinates
+
 StationId = str
 """A unique string that identifies a radar station"""
 
-"""
-A structured unique identifer for a station of a radar.
 
-Intended to be used as the uid of a `Station` object.
-"""
+class RadarParameters(typing.TypedDict):
+    """The minimum amount of parameters available for a radar station"""
+    id: int
+    ipp: float
+    pulse_length: float
+    power: float
+    bandwidth: float
+    duty_cycle: float
 
 
-class Station(object):
+class Station:
     """A radar station.
 
-    :param float lat: Geographical latitude of radar station in decimal degrees  (North+).
-    :param float lon: Geographical longitude of radar station in decimal degrees (East+).
-    :param float alt: Geographical altitude above geoid surface of radar station in meter.
-    :param float min_elevation: Elevation threshold for the radar station in degrees,
+    Parameters
+    ----------
+    lat : float
+        Geographical latitude of radar station in decimal degrees  (North+).
+    lon : float
+        Geographical longitude of radar station in decimal degrees (East+).
+    alt : float
+        Geographical altitude above geoid surface of radar station in meter.
+    field_of_view : float
+        Elevation threshold for the radar station in degrees,
         i.e. it cannot detect or point below this elevation.
-    :param pyant.Beam beam: Radiation pattern for radar station.
-
-
-    :ivar float lat: Geographical latitude of radar station in decimal degrees  (North+).
-    :ivar float lon: Geographical longitude of radar station in decimal degrees (East+).
-    :ivar float alt: Geographical altitude above geoid surface of radar station in meter.
-    :ivar float min_elevation: Elevation threshold for the radar station in degrees,
-        i.e. it cannot detect or point below this elevation.
-    :ivar numpy.array ecef: The ECEF coordinates of the radar station
-        calculated using :func:`frames.geodetic_to_ITRS`.
-    :ivar pyant.Beam beam: Radiation pattern for radar station.
-    :ivar bool enabled: Indicates if this station is turned on or off.
-
+    beam : pyant.Beam
+        Radiation pattern for radar station.
     """
 
     def __init__(
@@ -36,8 +41,8 @@ class Station(object):
         lat,
         lon,
         alt,
-        min_elevation: Float_as_deg,
-        beam,
+        field_of_view: Float_as_deg,
+        beam: Beam,
         uid: StationId = "__DEFAULT_STN_ID__",
     ):
         self.lat = lat
@@ -45,7 +50,7 @@ class Station(object):
         self.alt = alt
         self.min_elevation = min_elevation
         self.ecef = frames.geodetic_to_ITRS(lat, lon, alt, degrees=True)
-        ecef_lla = pyant.coordinates.cart_to_sph(self.ecef, degrees=True)
+        ecef_lla = coordinates.cart_to_sph(self.ecef, degrees=True)
         self.ecef_lat = ecef_lla[1]
         self.ecef_lon = 90 - ecef_lla[0]
         self.ecef_alt = ecef_lla[2]
