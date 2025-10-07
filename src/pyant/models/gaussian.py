@@ -53,6 +53,7 @@ class Gaussian(Beam):
         self._randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
         self.peak_gain = peak_gain
         self.min_off_axis = 1e-6
+        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""

@@ -84,6 +84,7 @@ class Array(Beam):
         self.peak_gain = peak_gain
         self.polarization = polarization
         self.antenna_element = antenna_element
+        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""

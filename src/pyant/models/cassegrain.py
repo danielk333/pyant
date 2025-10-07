@@ -50,6 +50,7 @@ class Cassegrain(Beam):
         self.eps = 1e-6
         self.min_off_axis = 1e-9
         self.peak_gain = peak_gain
+        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""

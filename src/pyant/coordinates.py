@@ -264,7 +264,7 @@ def rot_mat_z(theta, dtype=np.float64, degrees=False):
     return rot
 
 
-def rot_mat_2d(theta, dtype=np.float64, degrees=True):
+def rot_mat_2d(theta, dtype=np.float64, degrees=False):
     """Matrix for rotation of R2 vector in the plane through angle theta
     For frame rotation, use the transpose.
 
