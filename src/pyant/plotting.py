@@ -233,23 +233,28 @@ def gain_surface(
         Returns the matplotlib figure, axis and drawn surface
 
     """
-
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
     else:
         fig = None
 
-    if isinstance(beam, Beam):
-        params, shape = beam.get_parameters(ind, named=True)
-        pointing = params["pointing"]
+    if not isinstance(beam, Beam):
+        raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
+    if beam.size > 0:
+        raise ValueError(
+            "Can only plot beam with scalar parameters -"
+            f"dont know which of the {beam.size} options to pick"
+        )
+    if "pointing" not in beam.parameters:
+        pointing = np.array([0, 0, 1], dtype=np.float64)
     else:
-        raise TypeError(f'Can only plot Beam, not "{type(beam)}"')
+        pointing = beam.parameters["pointing"]
 
     cmin = np.cos(np.radians(min_elevation))
     S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
 
-    S[inds] = beam.gain(k[:, inds], polarization=polarization, ind=ind).flatten()
+    S[inds] = beam.gain(k[:, inds], polarization=polarization)
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
