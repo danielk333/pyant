@@ -14,7 +14,6 @@
 # ---
 
 
-raise NotImplementedError()
 # # Phased paracyl plots
 
 import numpy as np
@@ -53,28 +52,25 @@ def thet():
 
 
 def get_parc():
-    return PhasedFiniteCylindricalParabola(
-        azimuth=0,
-        elevation=90.0,
-        phase_steering=0.0,
-        depth=18.0,
+    return pyant.models.PhasedFiniteCylindricalParabola(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
+        phase_steering=0,
         frequency=224.0e6,
-        I0=None,
         width=120.0,
         height=40.0,
+        depth=18.0,
+        aperture_width=120.0,
         degrees=True,
     )
 
 
 def get_farc():
-    return FiniteCylindricalParabola(
-        azimuth=0,
-        elevation=90.0,
+    return pyant.models.FiniteCylindricalParabola(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
         frequency=224.0e6,
-        I0=None,
         width=120.0,
         height=40.0,
-        degrees=True,
+        aperture_width=120.0,
     )
 
 
@@ -247,39 +243,38 @@ def compare(az=30, el=60, frq=60e6, with_old=False, **kw):
 
     fh, ah = plt.subplots(2 + with_old, 2, sharex="col", sharey="all")
 
-    parc.frequency = frq
-    parc.elevation = el
+    parc.parameters["frequency"] = frq
+    parc.sph_point(azimuth=0, elevation=el, degrees=True)
 
-    parc.phase_steering = -az
+    parc.parameters["phase_steering"] = -az
     gain_heatmap(parc, ax=ah[0, 0], **kw)
     ah[0, 0].set_title(f"ph = {-az}")
 
-    parc.phase_steering = az
+    parc.parameters["phase_steering"] = az
     gain_heatmap(parc, ax=ah[0, 1], **kw)
     ah[0, 1].set_title(f"ph = {az}")
 
-    parc.phase_steering = 0
+    parc.parameters["phase_steering"] = 0
 
-    parc.azimuth = -az
+    parc.sph_point(azimuth=-az, elevation=el, degrees=True)
     gain_heatmap(parc, ax=ah[1, 0], **kw)
     ah[1, 0].set_title(f"az = {-az}")
 
-    parc.azimuth = az
+    parc.sph_point(azimuth=az, elevation=el, degrees=True)
     gain_heatmap(parc, ax=ah[1, 1])
     ah[1, 1].set_title(f"az = {az}")
 
     if with_old:
         farc = get_farc()
-        farc.height = 40
-        farc.width = 120
-        farc.frequency = 30e6
-        farc.elevation = 60
+        farc.parameters["height"] = 40
+        farc.parameters["width"] = 120
+        farc.parameters["frequency"] = 30e6
+        farc.sph_point(azimuth=-az, elevation=el, degrees=True)
 
-        farc.azimuth = -az
         gain_heatmap(farc, ax=ah[2, 0])
         ah[2, 0].set_title(f"(unphaseable) az = {-az}")
 
-        farc.azimuth = az
+        farc.sph_point(azimuth=az, elevation=el, degrees=True)
         gain_heatmap(farc, ax=ah[2, 1])
         ah[2, 1].set_title(f"(unphaseable) az = {az}")
 
