@@ -23,6 +23,21 @@ def add_circle(ax, c, r, fmt="k--", *args, **kw):
     ax.plot(c[0] + np.cos(th), c[1] + np.sin(th), fmt, *args, **kw)
 
 
+def compute_j_grid(resolution):
+    size = resolution**2
+    thx = np.linspace(0, 2 * np.pi, num=resolution)
+    thy = np.linspace(0, 2 * np.pi, num=resolution)
+
+    jones_vecs = np.zeros((2, size), dtype=np.complex128)
+
+    thxmat, thymat = np.meshgrid(thx, thy, sparse=False, indexing="ij")
+
+    jones_vecs[0, :] = np.exp(1j * thxmat.reshape(1, size))
+    jones_vecs[1, :] = np.exp(1j * thymat.reshape(1, size))
+
+    return jones_vecs, thxmat, thymat
+
+
 def compute_k_grid(pointing, resolution, centered, cmin):
     if centered:
         kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
@@ -271,6 +286,69 @@ def gain_surface(
     ax.set_ylabel("ky [1]")
     ax.set_zlabel("Gain [dB]")
     return fig, ax, surf
+
+
+def polarization_heatmap(
+    beam,
+    k,
+    resolution=201,
+    levels=20,
+    ax=None,
+    label=None,
+    cmap=None,
+):
+    """Creates a heatmap of the gain in the given direction as a function of polarization"""
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = None
+
+    if not isinstance(beam, Beam):
+        raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
+    if beam.size > 0:
+        raise ValueError(
+            "Can only plot beam with scalar parameters -"
+            f"dont know which of the {beam.size} options to pick"
+        )
+
+    # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
+    jones_vecs, thxmat, thymat = compute_j_grid(resolution)
+
+    g = np.zeros((jones_vecs.shape[1],), dtype=np.float64)
+    for ind in range(jones_vecs.shape[1]):
+        g[ind] = beam.gain(k, polarization=jones_vecs[:, ind])
+    g = g.reshape(resolution, resolution)
+
+    old = np.seterr(invalid="ignore")
+    gdB = np.log10(g) * 10.0
+    np.seterr(**old)
+
+    if cmap is None:
+        cmap = plt.get_cmap("plasma")
+
+    if levels is None:
+        conf = ax.pcolormesh(np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, vmin=0)
+    else:
+        # Recipe at
+        # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
+        bins = MaxNLocator(nbins=levels).tick_values(np.nanmin(gdB), np.nanmax(gdB))
+        norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
+        conf = ax.pcolormesh(np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, norm=norm)
+
+    ax.axis("scaled")
+    ax.set_clip_box(ax.bbox)
+
+    ax.set_xlabel("Jones theta_x [deg]")
+    ax.set_ylabel("Jones theta_y [deg]")
+
+    cbar = plt.colorbar(conf, ax=ax)
+    cbar.ax.set_ylabel("Gain [dB]")
+    tit = f"Gain for polarization k=({k[0]:.2f},{k[1]:.2f},{k[2]:.2f})"
+    if label:
+        tit += " " + label
+    ax.set_title(tit)
+
+    return fig, ax, conf
 
 
 def gain_heatmap(

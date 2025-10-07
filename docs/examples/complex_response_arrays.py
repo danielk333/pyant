@@ -16,6 +16,7 @@
 # # Complex response of array
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import pyant
 
@@ -31,20 +32,17 @@ antennas[0, :, 0] = xv.flatten()
 antennas[1, :, 0] = yv.flatten()
 
 beam = pyant.models.Array(
-    azimuth=0,
-    elevation=90.0,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=46.5e6,
+    polarization=np.array([1, 1j]) / np.sqrt(2),
     antennas=antennas,
-    degrees=True,
 )
 
 beam_linp = pyant.models.Array(
-    azimuth=0,
-    elevation=90.0,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=46.5e6,
     polarization=np.array([1, 0]),
     antennas=antennas,
-    degrees=True,
 )
 
 k = np.array([0, 0, 1])
@@ -83,3 +81,13 @@ print(
     f"Gain from {k} of |H> analysis when signal is LHCP:\n"
     f"{beam_linp.gain(k=k, polarization=beam.polarization)}\n"
 )
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+pyant.plotting.gain_heatmap(beam, resolution=200, min_elevation=60.0, ax=ax1)
+pyant.plotting.antenna_configuration(beam.antennas, z_axis=False, ax=ax2)
+
+fig, ax = plt.subplots()
+pyant.plotting.polarization_heatmap(
+    beam, np.array([0, 0, 1], dtype=np.float64), resolution=200, ax=ax
+)
+plt.show()
