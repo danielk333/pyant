@@ -152,3 +152,7 @@ class TestBeam(unittest.TestCase):
         nt.assert_equal(azelr[0, :], self.data["azimuth"])
         nt.assert_equal(azelr[1, :], 0)
         nt.assert_equal(azelr[2, :], np.ones_like(self.data["azimuth"]))
+
+    def test_sph_point(self):
+        # TODO: implement these
+        pass
