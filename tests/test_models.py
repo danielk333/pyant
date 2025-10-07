@@ -63,7 +63,30 @@ models_vector = [
         ).copy(),
         frequency=np.full((num,), 50e6, dtype=np.float64),
         antennas=antennas,
-    )
+    ),
+    pyant.models.FiniteCylindricalParabola(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+        frequency=np.full((num,), 50e6, dtype=np.float64),
+        height=np.full((num,), 100.0, dtype=np.float64),
+        width=np.full((num,), 40.0, dtype=np.float64),
+        aperture_width=np.full((num,), 80.0, dtype=np.float64),
+    ),
+    pyant.models.PhasedFiniteCylindricalParabola(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+        frequency=np.full((num,), 30e6, dtype=np.float64),
+        width=np.full((num,), 120, dtype=np.float64),
+        height=np.full((num,), 40, dtype=np.float64),
+        aperture_width=np.full((num,), 120, dtype=np.float64),
+        phase_steering=np.linspace(0, 30, num=num),
+        depth=np.full((num,), 18, dtype=np.float64),
+        degrees=True,
+    ),
 ]
 
 models_scalar = [
@@ -101,7 +124,23 @@ models_scalar = [
         pointing=np.array([0, 0, 1.0]),
         frequency=46.5e6,
         antennas=antennas,
-    )
+    ),
+    pyant.models.FiniteCylindricalParabola(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
+        frequency=224.0e6,
+        width=120.0,
+        height=40.0,
+        aperture_width=120.0,
+    ),
+    pyant.models.PhasedFiniteCylindricalParabola(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
+        phase_steering=0.1,
+        frequency=30e6,
+        width=120.0,
+        height=40.0,
+        depth=18.0,
+        aperture_width=120.0,
+    ),
 ]
 
 

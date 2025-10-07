@@ -3,6 +3,7 @@
 import copy
 
 import numpy as np
+from numpy.typing import NDArray
 import scipy.constants
 import scipy.special
 
@@ -35,27 +36,23 @@ class FiniteCylindricalParabola(Beam):
 
     def __init__(
         self,
-        azimuth,
-        elevation,
+        pointing,
         frequency,
         width,
         height,
-        aperture=None,
-        I0=None,
-        **kwargs,
+        aperture_width,
+        peak_gain=None,
     ):
-        super().__init__(azimuth, elevation, frequency, **kwargs)
-        if aperture is None:
-            aperture = width
-        self.I0 = I0
+        super().__init__()
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
+        self.parameters["frequency"] = frequency
+        self.parameters["height"] = height
+        self.parameters["width"] = width
+        self.parameters["aperture_width"] = aperture_width
 
-        self.register_parameter("width")
-        self.register_parameter("height")
-        self.register_parameter("aperture")
-
-        self.fill_parameter("width", width)
-        self.fill_parameter("height", height)
-        self.fill_parameter("aperture", aperture)
+        self.peak_gain = peak_gain
+        self.validate_parameter_shapes()
 
     def normalize(self, width, height, wavelength):
         """Calculate normalization constant for beam pattern by assuming
@@ -63,128 +60,103 @@ class FiniteCylindricalParabola(Beam):
         """
         return 4 * np.pi * width * height / wavelength**2
 
-    @property
-    def width(self):
-        """Reflector panel width (axial/azimuth dimension) in meters."""
-        return self.parameters["width"]
-
-    @width.setter
-    def width(self, val):
-        self.fill_parameter("width", val)
-
-    @property
-    def height(self):
-        """Reflector panel height (perpendicular/elevation dimension) in meters."""
-        return self.parameters["height"]
-
-    @height.setter
-    def height(self, val):
-        self.fill_parameter("height", val)
-
-    @property
-    def aperture(self):
-        """Length of the feed in meters."""
-        return self.parameters["aperture"]
-
-    @aperture.setter
-    def aperture(self, val):
-        self.fill_parameter("aperture", val)
-
     def copy(self):
         """Return a copy of the current instance."""
         return FiniteCylindricalParabola(
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            frequency=copy.deepcopy(self.frequency),
-            I0=copy.deepcopy(self.I0),
-            width=copy.deepcopy(self.width),
-            height=copy.deepcopy(self.height),
-            aperture=copy.deepcopy(self.aperture),
-            degrees=self.degrees,
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            frequency=copy.deepcopy(self.parameters["frequency"]),
+            height=copy.deepcopy(self.parameters["height"]),
+            width=copy.deepcopy(self.parameters["width"]),
+            aperture_width=copy.deepcopy(self.parameters["aperture_width"]),
+            peak_gain=self.peak_gain,
         )
 
-    def local_to_pointing(self, k, azimuth, elevation, degrees=None):
+    def local_to_pointing(self, k):
         """Convert from local wave vector direction to bore-sight relative
         longitudinal and transverse angles.
         """
-        if degrees is None:
-            degrees = self.degrees
+        k_len = self.validate_k_shape(k)
+        azelr = coordinates.cart_to_sph(self.parameters["pointing"], degrees=False)
+        size = self.size
 
-        k_ = k / np.linalg.norm(k, axis=0)
+        k = k / np.linalg.norm(k, axis=0)
 
-        if degrees:
-            ang_ = 90.0
-        else:
-            ang_ = np.pi / 2
-
-        Rz = coordinates.rot_mat_z(azimuth, degrees=degrees)
-        Rx = coordinates.rot_mat_x(ang_ - elevation, degrees=degrees)
+        Rz = coordinates.rot_mat_z(azelr[0, ...], degrees=False)
+        Rx = coordinates.rot_mat_x(np.pi / 2 - azelr[1, ...], degrees=False)
 
         # Look direction rotated into the radar's boresight system
-        kb = Rx @ Rz @ k_
-
-        # angle of kb from x;z plane, counter-clock wise
-        # ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
-        theta = np.arcsin(kb[1, ...])  # Angle of look above (-) or below (+) boresight
+        if size > 0 and k_len > 0:
+            kb = np.einsum("ijk,jk->ik", Rx, np.einsum("ijk,jk->ik", Rz, k))
+        elif size > 0 and k_len == 0:
+            kb = np.einsum(
+                "ijk,jk->ik",
+                Rx,
+                np.einsum("ijk,jk->ik", Rz, np.broadcast_to(k.reshape(3, 1), (3, size))),
+            )
+        elif size == 0:
+            kb = Rx @ Rz @ k
 
         # angle of kb from y;z plane, clock wise
         # ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
         phi = np.arcsin(kb[0, ...])  # Angle of look to left (-) or right (+) of b.s.
 
-        if degrees:
-            theta = np.degrees(theta)
-            phi = np.degrees(phi)
+        # angle of kb from x;z plane, counter-clock wise
+        # ( https://www.cv.nrao.edu/~sransom/web/Ch3.html )
+        theta = np.arcsin(kb[1, ...])  # Angle of look above (-) or below (+) boresight
 
         return theta, phi
 
-    def pointing_to_local(self, theta, phi, azimuth, elevation, degrees=None):
+    def pointing_to_local(self, theta, phi):
         """Convert from bore-sight relative longitudinal and transverse angles
         to local wave vector direction.
         """
-        if degrees is None:
-            degrees = self.degrees
+        azelr = coordinates.cart_to_sph(self.parameters["pointing"], degrees=False)
+        size = self.size
 
         sz = (3,)
-        if isinstance(theta, np.ndarray):
+        k_len = 0
+        if isinstance(theta, np.ndarray) and theta.ndim > 0:
             sz = sz + (len(theta),)
-        elif isinstance(phi, np.ndarray):
+            k_len = len(theta)
+        elif isinstance(phi, np.ndarray) and phi.ndim > 0:
             sz = sz + (len(phi),)
-
-        if degrees:
-            theta = np.radians(theta)
-            phi = np.radians(phi)
+            k_len = len(phi)
 
         kb = np.zeros(sz, dtype=np.float64)
-        kb[1, ...] = np.sin(theta)
         kb[0, ...] = np.sin(phi)
+        kb[1, ...] = np.sin(theta)
         kb[2, ...] = np.sqrt(1 - kb[0, ...] ** 2 - kb[1, ...] ** 2)
 
-        if degrees:
-            ang_ = 90.0
-        else:
-            ang_ = np.pi / 2
-
-        Rz = coordinates.rot_mat_z(azimuth, degrees=degrees)
-        Rx = coordinates.rot_mat_x(ang_ - elevation, degrees=degrees)
+        Rz = coordinates.rot_mat_z(azelr[0, ...], degrees=False)
+        Rx = coordinates.rot_mat_x(np.pi / 2 - azelr[1, ...], degrees=False)
 
         # Look direction rotated from the radar's boresight system
-        k = Rz.T @ Rx.T @ kb
+        if size > 0 and k_len > 0:
+            k = np.einsum(
+                "ijk,jk->ik",
+                np.einsum("ijk->jik", Rx),
+                np.einsum("ijk,jk->ik", np.einsum("ijk->jik", Rz), kb),
+            )
+        elif size > 0 and k_len == 0:
+            k = np.einsum(
+                "ijk,jk->ik",
+                np.einsum("ijk->jik", Rx),
+                np.einsum(
+                    "ijk,jk->ik",
+                    np.einsum("ijk->jik", Rz),
+                    np.broadcast_to(kb.reshape(3, 1), (3, size)),
+                ),
+            )
+        elif size == 0:
+            k = Rz.T @ Rx.T @ kb
 
         return k
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
+    def gain(self, k: NDArray, polarization: NDArray | None = None):
+        theta, phi = self.local_to_pointing(k)
+        return self.gain_tf(theta, phi)
 
-        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
-        if len(params["pointing"].shape) == 2:
-            params["pointing"] = params["pointing"].reshape(3)
-
-        sph = coordinates.cart_to_sph(params["pointing"], degrees=False)
-        theta, phi = self.local_to_pointing(k, sph[0], sph[1], degrees=False)
-
-        return self.gain_tf(theta, phi, params, degrees=False)
-
-    def gain_tf(self, theta, phi, params, degrees=None):
+    def gain_tf(self, theta, phi):
         """Calculate gain in the frame rotated to the aperture plane.
 
         Parameters
@@ -199,28 +171,28 @@ class FiniteCylindricalParabola(Beam):
         params : dict
             The parameters to use for gain calculation.
         """
-        if degrees is None:
-            degrees = self.degrees
+        wavelength = scipy.constants.c / self.parameters["frequency"]
 
-        wavelength = scipy.constants.c / params["frequency"]
-
-        if self.I0 is None:
-            I0 = self.normalize(params["aperture"], params["height"], wavelength)
+        if self.peak_gain is None:
+            g0 = self.normalize(
+                self.parameters["aperture_width"], self.parameters["height"], wavelength
+            )
         else:
-            I0 = self.I0
-
-        if degrees:
-            theta = np.radians(theta)
-            phi = np.radians(phi)
+            g0 = self.peak_gain
 
         # x = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # y = transverse angle, 0 = boresight, radians
 
         # sinc*sinc is 2D FFT of a rectangular aperture
-        x = params["aperture"] / wavelength * np.sin(phi)  # sinc component (longitudinal)
-        y = params["height"] / wavelength * np.sin(theta)  # sinc component (transverse)
-        G = np.sinc(x) * np.sinc(y)  # sinc fn. (= field), NB: np.sinc includes pi !!
-        G *= np.cos(phi)  # Element gain
-        G = G * G  # sinc^2 fn. (= power)
 
-        return G * I0
+        # sinc component (longitudinal)
+        x = self.parameters["aperture_width"] / wavelength * np.sin(phi)
+
+        # sinc component (transverse)
+        y = self.parameters["height"] / wavelength * np.sin(theta)
+
+        g = np.sinc(x) * np.sinc(y)  # sinc fn. (= field), NB: np.sinc includes pi !!
+        g *= np.cos(phi)  # Element gain
+        g = g * g  # sinc^2 fn. (= power)
+
+        return g * g0

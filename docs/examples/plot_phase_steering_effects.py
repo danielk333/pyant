@@ -13,7 +13,6 @@
 #     name: python3
 # ---
 
-raise NotImplementedError()
 # # Phase steerable Half-pipe effects
 
 import numpy as np
@@ -25,13 +24,9 @@ from matplotlib.ticker import MaxNLocator
 
 import pyant
 
-# num = 1000
-# num_ph = 300
-
 
 def steering_gain(beam, num_ph=701, num_az=901, symmetric=True, corrected=True):
     # phase steering
-
     G = np.zeros((num_ph, num_az), dtype=np.float64)
 
     k = np.zeros((3, num_az), dtype=np.float64)
@@ -43,10 +38,10 @@ def steering_gain(beam, num_ph=701, num_az=901, symmetric=True, corrected=True):
     for i in range(num_ph):
         # set phase
         if corrected:
-            beam.phase_steering = beam._nominal_phase_steering(phi0[i])
+            beam.parameters["phase_steering"] = beam._nominal_phase_steering(phi0[i], degrees=True)
         else:
-            beam.phase_steering = phi0[i]
-        G[i, :] = beam.gain(k).flatten()
+            beam.parameters["phase_steering"] = phi0[i]
+        G[i, :] = beam.gain(k)
 
     return k, phi0, G
 
@@ -63,7 +58,9 @@ def make_steering_plot(
     # Symmetric=None for no 'true k' dashed line
     # Symmetric=True plots from min(kx) to max(kx)
     # Symmetric=False plots from 0 to max(kx)
+    old = np.seterr(divide="ignore")
     SdB = np.log10(G) * 10.0
+    np.seterr(**old)
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(10, 6), dpi=80)
@@ -75,7 +72,10 @@ def make_steering_plot(
 
     # , vmin=0, vmax=np.nanmax(SdB)
     conf = ax.pcolormesh(kx, phi0, SdB, cmap=cmap, norm=norm, shading="auto")
-    plt.colorbar(conf, ax=ax, fraction=0.04, pad=0.01)
+    ax.set_xlabel("Along apperture bridge angle [deg]")
+    ax.set_ylabel("Steering angle [deg]")
+    cb = plt.colorbar(conf, ax=ax, fraction=0.04, pad=0.01)
+    cb.set_label("Gain [dB]")
 
     if symmetric is not None:
         k_true = [min(kx) * symmetric, max(kx)]
@@ -111,13 +111,13 @@ def steering_plot(
 
 
 beam = pyant.models.PhasedFiniteCylindricalParabola(
-    azimuth=0,
-    elevation=90.0,
-    depth=18,
-    phase_steering=0.0,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=300e6,
     width=120.0,
     height=40.0,
+    aperture_width=120.0,
+    phase_steering=0,
+    depth=18,
     degrees=True,
 )
 

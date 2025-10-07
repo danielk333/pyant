@@ -13,7 +13,6 @@
 #     name: python3
 # ---
 
-raise NotImplementedError()
 # # Phase steerable Half-pipe
 
 import itertools as it
@@ -29,18 +28,19 @@ def flatten(Lst):
 phi = np.linspace(0, 2 * np.pi, 100)
 cosp = np.cos(phi)
 sinp = np.sin(phi)
-aa = np.cos(np.radians(90 - np.array([75, 60, 45, 30])))
+phase_st = np.array([0, 20, 40, 60], dtype=np.float64)
+aa = np.cos(np.radians(90 - phase_st))
 
 pa = flatten([(a * cosp, a * sinp, "w-") for a in aa])
 
 beam = pyant.models.PhasedFiniteCylindricalParabola(
-    azimuth=0,
-    elevation=90.0,
-    depth=18,
-    phase_steering=[0.0, 7.0, 14.0, 21.0],
+    pointing=np.array([0, 0, 1], dtype=np.float64),
+    phase_steering=0,
     frequency=30e6,
     width=120.0,
     height=40.0,
+    depth=18.0,
+    aperture_width=120.0,
     degrees=True,
 )
 
@@ -48,58 +48,55 @@ beam = pyant.models.PhasedFiniteCylindricalParabola(
 # +
 fig, axes = plt.subplots(2, 2, figsize=(10, 6), dpi=80)
 axes = axes.flatten()
-for i in range(beam.named_shape["phase_steering"]):
+for i in range(len(phase_st)):
+    beam.parameters["phase_steering"] = beam._nominal_phase_steering(phase_st[i], degrees=True)
     pyant.plotting.gain_heatmap(
         beam,
         resolution=901,
-        min_elevation=30.0,
+        min_elevation=0.0,
         ax=axes[i],
-        ind={
-            "phase_steering": i,
-        },
     )
     axes[i].plot(*pa)
-    axes[i].set_title(f"{int(beam.phase_steering[i])} deg steering")
+    axes[i].set_title(f"{int(phase_st[i])} deg steering")
 
+elevation = [90.0, 60.0, 30.0]
+phase_steering = [0, 25.0]
 
 beam_two = pyant.models.PhasedFiniteCylindricalParabola(
-    azimuth=0,
-    elevation=[90.0, 60.0, 30.0],
-    depth=18,
-    phase_steering=[0, 25.0],
+    pointing=np.array([0, 0, 1], dtype=np.float64),
+    phase_steering=0,
     frequency=224.0e6,
     width=120.0 / 4,
     height=40.0,
+    depth=18.0,
+    aperture_width=120.0,
     degrees=True,
 )
 
 
 fig, axes = plt.subplots(2, 3, figsize=(10, 6), dpi=80)
-for i in range(beam_two.named_shape["phase_steering"]):
-    for j in range(beam_two.named_shape["pointing"]):
-        ind = {
-            "phase_steering": i,
-            "pointing": j,
-        }
+for i in range(len(phase_steering)):
+    for j in range(len(elevation)):
+        beam_two.sph_point(azimuth=0, elevation=elevation[j], degrees=True)
+        beam_two.parameters["phase_steering"] = beam._nominal_phase_steering(
+            phase_steering[i], degrees=True
+        )
         pyant.plotting.gain_heatmap(
             beam_two,
             resolution=901,
             min_elevation=20.0,
             ax=axes[i, j],
-            ind=ind,
         )
 
-        params, shape = beam_two.get_parameters(ind, named=True)
-        phi = params["phase_steering"]
-        G0 = beam_two.gain_tf(theta=0, phi=phi, params=params, degrees=True)
+        g0 = beam_two.gain_tf(theta=0, phi=np.radians(phase_steering[i]))
         print(
-            f"Pointing: az={beam_two.azimuth} deg, el={beam_two.elevation[j]} deg, "
-            + f"phase steering={phi} deg "
-            + f"-> Peak gain = {np.log10(G0[0])*10:8.3f} dB"
+            f"Pointing: az=0 deg, el={elevation[j]} deg, "
+            + f"phase steering={phase_steering[i]} deg "
+            + f"-> Peak gain = {np.log10(g0)*10:8.3f} dB"
         )
 
         axes[i, j].plot(*pa)
-        axes[i, j].set_title(f"{int(phi)} ph-st | {int(beam_two.elevation[j])} el")
+        axes[i, j].set_title(f"{int(phase_steering[i])} ph-st | {int(elevation[j])} el")
 
 
 plt.show()

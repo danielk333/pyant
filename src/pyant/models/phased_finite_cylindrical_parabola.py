@@ -44,60 +44,44 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
 
     def __init__(
         self,
-        azimuth,
-        elevation,
+        pointing,
         frequency,
-        phase_steering,
         width,
         height,
+        aperture_width,
+        phase_steering,
         depth,
-        aperture=None,
-        I0=None,
-        **kwargs,
+        peak_gain=None,
+        degrees=False,
     ):
         super().__init__(
-            azimuth, elevation, frequency, width, height, aperture=aperture, I0=I0, **kwargs
+            pointing=pointing,
+            frequency=frequency,
+            width=width,
+            height=height,
+            aperture_width=aperture_width,
+            peak_gain=peak_gain,
         )
-        self.register_parameter("depth")
-        self.register_parameter("phase_steering")
-
-        self.fill_parameter("depth", depth)
-        self.fill_parameter("phase_steering", phase_steering)
-
-    @property
-    def depth(self):
-        """Perpendicular distance from feed to reflector in meters."""
-        return self.parameters["depth"]
-
-    @depth.setter
-    def depth(self, val):
-        self.fill_parameter("depth", val)
-
-    @property
-    def phase_steering(self):
-        """Phase steering angle applied to the feed bridge of antennas"""
-        return self.parameters["phase_steering"]
-
-    @phase_steering.setter
-    def phase_steering(self, val):
-        self.fill_parameter("phase_steering", val)
+        self.parameters["phase_steering"] = phase_steering
+        self.parameters["depth"] = depth
+        self.degrees = degrees
+        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""
         return PhasedFiniteCylindricalParabola(
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            frequency=copy.deepcopy(self.frequency),
-            phase_steering=copy.deepcopy(self.phase_steering),
-            width=copy.deepcopy(self.width),
-            height=copy.deepcopy(self.height),
-            depth=copy.deepcopy(self.depth),
-            aperture=copy.deepcopy(self.aperture),
-            I0=copy.deepcopy(self.I0),
-            radians=self.radians,
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            phase_steering=copy.deepcopy(self.parameters["phase_steering"]),
+            frequency=copy.deepcopy(self.parameters["frequency"]),
+            height=copy.deepcopy(self.parameters["height"]),
+            width=copy.deepcopy(self.parameters["width"]),
+            depth=copy.deepcopy(self.parameters["depth"]),
+            aperture_width=copy.deepcopy(self.parameters["aperture_width"]),
+            peak_gain=self.peak_gain,
+            degrees=self.degrees,
         )
 
-    def gain_tf(self, theta, phi, params, degrees=None):
+    def gain_tf(self, theta, phi):
         """Calculate gain in the frame rotated to the aperture plane.
 
         Parameters
@@ -113,51 +97,49 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             The parameters to use for gain calculation.
 
         """
-        if degrees is None:
-            degrees = self.degrees
-
-        wavelength = scipy.constants.c / params["frequency"]
-        if degrees:
-            theta = np.radians(theta)
-            phi = np.radians(phi)
+        wavelength = scipy.constants.c / self.parameters["frequency"]
 
         if self.degrees:
-            phase_steering = np.radians(params["phase_steering"])
+            phase_steering = np.radians(self.parameters["phase_steering"])
         else:
-            phase_steering = params["phase_steering"]
+            phase_steering = self.parameters["phase_steering"]
 
         # Compute effective area loss due to spillover when phase-steering past edge of reflector.
         A = (
-            params["depth"] * np.tan(np.abs(phase_steering))
-            - (params["width"] - params["aperture"]) / 2
+            self.parameters["depth"] * np.tan(np.abs(phase_steering))
+            - (self.parameters["width"] - self.parameters["aperture_width"]) / 2
         )
         w_loss = np.clip(A, 0, None)
 
         # This implies geometric optics for the feed-to-reflector path
-        w_eff = np.clip(params["aperture"] - w_loss, 0, None)
+        w_eff = np.clip(self.parameters["aperture_width"] - w_loss, 0, None)
 
-        if self.I0 is None:
-            I0 = self.normalize(w_eff, params["height"], wavelength)
+        if self.peak_gain is None:
+            g0 = self.normalize(w_eff, self.parameters["height"], wavelength)
         else:
-            I0 = self.I0
+            g0 = self.peak_gain
 
         # y = longitudinal angle (i.e. parallel to el.axis), 0 = boresight, radians
         # x = transverse angle, 0 = boresight, radians
-        x = w_eff / wavelength * (np.sin(phi) - phase_steering)  # sinc component (transverse)
-        y = params["height"] / wavelength * np.sin(theta)  # sinc component (longitudinal)
-        G = (
-            np.sinc(x) * np.sinc(y) * (w_eff / self.aperture)
-        )  # sinc fn. (= field), NB: np.sinc includes pi !!
+
+        # sinc component (transverse)
+        x = w_eff / wavelength * (np.sin(phi) - phase_steering)
+
+        # sinc component (longitudinal)
+        y = self.parameters["height"] / wavelength * np.sin(theta)
+
+        # sinc fn. (= field), NB: np.sinc includes pi !!
+        g = np.sinc(x) * np.sinc(y) * (w_eff / self.parameters["aperture_width"])
 
         # NB! This factor of cos(phi) is NOT geometric foreshortening --
         # It is instead a crude model for element (i.e., dipole) gain!
-        G *= np.cos(phi)
+        g *= np.cos(phi)
 
-        G = G * G  # sinc^2 fn. (= power)
+        g = g * g  # sinc^2 fn. (= power)
 
-        return G * I0
+        return g * g0
 
-    def _nominal_phase_steering(self, phi, degrees=None):
+    def _nominal_phase_steering(self, phi, degrees=False):
         """
         For a given desired pointing `phi`, compute the nominal phase
         steering angle that gives a pattern that peaks at `phi`.
@@ -178,8 +160,6 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         This also means that steering past phi = 1, or 57.3°, is not possible.
 
         """
-        if degrees is None:
-            degrees = self.degrees
         if degrees:
             phi = np.radians(phi)
         assert np.all(np.abs(phi) <= np.pi / 2), f"cannot steer past the horizon {np.abs(phi)}"

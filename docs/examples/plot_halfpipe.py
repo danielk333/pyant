@@ -13,21 +13,19 @@
 #     name: python3
 # ---
 
-raise NotImplementedError()
 # # Halfpipe radar
 
+import numpy as np
 import matplotlib.pyplot as plt
 import pyant
 
 
-el = 90
 beam = pyant.models.FiniteCylindricalParabola(
-    azimuth=0,
-    elevation=el,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=224.0e6,
     width=120.0,
     height=40.0,
-    degrees=True,
+    aperture_width=120.0,
 )
 
 
@@ -40,12 +38,12 @@ pyant.plotting.gain_heatmap(
     ax=ax1,
 )
 
-beam.sph_point(0, 30)
+beam.sph_point(azimuth=0, elevation=30)
 pyant.plotting.gain_heatmap(
     beam,
     resolution=300,
     min_elevation=80.0,
-    label=f" - pointed {beam.elevation} deg elevation",
+    label=" - pointed 30 deg elevation",
     ax=ax2,
 )
 plt.show()
