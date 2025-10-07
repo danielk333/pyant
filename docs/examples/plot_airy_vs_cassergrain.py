@@ -21,13 +21,13 @@ import pyant
 
 
 beam = pyant.models.Airy(
-    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     radius=23.0,
     peak_gain=10**4.81,
 )
 beam_c = pyant.models.Cassegrain(
-    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     outer_radius=40.0,
     inner_radius=23.0,

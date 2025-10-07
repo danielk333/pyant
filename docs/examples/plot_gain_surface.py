@@ -15,19 +15,17 @@
 
 # # Surface plot
 
-
+import numpy as np
 import matplotlib.pyplot as plt
 import pyant
 
 
 beam = pyant.models.Cassegrain(
-    azimuth=0,
-    elevation=90.0,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    I0=10**4.81,
+    peak_gain=10**4.81,
     outer_radius=40.0,
     inner_radius=23.0,
-    degrees=True,
 )
 
 

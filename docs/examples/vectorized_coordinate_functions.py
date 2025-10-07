@@ -16,41 +16,14 @@
 
 # # Vectorized coordinate functions
 
-
-import numpy as np
-import pyant
 import timeit
 
 
-number = 1000
-size = 100
+number = 100
+size = 1000
 
 
 def coordinates_vector_angle():
-    a = np.array([1, 0, 0])
-    b = np.array([0, 1, 0])
-    c = np.array([1, 1, 0])
-    bc = np.append(b.reshape(3, 1), c.reshape(3, 1), axis=1)
-    print(bc)
-
-    th_ab = pyant.coordinates.vector_angle(a, b)
-    print(th_ab)
-
-    th_ac = pyant.coordinates.vector_angle(a, c)
-    print(th_ac)
-
-    th_abc = pyant.coordinates.vector_angle(a, bc)
-    print(th_abc)
-
-    x = np.random.randn(3, 100)
-
-    th_ax = pyant.coordinates.vector_angle(a, x)
-    print(th_ax)
-    # As opposed to
-    #
-    # for y in x.T:
-    #     print(pyant.coordinates.vector_angle(a,y))
-
     dt_l = timeit.timeit(
         """
 for y in x.T:
@@ -81,30 +54,6 @@ x = np.random.randn(3,{size})
 
 
 def coordinates_sph_to_cart():
-    a = np.array([0, 45, 1], dtype=np.float64)
-    b = np.array([120, 85, 1], dtype=np.float64)
-    ab = np.append(a.reshape(3, 1), b.reshape(3, 1), axis=1)
-    print(ab)
-
-    sph_a = pyant.coordinates.sph_to_cart(a)
-    print(sph_a)
-
-    sph_b = pyant.coordinates.sph_to_cart(b)
-    print(sph_b)
-
-    sph_ab = pyant.coordinates.sph_to_cart(ab)
-    print(sph_ab)
-
-    x = np.random.randn(3, 10)
-    x[2, :] = 1.0
-
-    sph_x = pyant.coordinates.sph_to_cart(x)
-    print(sph_x)
-    # As opposed to
-    #
-    # for y in x.T:
-    #     print(pyant.coordinates.sph_to_cart(y))
-
     setup = f"""
 import pyant
 import numpy as np
@@ -132,29 +81,6 @@ for y in x.T:
 
 
 def coordinates_cart_to_sph():
-    a = np.array([1, 1, 1], dtype=np.float64)
-    b = np.array([0, 0, 1], dtype=np.float64)
-    ab = np.append(a.reshape(3, 1), b.reshape(3, 1), axis=1)
-    print(ab)
-
-    sph_a = pyant.coordinates.cart_to_sph(a)
-    print(sph_a)
-
-    sph_b = pyant.coordinates.cart_to_sph(b)
-    print(sph_b)
-
-    sph_ab = pyant.coordinates.cart_to_sph(ab)
-    print(sph_ab)
-
-    x = np.random.randn(3, 10)
-
-    sph_x = pyant.coordinates.cart_to_sph(x)
-    print(sph_x)
-    # As opposed to
-    #
-    # for y in x.T:
-    #     print(pyant.coordinates.cart_to_sph(y))
-
     setup = f"""
 import pyant
 import numpy as np

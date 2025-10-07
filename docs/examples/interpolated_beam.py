@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+raise NotImplementedError()
 # # Interpolated arbitrary beam
 #
 # For use when models need to be evaluated often but the model computation is slow

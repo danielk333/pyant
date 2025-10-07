@@ -14,6 +14,7 @@
 # ---
 
 
+raise NotImplementedError()
 # # Phased paracyl plots
 
 import numpy as np

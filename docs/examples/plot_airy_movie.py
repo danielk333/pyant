@@ -12,7 +12,7 @@
 #     language: python
 #     name: python3
 # ---
-
+raise NotImplementedError()
 
 # # Airy disk movie
 

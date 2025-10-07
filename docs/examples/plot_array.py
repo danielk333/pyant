@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+raise NotImplementedError()
 # # Antenna array gain
 
 

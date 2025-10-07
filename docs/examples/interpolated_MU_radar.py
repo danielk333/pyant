@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+raise NotImplementedError()
 # # Interpolated MU radar
 #
 # Combination of interpolated base antenna field and a measured antenna gain pattern
