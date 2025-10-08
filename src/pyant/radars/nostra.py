@@ -1,9 +1,5 @@
 from ..models import Gaussian
-from .beams import radar_beam_generator
-from ..registry import Radars, Models
 
-
-@radar_beam_generator(Radars.EISCAT_VHF, Models.FiniteCylindricalParabola)
 def generate_tsdr(sub_modules=1, ):
     """Tromso Space Debris Radar system with all panels moving as a whole [1]_.
 

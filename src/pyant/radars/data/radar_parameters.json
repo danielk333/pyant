@@ -1,20 +1,49 @@
 {
     "mu": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 46.5e6,
         "power_per_element": 2105.2631578947367,
         "power": 1e6,
+        "min_elevation": 30,
         "lat": 34.85402777777778,
         "lon": 136.10562222222222,
         "alt": 372.0
     },
-    "eiscat_uhf": {
+    "eiscat_uhf_tromso": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 930.0e6,
         "power": 1.6e6,
-        "lat": [69.58638888888889, 67.86055555555555, 67.36361111111111],
-        "lon": [19.227222222222224, 20.435277777777777, 26.626944444444444],
-        "alt": [86.0, 418.0, 197.0]
+        "noise_temperature": 100,
+        "min_elevation": 30,
+        "lat": 69.58638888888889,
+        "lon": 19.227222222222224,
+        "alt": 86.0,
+    },
+    "eiscat_uhf_kiruna": {
+        "transmitter": false,
+        "receiver": true,
+        "frequency": 930.0e6,
+        "noise_temperature": 100,
+        "min_elevation": 30,
+        "lat": 67.86055555555555,
+        "lon": 20.435277777777777,
+        "alt": 418.0,
+    },
+    "eiscat_uhf_sodankyla": {
+        "transmitter": false,
+        "receiver": true,
+        "frequency": 930.0e6,
+        "noise_temperature": 100,
+        "min_elevation": 30,
+        "lat": 67.36361111111111,
+        "lon": 26.626944444444444,
+        "alt": 197.0,
     },
     "e3d_module": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 233e6,
         "power_per_element": 1e3,
         "power": 91e3,
@@ -22,40 +51,72 @@
         "lon": 20.432841,
         "alt": 300.0
     },
-    "e3d_stage1": {
+    "e3d_stage1_skibotn": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 233e6,
         "power_per_element": 1e3,
         "power": 3.276e6,
-        "lat": [69.34023844, 68.463862, 68.148205],
-        "lon": [20.313166, 22.458859, 19.769894],
-        "alt": [0.0, 0.0, 0.0]
+        "noise_temperature": 150,
+        "min_elevation": 30,
+        "lat": 69.34023844,
+        "lon": 20.313166,
+        "alt": 0.0,
     },
-    "e3d_stage2": {
+    "e3d_stage1_karesuvanto": {
+        "transmitter": false,
+        "receiver": true,
         "frequency": 233e6,
-        "power": 10e6
+        "noise_temperature": 150,
+        "min_elevation": 30,
+        "lat": 68.463862,
+        "lon": 22.458859,
+        "alt": 0.0,
+    },
+    "e3d_stage1_kaiseniemi": {
+        "transmitter": false,
+        "receiver": true,
+        "frequency": 233e6,
+        "noise_temperature": 150,
+        "min_elevation": 30,
+        "lat": 68.148205,
+        "lon": 19.769894,
+        "alt": 0.0,
     },
     "esr_32m": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 500e6,
         "power": 1e6,
+        "min_elevation": 15,
+        "noise_temperature": 70,
         "lat": 78.153145,
         "lon": 16.0758715,
         "alt": 185
     },
     "esr_42m": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 500e6,
         "power": 1e6,
+        "noise_temperature": 70,
         "lat": 78.153145,
-        "lon": 16.0758715,
+        "lon": 16.081483,
         "alt": 185
     },
     "tsdr": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 1.8e9,
         "power": 0.5e6,
+        "noise_temperature": 100,
         "lat": 69.5866115,
         "lon": 19.221555,
         "alt": 85.0
     },
     "maarsy": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 53.5e6,
         "power": 0.8e6,
         "lat": 69.29836217360676,
@@ -63,6 +124,8 @@
         "alt": 1.0
     },
     "pansy": {
+        "transmitter": true,
+        "receiver": true,
         "frequency": 47e6,
         "power_per_element": 500.0,
         "power": 0.5e6,
