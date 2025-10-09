@@ -13,7 +13,6 @@
 #     name: python3
 # ---
 
-raise NotImplementedError()
 # # Interpolated Antenna array gain
 
 import time
@@ -48,11 +47,9 @@ for ind in range(subgroups):
     antennas[1, :, ind] = subgroup[1, :] + max_r * 3 * np.sin(phi)
 
 beam = pyant.models.Array(
-    azimuth=0,
-    elevation=90,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=frequency,
     antennas=antennas,
-    degrees=True,
 )
 
 # +

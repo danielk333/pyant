@@ -49,25 +49,16 @@ class InterpolatedArray(Beam):
 
     """
 
-    def __init__(self, scaling=1.0, azimuth=0, elevation=0, **kwargs):
-        super().__init__(azimuth=azimuth, elevation=elevation, frequency=np.nan, **kwargs)
-        self.interpolated = None
-        self.interpolated_channels = []
-        self.interpolated_antenna = None
-        self.scaling = scaling
-        self.channels = None
-        self.interp_dims = None
+    def __init__(self, pointing):
+        super().__init__()
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
 
     def copy(self):
         """Return a copy of the current instance."""
         bm = InterpolatedArray(
-            azimuth=copy.deepcopy(self.azimuth),
-            elevation=copy.deepcopy(self.elevation),
-            scaling=copy.deepcopy(self.scaling),
-            degrees=self.degrees,
+            pointing=copy.deepcopy(self.parameters["pointing"]),
         )
-        bm.frequency = self.frequency
-        bm.pointing = self.pointing
         bm.channels = self.channels
         bm.interp_dims = self.interp_dims
         bm.interpolated = copy.deepcopy(self.interpolated)
@@ -86,9 +77,7 @@ class InterpolatedArray(Beam):
         datas.update(
             dict(
                 channels=np.int64(self.channels),
-                frequency=self.frequency,
                 pointing=self.pointing,
-                degrees=self.degrees,
                 interp_dims=self.interp_dims,
             )
         )
@@ -97,8 +86,6 @@ class InterpolatedArray(Beam):
     def load(self, fname):
         data = np.load(fname, allow_pickle=True)
         self.channels = data["channels"]
-        self.frequency = data["frequency"]
-        self.degrees = data["degrees"]
         self.pointing = data["pointing"]
         self.interp_dims = data["interp_dims"]
 
@@ -113,7 +100,6 @@ class InterpolatedArray(Beam):
     def generate_interpolation(
         self,
         beam,
-        ind=None,
         polarization=None,
         min_elevation=0.0,
         interpolate_channels=None,
@@ -127,6 +113,7 @@ class InterpolatedArray(Beam):
             Index for which channels to save interpolations from.
 
         """
+        raise NotImplementedError("todo wip")
         assert isinstance(beam, Array), "Can only interpolate arrays"
 
         # Transfer meta-data and parameters
@@ -137,7 +124,6 @@ class InterpolatedArray(Beam):
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        params, shape = beam.get_parameters(ind, named=True, max_vectors=0)
         self.frequency = params["frequency"]
         p = params["pointing"].reshape(3)
         sph = coordinates.cart_to_sph(p, degrees=beam.degrees)
