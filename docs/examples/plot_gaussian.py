@@ -21,10 +21,10 @@ import pyant
 
 
 beam = pyant.models.Gaussian(
-    pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=46.5e6,
     radius=100.0,
-    normal_pointing=pyant.coordinates.sph_to_cart(np.array([0, 90.0, 1]), degrees=True),
+    normal_pointing=np.array([0, 0, 1], dtype=np.float64),
     peak_gain=10**4.81,
 )
 

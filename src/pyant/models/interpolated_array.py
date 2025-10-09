@@ -7,8 +7,6 @@ from ..beam import Beam
 from .array import Array
 from .. import coordinates
 
-# import matplotlib.pyplot as plt
-
 
 def plane_wave_compund(kp, r):
     """The complex plane wave function.
