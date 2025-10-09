@@ -6,6 +6,7 @@ References for the data:
 #TODO
 
 """
+
 import json
 import pathlib
 import importlib.resources
@@ -34,7 +35,6 @@ else:
                 continue
 
             DATA[file.name] = pathlib.Path(str(file))
-
 
 
 RADAR_PARAMETERS = dict()

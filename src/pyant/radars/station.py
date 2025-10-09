@@ -39,5 +39,3 @@ class RadarStation(TypedDict, total=False):
     noise_temperature: float
     power: float
     power_per_element: float
-
-
