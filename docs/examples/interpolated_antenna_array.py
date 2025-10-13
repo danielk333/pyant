@@ -60,7 +60,7 @@ ax.axis("equal")
 
 # +
 
-interp_beam = pyant.models.InterpolatedArray()
+interp_beam = pyant.models.InterpolatedArray(pointing=beam.parameters["pointing"].copy())
 start_time = time.time()
 interp_beam.generate_interpolation(
     beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]

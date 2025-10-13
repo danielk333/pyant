@@ -26,6 +26,20 @@ k_vector = np.ones((3, num), dtype=np.float64)
 k_vector[0, :] = 0
 k_vector[1, :] = np.linspace(-0.1, 0.1, num)
 
+
+array_beam = pyant.models.Array(
+    pointing=np.array([0, 0, 1], dtype=np.float64),
+    frequency=50e6,
+    antennas=antennas,
+)
+cas_beam = pyant.models.Cassegrain(
+    pointing=pointing,
+    frequency=930e6,
+    inner_radius=3.0,
+    outer_radius=23.0,
+)
+
+
 models_vector = [
     pyant.models.Airy(
         pointing=np.broadcast_to(
@@ -142,6 +156,37 @@ models_scalar = [
         aperture_width=120.0,
     ),
 ]
+
+
+models_scalar.append(
+    pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
+)
+models_scalar[-1].generate_interpolation(
+    array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
+)
+models_scalar.append(
+    pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
+)
+models_scalar[-1].generate_interpolation(
+    array_beam, resolution=(50, 50, 100), min_elevation=70.0, interpolate_channels=[0]
+)
+models_scalar.append(pyant.models.Interpolated())
+models_scalar[-1].generate_interpolation(
+    cas_beam,
+    resolution=150,
+)
+models_vector = []
+models_vector.append(
+    pyant.models.InterpolatedArray(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+    )
+)
+models_vector[-1].generate_interpolation(
+    array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
+)
 
 
 def beam_name(beam):

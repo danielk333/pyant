@@ -113,26 +113,20 @@ class InterpolatedArray(Beam):
             Index for which channels to save interpolations from.
 
         """
-        raise NotImplementedError("todo wip")
         assert isinstance(beam, Array), "Can only interpolate arrays"
+        assert beam.size == 0, "Can only interpolate scalar parameters"
 
         # Transfer meta-data and parameters
         self.channels = beam.channels
 
         if polarization is None:
-            polarization = beam.polarization
+            polarization = beam.polarization.copy()
         elif not np.all(np.iscomplex(polarization)):
             polarization = polarization.astype(np.complex128)
 
-        self.frequency = params["frequency"]
-        p = params["pointing"].reshape(3)
-        sph = coordinates.cart_to_sph(p, degrees=beam.degrees)
-        self.degrees = beam.degrees
-        self.sph_point(sph[0], sph[1])
+        p = beam.parameters["pointing"]
 
-        wavelength = scipy.constants.c / params["frequency"]
-        if len(wavelength.shape) > 0:
-            wavelength = wavelength[0]
+        wavelength = scipy.constants.c / beam.parameters["frequency"]
         cmin = np.cos(np.radians(min_elevation))
 
         size_k = np.prod(resolution[:2])
@@ -189,7 +183,7 @@ class InterpolatedArray(Beam):
             subg_response = plane_wave_compund(kp[:, inds], grp / wavelength)
             psi[i, inds] = subg_response.sum(axis=0).T
 
-        ant_response = beam.antenna_element(k, polarization) * beam.scaling
+        ant_response = beam.antenna_element(k, polarization) * beam.peak_gain
 
         # broadcast over input polarization
         ant_response = ant_response[:, :] * polarization[:, None]
@@ -243,7 +237,7 @@ class InterpolatedArray(Beam):
                 bounds_error=False,
             )
 
-    def channel_gain(self, k, channels=None, ind=None, **kwargs):
+    def channel_gain(self, k, channels=None):
         """Interpolated gain of each channel.
 
         Parameters
@@ -258,19 +252,24 @@ class InterpolatedArray(Beam):
             requested and `num_k` is the number of input wave vectors.
             If `num_k = 1` the returned ndarray is `(c,)`.
         """
-        k_len = k.shape[1] if len(k.shape) == 2 else 1
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
-        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
-        if k_len == 1:
-            k = k.reshape(3, 1)
-        p = params["pointing"].reshape(3)
+        k_len = self.validate_k_shape(k)
+        size = self.size
+        p = self.parameters["pointing"]
 
         kn = k / np.linalg.norm(k, axis=0)
-        kpn = kn - p[:, None]
+        if size > 0 and k_len > 0:
+            kpn = kn - p
+        elif size > 0 and k_len == 0:
+            kpn = kn[:, None] - p
+        elif size == 0 and k_len > 0:
+            kpn = kn - p[:, None]
+        elif size == 0 and k_len == 0:
+            kpn = kn - p
+        g_size = kpn.shape[1] if len(kpn.shape) > 1 else 1
 
         if channels is None:
             channels = np.arange(self.channels)
-        gains = np.full((len(channels), k_len), np.nan, dtype=np.float64)
+        gains = np.full((len(channels), g_size), np.nan, dtype=np.float64)
 
         for ind, ci in enumerate(channels):
             if self.interpolated_channels[ci] is None:
@@ -282,32 +281,38 @@ class InterpolatedArray(Beam):
 
         ant_response = self.interpolated_antenna(kn[:2, ...].T)
 
-        gains *= ant_response[None, :]
-        if len(k.shape) == 1:
+        gains = gains * ant_response[None, :]
+        if len(kpn.shape) == 1:
             gains = gains.reshape(gains.shape[:-1])
 
         return gains
 
     def gain(self, k, ind=None, polarization=None, **kwargs):
         """Gain of the antenna array."""
-        k_len = k.shape[1] if len(k.shape) == 2 else 1
-        assert len(k.shape) <= 2, "'k' can only be vectorized with one additional axis"
-        params, shape = self.get_parameters(ind, named=True, max_vectors=0)
-        if k_len == 1:
-            k = k.reshape(3, 1)
-        p = params["pointing"].reshape(3)
+        k_len = self.validate_k_shape(k)
+        size = self.size
+        p = self.parameters["pointing"]
+        scalar_output = size == 0 and k_len == 0
 
         kn = k / np.linalg.norm(k, axis=0)
-        kpn = kn - p[:, None]
+        if size > 0 and k_len > 0:
+            kpn = kn - p
+        elif size > 0 and k_len == 0:
+            kpn = kn[:, None] - p
+            kn = np.broadcast_to(kn.reshape((3, 1)), (3, size))
+        elif size == 0 and k_len > 0:
+            kpn = kn - p[:, None]
+        elif size == 0 and k_len == 0:
+            kpn = kn - p
 
         if self.interp_dims == 3:
-            G = self.interpolated(kpn[:3, ...].T)
+            g = self.interpolated(kpn[:3, ...].T)
         else:
-            G = self.interpolated(kpn[:2, ...].T)
+            g = self.interpolated(kpn[:2, ...].T)
 
         ant_response = self.interpolated_antenna(kn[:2, ...].T)
 
-        G *= ant_response
-        if len(k.shape) == 1:
-            G = G.reshape(G.shape[:-1])
-        return G
+        g = g * ant_response
+        if scalar_output:
+            g = g[0]
+        return g
