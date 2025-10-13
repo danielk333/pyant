@@ -13,7 +13,6 @@
 #     name: python3
 # ---
 
-raise NotImplementedError()
 # # Antenna array gain
 
 
@@ -29,6 +28,7 @@ beam = pyant.beams.arrays.equidistant_archimedian_spiral(
     arc_separation=1.1,
     range_coefficient=5.0,
     frequency=46.5e6,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
 )
 
 x = beam.antennas[0, 0, :]
@@ -42,17 +42,6 @@ M[diags] = 1
 M[off_diags] = M[off_diags] * (1 / D[off_diags]) ** 0.2
 
 beam.mutual_coupling_matrix = M
-
-
-# Uncomment these to try the speed up for more complex gain calculations
-
-# start_time = time.time()
-# pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=False)
-# print(f'"gain_heatmap" ({100**2}) loop       performance: {time.time() - start_time:.1e} seconds')
-
-# start_time = time.time()
-# pyant.plotting.gain_heatmap(beam, resolution=100, min_elevation=80.0, vectorized=True)
-# print(f'"gain_heatmap" ({100**2}) vectorized performance: {time.time() - start_time:.1e} seconds')
 
 
 # +

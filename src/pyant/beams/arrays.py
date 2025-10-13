@@ -9,8 +9,7 @@ def equidistant_archimedian_spiral(
     arc_separation,
     range_coefficient,
     frequency,
-    azimuth=0,
-    elevation=90,
+    pointing,
     degrees=True,
 ):
     # https://math.stackexchange.com/a/2216736
@@ -24,9 +23,7 @@ def equidistant_archimedian_spiral(
     antennas = antennas.reshape((3, 1, antenna_num))
 
     return Array(
-        azimuth=azimuth,
-        elevation=elevation,
+        pointing=pointing,
         frequency=frequency,
         antennas=antennas,
-        degrees=degrees,
     )
