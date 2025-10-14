@@ -23,7 +23,7 @@ stages:
 ## Platforms testing ##
 
 pytest:
-  image: ghcr.io/astral-sh/uv:alpine
+  image: ghcr.io/astral-sh/uv:bookworm-slim
   allow_failure: true
   parallel:
     matrix:
