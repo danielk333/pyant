@@ -22,8 +22,8 @@ else:
 from . import coordinates
 from . import models
 from . import statistics
-# from . import clib
 from . import beams
-from . import radars
+
+# from . import clib
 
 from .beam import Beam
