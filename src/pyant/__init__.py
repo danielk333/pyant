@@ -2,14 +2,13 @@
 
 """ """
 import types
+import importlib
 from .version import __version__
 
 # Modules
-try:
+if importlib.util.find_spec("matplotlib") is not None:
     from . import plotting
-except ImportError as err:
-    if err.name != "matplotlib":
-        raise
+else:
 
     class _MissingModule(types.ModuleType):
         def __getattr__(self, name):
@@ -23,7 +22,8 @@ except ImportError as err:
 from . import coordinates
 from . import models
 from . import statistics
-from . import clib
+# from . import clib
 from . import beams
+from . import radars
 
 from .beam import Beam
