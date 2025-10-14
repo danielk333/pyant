@@ -27,13 +27,13 @@ pytest:
   allow_failure: true
   parallel:
     matrix:
-      - VERSION: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+      - VERSION: ["3.9", "3.10", "3.11", "3.12", "3.13"]
   script:
     - uv python install $VERSION
     - uv venv --seed --python $VERSION ./venv
     - source venv/bin/activate
     - pip install .[tests]
-    - pytest run
+    - pytest
 
 ###############
 ## Releasing ##
