@@ -1,15 +1,26 @@
 #!/usr/bin/env python
 import copy
-
-import numpy as np
 from numpy.typing import NDArray
+from typing import Callable
+import numpy as np
 import scipy.constants
 import scipy.special
 
 from ..beam import Beam
+from ..types import (
+    NDArray_2,
+    NDArray_3,
+    NDArray_N,
+    NDArray_2xN,
+    NDArray_3xN,
+    NDArray_MxM,
+    NDArray_3xNxM,
+)
+
+AntennaGain = Callable[[NDArray_3 | NDArray_3xN, NDArray_2], NDArray_2xN]
 
 
-def default_element(k, polarization):
+def default_element(k: NDArray_3 | NDArray_3xN, polarization: NDArray_2) -> NDArray_2xN:
     """Antenna element gain pattern, azimuthally symmetric dipole response."""
     ret = np.ones((2,), dtype=k.dtype)
     return ret[:, None] * k[2, :]
@@ -26,8 +37,8 @@ class Array(Beam):
     Parameters
     ----------
     antennas : numpy.ndarray
-        `(3, n)` or `(3, n, c)` numpy array of antenna spatial positions,
-        where `n` is the number of antennas and `c` is the number of sub-arrays.
+        `(3, n)` or `(3, n, m)` numpy array of antenna spatial positions,
+        where `n` is the number of antennas and `m` is the number of sub-arrays.
         *This is not the same arrangement as the internal antennas variable*.
     scaling : float
         Scaling parameter for the output gain, can be interpreted as an
@@ -39,8 +50,8 @@ class Array(Beam):
     Attributes
     ----------
     antennas : numpy.ndarray
-        `(n, 3, c)` numpy array of antenna spatial positions,
-        where `n` is the number of antennas and `c` is the number of sub-arrays.
+        `(n, 3, m)` numpy array of antenna spatial positions,
+        where `n` is the number of antennas and `m` is the number of sub-arrays.
     scaling : float
         Scaling parameter for the output gain, can be interpreted as an
         antenna element scalar gain.
@@ -54,13 +65,13 @@ class Array(Beam):
 
     def __init__(
         self,
-        pointing,
-        frequency,
-        antennas,
-        mutual_coupling_matrix=None,
-        antenna_element=default_element,
-        polarization=np.array([1, 1j]) / np.sqrt(2),
-        peak_gain=1.0,
+        pointing: NDArray_3 | NDArray_3xN,
+        frequency: NDArray_N,
+        antennas: NDArray_3xNxM,
+        mutual_coupling_matrix: NDArray_MxM | None = None,
+        antenna_element: AntennaGain = default_element,
+        polarization: NDArray_2 = np.array([1, 1j]) / np.sqrt(2),
+        peak_gain: float = 1.0,
     ):
         super().__init__()
         self.parameters["pointing"] = pointing
@@ -106,20 +117,20 @@ class Array(Beam):
         )
 
     @property
-    def channels(self):
+    def channels(self) -> int:
         """Number of channels returned by complex output."""
         if isinstance(self.antennas, list):
             return len(self.antennas)
         else:
             return self.antennas.shape[2]
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
+    def gain(self, k: NDArray_3 | NDArray_3xN, polarization: NDArray_2 | None = None):
         """Gain of the antenna array."""
         g = self.channel_signals(k, polarization=polarization)
         g = np.sum(g, axis=0)  # coherent intergeneration over channels
         return np.abs(g)
 
-    def channel_signals(self, k, polarization=None):
+    def channel_signals(self, k: NDArray_3 | NDArray_3xN, polarization: NDArray_2 | None = None):
         """Complex voltage output signals after summation of antennas and polarization.
 
         Returns
@@ -145,7 +156,12 @@ class Array(Beam):
         psi = np.sum(psi, axis=1)  # coherent intergeneration over polarization
         return psi
 
-    def signals(self, k, polarization, ind=None, channels=None, **kwargs):
+    def signals(
+        self,
+        k: NDArray_3 | NDArray_3xN,
+        polarization: NDArray_2,
+        channels: list[int] | None = None,
+    ):
         """Complex voltage output signals after summation of antennas.
 
         Returns
@@ -162,7 +178,7 @@ class Array(Beam):
         size = self.size
         scalar_output = size == 0 and k_len == 0
 
-        inds = np.arange(self.channels, dtype=np.int64)
+        inds: NDArray[np.int64] = np.arange(self.channels, dtype=np.int64)
         if channels is not None:
             inds = inds[channels]
 
@@ -202,6 +218,8 @@ class Array(Beam):
 
         # This is an approximation assuming that the summed response of the subgroup
         # can be representative of the mutual coupling
+        # TODO: There are better Mutual coupling models, they should be implemented specifically
+        # for the radar where they work when we need them, this is left here as a reminder of this
         if self.mutual_coupling_matrix is not None:
             psi[:, 0, ...] = self.mutual_coupling_matrix @ psi[:, 0, ...]
             psi[:, 1, ...] = self.mutual_coupling_matrix @ psi[:, 1, ...]
