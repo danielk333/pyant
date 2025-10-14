@@ -63,7 +63,7 @@ pypi:
   script:
     - python -m build
     - python -m twine check dist/*
-    - python -m auditwheel repair dist/*.whl
+    # - python -m auditwheel repair dist/*.whl
     - mv -v dist/*tar.gz wheelhouse/
     - >
       TWINE_USERNAME=__token__
