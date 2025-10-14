@@ -70,6 +70,26 @@ models_vector = [
             (3, num),
         ).copy(),
     ),
+    pyant.models.MeasuredAzimuthallySymmetric(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+        off_axis_angle=np.linspace(0, 90, 100),
+        gains=np.linspace(0, 1, 100),
+        interpolation_method="linear",
+        degrees=True,
+    ),
+    pyant.models.MeasuredAzimuthallySymmetric(
+        pointing=np.broadcast_to(
+            pointing.reshape(3, 1),
+            (3, num),
+        ).copy(),
+        off_axis_angle=np.linspace(0, 90, 100),
+        gains=np.linspace(0, 1, 100),
+        interpolation_method="cubic_spline",
+        degrees=True,
+    ),
     pyant.models.Array(
         pointing=np.broadcast_to(
             pointing.reshape(3, 1),
@@ -123,13 +143,15 @@ models_scalar = [
     ),
     pyant.models.Isotropic(),
     pyant.models.MeasuredAzimuthallySymmetric(
-        elevations=np.linspace(0, 90, 100),
+        pointing=pointing,
+        off_axis_angle=np.linspace(0, 90, 100),
         gains=np.linspace(0, 1, 100),
         interpolation_method="linear",
         degrees=True,
     ),
     pyant.models.MeasuredAzimuthallySymmetric(
-        elevations=np.linspace(0, 90, 100),
+        pointing=pointing,
+        off_axis_angle=np.linspace(0, 90, 100),
         gains=np.linspace(0, 1, 100),
         interpolation_method="cubic_spline",
         degrees=True,
@@ -157,36 +179,35 @@ models_scalar = [
     ),
 ]
 
-
-models_scalar.append(
-    pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
-)
-models_scalar[-1].generate_interpolation(
+_beam = pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
+_beam.generate_interpolation(
     array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
 )
-models_scalar.append(
-    pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
-)
-models_scalar[-1].generate_interpolation(
+models_scalar.append(_beam)
+
+_beam = pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
+_beam.generate_interpolation(
     array_beam, resolution=(50, 50, 100), min_elevation=70.0, interpolate_channels=[0]
 )
-models_scalar.append(pyant.models.Interpolated())
-models_scalar[-1].generate_interpolation(
+models_scalar.append(_beam)
+
+_beam_base = pyant.models.Interpolated()
+_beam_base.generate_interpolation(
     cas_beam,
     resolution=150,
 )
-models_vector = []
-models_vector.append(
-    pyant.models.InterpolatedArray(
-        pointing=np.broadcast_to(
-            pointing.reshape(3, 1),
-            (3, num),
-        ).copy(),
-    )
+models_scalar.append(_beam_base)
+
+_beam = pyant.models.InterpolatedArray(
+    pointing=np.broadcast_to(
+        pointing.reshape(3, 1),
+        (3, num),
+    ).copy(),
 )
-models_vector[-1].generate_interpolation(
+_beam.generate_interpolation(
     array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
 )
+models_vector.append(_beam)
 
 
 def beam_name(beam):

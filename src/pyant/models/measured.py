@@ -2,6 +2,7 @@
 
 import copy
 from typing import Literal
+from ..types import NDArray_3, NDArray_3xN, NDArray_N
 
 import scipy.interpolate as sci
 import numpy as np
@@ -18,26 +19,29 @@ class MeasuredAzimuthallySymmetric(Beam):
 
     def __init__(
         self,
-        elevations: NDArray,
-        gains: NDArray,
+        pointing: NDArray_3 | NDArray_3xN,
+        off_axis_angle: NDArray_N,
+        gains: NDArray_N,
         interpolation_method: InterpMethods = "linear",
         degrees: bool = True,
     ):
         super().__init__()
-        self.elevations = elevations
+        self.parameters["pointing"] = pointing
+        self.parameters_shape["pointing"] = (3,)
+
+        self.off_axis_angle = off_axis_angle
         self.gains = gains
         self.interpolation_method = interpolation_method
         self.degrees = degrees
 
     def gain(self, k: NDArray, polarization: NDArray | None = None):
-        azelr = coordinates.cart_to_sph(k, degrees=self.degrees)
-        els = azelr[1, ...]
+        phi = coordinates.vector_angle(k, self.parameters["pointing"], degrees=self.degrees)
 
         if self.interpolation_method == "cubic_spline":
-            cbs = sci.CubicSpline(self.elevations, self.gains, extrapolate=False)
-            g = cbs(els)
+            cbs = sci.CubicSpline(self.off_axis_angle, self.gains, extrapolate=False)
+            g = cbs(phi)
         elif self.interpolation_method == "linear":
-            g = np.interp(els, self.elevations, self.gains, left=np.nan, right=np.nan)
+            g = np.interp(phi, self.off_axis_angle, self.gains, left=np.nan, right=np.nan)
         else:
             raise ValueError(
                 f"Interpolation method '{self.interpolation_method}' not supported,"
@@ -47,7 +51,8 @@ class MeasuredAzimuthallySymmetric(Beam):
 
     def copy(self):
         return MeasuredAzimuthallySymmetric(
-            elevations=copy.deepcopy(self.elevations),
+            pointing=copy.deepcopy(self.parameters["pointing"]),
+            off_axis_angle=copy.deepcopy(self.off_axis_angle),
             gains=copy.deepcopy(self.gains),
             interpolation_method=self.interpolation_method,
             degrees=self.degrees,

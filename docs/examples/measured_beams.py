@@ -22,12 +22,13 @@ import numpy as np
 import pyant
 
 num = 15
-els = np.linspace(82, 90, num=num)
-gains = np.exp(-(90 - els)) * (np.sin(els) ** 2 + 0.01)
+phi = np.linspace(0, 8, num=num)
+gains = np.exp(-phi) * (np.sin(phi) ** 2 + 0.01)
 gains = gains / np.max(gains)
 
 beam = pyant.models.MeasuredAzimuthallySymmetric(
-    elevations=els,
+    pointing=np.array([0, 0, 1], dtype=np.float64),
+    off_axis_angle=phi,
     gains=gains,
     interpolation_method="linear",
     degrees=True,
