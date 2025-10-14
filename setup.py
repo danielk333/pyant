@@ -11,5 +11,6 @@ clib_beam = Extension(
 
 
 setup(
-    ext_modules=[clib_beam],
+    # Dont include this until the C module is useful
+    # ext_modules=[clib_beam],
 )
