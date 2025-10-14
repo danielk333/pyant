@@ -31,16 +31,14 @@ Plot the gain pattern of a dish radar modeled using the Cassegrain model.
 import matplotlib.pyplot as plt
 import pyant
 
-ant = pyant.Cassegrain(
-    azimuth=0,
-    elevation=90.0,
+beam = pyant.models.Cassegrain(
+    pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    I0=10**4.81,
-    a0=23.0,
-    a1=40.0,
-    degrees=True,
+    outer_radius=40.0,
+    inner_radius=23.0,
+    peak_gain=10**4.81,
 )
 
-pyant.plotting.gain_heatmap(ant, resolution=301, min_elevation=80.0)
+pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0)
 plt.show()
 ```
