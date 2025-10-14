@@ -1,4 +1,9 @@
-from typing import TypedDict, Required
+import sys
+if sys.version_info >= (3, 11):
+    from typing import TypedDict, Required
+else:
+    from typing_extensions import Required, TypedDict
+
 from numpy.typing import NDArray
 
 from ..beam import Beam
@@ -27,10 +32,11 @@ class RadarStation(TypedDict, total=False):
     uid: Required[str]
     transmitter: Required[bool]
     receiver: Required[bool]
+    beam: Required[Beam]
     lat: Required[float]
     lon: Required[float]
     alt: Required[float]
-    beam: Required[Beam]
+    frequency: float
     ecef: NDArray
     ecef_lat: float
     ecef_lon: float

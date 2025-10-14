@@ -8,7 +8,7 @@ import numpy as np
 import scipy.interpolate
 
 from ..models import Array, InterpolatedArray
-from ..coordinates import cart_to_sph
+from ..coordinates import sph_to_cart
 from .beams import radar_beam_generator
 from ..registry import Radars, Models
 from .data import DATA
