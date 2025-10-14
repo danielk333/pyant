@@ -55,7 +55,7 @@ develop = [
   "mkdocs-literate-nav",
   "mkdocs-section-index",
 ]
-tests = ["tox", "pytest", "pytest-cov"]
+tests = ["pytest", "pytest-cov"]
 
 [tool.setuptools]
 include-package-data = true
@@ -91,12 +91,3 @@ exclude_also = [
   # Don't complain about abstract methods, they aren't run:
   "@(abc\\.)?abstractmethod",
 ]
-
-[tool.tox]
-requires = ["tox>=4.19"]
-env_list = ["3.11", "3.12", "3.13"]
-
-[tool.tox.env_run_base]
-description = "Run test under {base_python}"
-commands = [["pytest"]]
-extras = ["tests"]
