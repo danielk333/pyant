@@ -56,6 +56,23 @@ class Airy(Beam):
         beam.zero_limit_eps = self.zero_limit_eps
         return beam
 
+    def to_npz(self, path):
+        np.savez(
+            path, peak_gain=self.peak_gain, zero_limit_eps=self.zero_limit_eps, **self.parameters
+        )
+
+    @classmethod
+    def from_npz(cls, path):
+        with np.load(path) as npz_data:
+            beam = cls(
+                pointing=npz_data["pointing"],
+                frequency=npz_data["frequency"],
+                radius=npz_data["radius"],
+                peak_gain=npz_data["peak_gain"],
+            )
+            beam.zero_limit_eps = npz_data["zero_limit_eps"]
+        return beam
+
     def gain(self, k: NDArray, polarization: NDArray | None = None):
         k_len = self.validate_k_shape(k)
         size = self.size

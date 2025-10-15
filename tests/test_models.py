@@ -249,6 +249,11 @@ def test_many_k_scalar_params(beam):
     assert g.shape == (num,)
 
 
+# @pytest.mark.parametrize("beam", models_vector + models_scalar, ids=beam_name)
+def test_save_load(beam):
+    raise NotImplementedError("todo")
+
+
 if __name__ == "__main__":
     index = 2
     test_many_k_vector_params(models_vector[index])

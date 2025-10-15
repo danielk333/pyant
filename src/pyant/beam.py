@@ -48,7 +48,7 @@ class Beam(ABC):
     def _get_parameter_len(self, key: str):
         """Get the length of a parameter axis, its always the last array dimension"""
         obj = self.parameters[key]
-        if isinstance(obj, np.ndarray):
+        if isinstance(obj, np.ndarray) and len(obj.shape) > 0:
             if key in self.parameters_shape:
                 shape = self.parameters_shape[key]
                 if len(obj.shape) == len(shape):
@@ -137,13 +137,13 @@ class Beam(ABC):
         """Return a copy of the current instance."""
         raise NotImplementedError("")
 
-    def to_h5(self, path):
-        """Write defining parameters to a h5 file"""
+    def to_npz(self, path):
+        """Write defining parameters to a numpy npz file"""
         raise NotImplementedError("")
 
     @classmethod
-    def from_h5(cls):
-        """Load defining parameters from a h5 file and instantiate a beam"""
+    def from_npz(cls, path):
+        """Load defining parameters from a numpy npz file and instantiate a beam"""
         raise NotImplementedError("")
 
     @property
