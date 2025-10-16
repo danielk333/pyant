@@ -51,7 +51,7 @@ k = pyant.coordinates.sph_to_cart(np.array([az, el, 1]), degrees=True)
 print(f"az={az} deg, el={el} deg")
 print(f"k_x={k[0]:.3f}, k_y={k[1]:.3f}, k_z={k[2]:.3f}")
 
-G = beam.sph_gain(az, el)
+G = beam.sph_gain(az, el, degrees=True)
 print(f"beam.sph_gain(az, el) = {G}")
 G = beam.gain(k)
 print(f"beam.gain(k) = {G}")
@@ -60,8 +60,8 @@ print(f"beam.gain(k) = {G}")
 We can also re-point the beam by using `sph_point` and `point` respectively
 
 ```{code-cell} ipython3
-beam.sph_point(45.0, 86.0)
-G = beam.sph_gain(az, el)
+beam.sph_point(45.0, 86.0, degrees=True)
+G = beam.sph_gain(az, el, degrees=True)
 print(f"pointed beam.sph_gain(az, el) = {G}")
 ```
 
@@ -79,7 +79,7 @@ for key, val in beam.parameters.items():
 We can also vectorize the input direction for which we get the radiation pattern
 
 ```{code-cell} ipython3
-beam.sph_point(0, 90)
+beam.sph_point(0, 90, degrees=True)
 
 # Note: the Airy beam can handle non-normalized input wave-vectors, it ignores the length
 k_two = np.array([[0, 0, 1.0], [0, 1, 1]]).T
