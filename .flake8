@@ -1,4 +1,4 @@
 [flake8]
 ignore = D203,E251,E126,E226,W504,W503,W605
 max-line-length = 100
-exclude = src/pyant/__pycache__,src/pyant/__init__.py,src/pyant/**/__init__.py
+exclude = src/pyant/__pycache__,src/**/__init__.py

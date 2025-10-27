@@ -75,7 +75,9 @@ class FiniteCylindricalParabola(Beam):
         """Convert from local wave vector direction to bore-sight relative
         longitudinal and transverse angles.
         """
-        k_len = self.validate_k_shape(k)
+        k_len = self.get_and_validate_k_shape(k)
+        if k_len == 0:
+            return np.empty((0,), dtype=k.dtype), np.empty((0,), dtype=k.dtype)
         azelr = coordinates.cart_to_sph(self.parameters["pointing"], degrees=False)
         size = self.size
 

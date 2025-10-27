@@ -67,9 +67,11 @@ class Cassegrain(Beam):
         return beam
 
     def gain(self, k: NDArray, polarization: NDArray | None = None):
-        k_len = self.validate_k_shape(k)
+        k_len = self.get_and_validate_k_shape(k)
+        if k_len == 0:
+            return np.empty((0,), dtype=k.dtype)
         size = self.size
-        scalar_output = size == 0 and k_len == 0
+        scalar_output = size == 0 and k_len is None
 
         p = self.parameters["pointing"]
         theta = coordinates.vector_angle(p, k, degrees=False)

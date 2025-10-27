@@ -3,6 +3,7 @@
 """Useful coordinate related functions."""
 
 import numpy as np
+from .types import NDArray_N, NDArray_3xN, NDArray_3
 
 CLOSE_TO_POLE_LIMIT = 1e-9**2
 CLOSE_TO_POLE_LIMIT_rad = np.arctan(1 / np.sqrt(CLOSE_TO_POLE_LIMIT))
@@ -14,8 +15,7 @@ def _clint(p, c, lim=1):
 
 
 def compute_j_grid(resolution):
-    """Compute a grid of polarizations with given resolution
-    """
+    """Compute a grid of polarizations with given resolution"""
     size = resolution**2
     thx = np.linspace(0, 2 * np.pi, num=resolution)
     thy = np.linspace(0, 2 * np.pi, num=resolution)
@@ -31,8 +31,7 @@ def compute_j_grid(resolution):
 
 
 def compute_k_grid(pointing, resolution, centered, cmin):
-    """Compute a grid of wave vector directions with given resolution
-    """
+    """Compute a grid of wave vector directions with given resolution"""
     if centered:
         kx = np.linspace(*_clint(pointing[0], cmin), num=resolution)
         ky = np.linspace(*_clint(pointing[1], cmin), num=resolution)
@@ -367,3 +366,81 @@ def scale_mat_2d(x, y):
     M_scale[0, 0] = x
     M_scale[1, 1] = y
     return M_scale
+
+
+def az_el_to_sph(azimuth: NDArray_N | float, elevation: NDArray_N | float) -> NDArray_N | float:
+    """Convert input azimuth and elevation to spherical coordinates states,
+    i.e a `shape=(3,n)` numpy array.
+    """
+
+    az_len = azimuth.size if isinstance(azimuth, np.ndarray) else None
+    el_len = elevation.size if isinstance(elevation, np.ndarray) else None
+
+    if el_len is not None and az_len is not None:
+        assert el_len == az_len, f"azimuth {az_len} and elevation {el_len} sizes must agree"
+
+    shape: tuple[int] | tuple[int, int]
+    if az_len is not None:
+        shape = (3, az_len)
+    elif el_len is not None:
+        shape = (3, el_len)
+    else:
+        shape = (3,)
+
+    sph = np.empty(shape, dtype=np.float64)
+    sph[0, ...] = azimuth
+    sph[1, ...] = elevation
+    sph[2, ...] = 1.0
+
+    return sph
+
+
+def az_el_point(
+    self, azimuth: NDArray_N | float, elevation: NDArray_N | float, degrees: bool = False
+):
+    """Point beam towards azimuth and elevation coordinate.
+
+    Parameters
+    ----------
+    azimuth : float
+        Azimuth east of north of pointing direction.
+    elevation : float
+        Elevation from horizon of pointing direction.
+    degrees : bool
+        If :code:`True` all input/output angles are in degrees,
+        else they are in radians. Defaults to instance
+        settings :code:`self.radians`.
+
+    """
+    sph = az_el_to_sph(azimuth, elevation)
+    return sph_to_cart(sph, degrees=degrees)
+
+
+def az_el_vs_cart_angle(
+    self,
+    azimuth: NDArray_N | float,
+    elevation: NDArray_N | float,
+    cart: NDArray_3xN | NDArray_3,
+    degrees: bool = False,
+) -> NDArray_N | float:
+    """Get angle between azimuth and elevation and pointing direction.
+
+    Parameters
+    ----------
+    azimuth : float or NDArray
+        Azimuth east of north of pointing direction.
+    elevation : float or NDArray
+        Elevation from horizon of pointing direction.
+    degrees : bool
+        If :code:`True` all input/output angles are in degrees,
+        else they are in radians.
+
+    Returns
+    -------
+    float or NDArray
+        Angle between pointing and given direction.
+
+    """
+    sph = az_el_to_sph(azimuth, elevation)
+    k = sph_to_cart(sph, degrees=degrees)
+    return vector_angle(cart, k, degrees=degrees)

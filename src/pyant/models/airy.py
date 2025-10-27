@@ -1,29 +1,17 @@
 #!/usr/bin/env python
 
-import copy
-
 import numpy as np
 import scipy.constants
 import scipy.special
 
-from numpy.typing import NDArray
 from ..beam import Beam
+from .parameters import AiryParams, get_and_validate_k_shape
 from .. import coordinates
+from ..types import NDArray_3, NDArray_3xN, NDArray_N
 
 
-class Airy(Beam):
+class Airy(Beam[AiryParams]):
     """Airy disk gain model of a radar dish.
-
-    Parameters
-    ----------
-    pointing : np.ndarray
-        Pointing direction of the boresight
-    frequency : float | np.ndarray
-        Frequency of the radar
-    peak_gain : float | np.ndarray
-        Peak gain (linear scale) in the pointing direction.
-    radius : float | np.ndarray
-        Radius in meters of the airy disk
 
     Notes
     -----
@@ -33,58 +21,38 @@ class Airy(Beam):
 
     """
 
-    def __init__(self, pointing, frequency, radius, peak_gain=1):
+    def __init__(
+        self,
+        peak_gain: float = 1,
+        zero_limit_eps: float = 1e-9,
+    ):
         super().__init__()
-        self.parameters["pointing"] = pointing
-        self.parameters_shape["pointing"] = (3,)
-        self.parameters["frequency"] = frequency
-        self.parameters["radius"] = radius
-
         self.peak_gain = peak_gain
-        self.zero_limit_eps = 1e-9
-
-        self.validate_parameter_shapes()
+        self.zero_limit_eps = zero_limit_eps
 
     def copy(self):
         """Return a copy of the current instance."""
         beam = Airy(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
-            frequency=copy.deepcopy(self.parameters["frequency"]),
-            radius=copy.deepcopy(self.parameters["radius"]),
             peak_gain=self.peak_gain,
+            zero_limit_eps=self.zero_limit_eps,
         )
-        beam.zero_limit_eps = self.zero_limit_eps
         return beam
 
-    def to_npz(self, path):
-        np.savez(
-            path, peak_gain=self.peak_gain, zero_limit_eps=self.zero_limit_eps, **self.parameters
-        )
+    def gain(self, k: NDArray_3xN | NDArray_3, parameters: AiryParams) -> NDArray_N | float:
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
+        if k_len == 0:
+            return np.empty((0,), dtype=k.dtype)
 
-    @classmethod
-    def from_npz(cls, path):
-        with np.load(path) as npz_data:
-            beam = cls(
-                pointing=npz_data["pointing"],
-                frequency=npz_data["frequency"],
-                radius=npz_data["radius"],
-                peak_gain=npz_data["peak_gain"],
-            )
-            beam.zero_limit_eps = npz_data["zero_limit_eps"]
-        return beam
+        scalar_output = size == 0 and k_len is None
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
-        k_len = self.validate_k_shape(k)
-        size = self.size
-        scalar_output = size == 0 and k_len == 0
-
-        p = self.parameters["pointing"]
+        p = parameters.pointing
         # size of theta is always k_len or size or a scalar
         theta = coordinates.vector_angle(p, k, degrees=False)
 
-        lam = scipy.constants.c / self.parameters["frequency"]
+        lam = scipy.constants.c / parameters.frequency
         k_n = 2.0 * np.pi / lam
-        radius = self.parameters["radius"]
+        radius = parameters.radius
 
         alph = k_n * radius * np.sin(theta)
         if scalar_output:
