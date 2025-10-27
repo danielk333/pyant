@@ -2,11 +2,13 @@
 
 """Defines an antenna's or entire radar system's radiation pattern"""
 from abc import ABC, abstractmethod
+import typing as t
 import collections
+from pathlib import Path
 
 import numpy as np
-from numpy.typing import NDArray
 import scipy.constants
+from .types import NDArray_3xN, NDArray_3, NDArray_N, NDArray_2
 
 from . import coordinates
 
@@ -45,7 +47,7 @@ class Beam(ABC):
         self.parameters = collections.OrderedDict()
         self.parameters_shape = {}
 
-    def _get_parameter_len(self, key: str):
+    def _get_parameter_len(self, key: str) -> int:
         """Get the length of a parameter axis, its always the last array dimension"""
         obj = self.parameters[key]
         if isinstance(obj, np.ndarray) and len(obj.shape) > 0:
@@ -61,14 +63,13 @@ class Beam(ABC):
             return 0
 
     @property
-    def size(self):
+    def size(self) -> int:
         """The additional dimensions added to the output Gain if broadcasting is enabled."""
         shape = [self._get_parameter_len(key) for key in self.parameters]
         if len(shape) == 0:
             return 0
         assert all(x == shape[0] for x in shape), (
-            "all parameter shapes must line up:"
-            f"{list(self.parameters.keys())} -> {shape}"
+            "all parameter shapes must line up:" f"{list(self.parameters.keys())} -> {shape}"
         )
         return shape[0]
 
@@ -89,7 +90,7 @@ class Beam(ABC):
                     p.shape[: len(shape)] == shape
                 ), f"{key} needs at least {shape} dimensions, not {p.shape}"
 
-    def validate_k_shape(self, k):
+    def validate_k_shape(self, k: NDArray_3xN | NDArray_3) -> int:
         """Helper function to validate the input direction vector shape is correct"""
         # TODO: maybe change to raise custom exceptions?
         size = self.size
@@ -108,7 +109,9 @@ class Beam(ABC):
         return self.parameters.keys()
 
     @staticmethod
-    def _azel_to_numpy(azimuth: NDArray | float, elevation: NDArray | float) -> NDArray:
+    def _azel_to_numpy(
+        azimuth: NDArray_N | float, elevation: NDArray_N | float
+    ) -> NDArray_N | float:
         """Convert input azimuth and elevation to spherical coordinates states,
         i.e a `shape=(3,n)` numpy array.
         """
@@ -119,12 +122,13 @@ class Beam(ABC):
         if el_len is not None and az_len is not None:
             assert el_len == az_len, f"azimuth {az_len} and elevation {el_len} sizes must agree"
 
+        shape: tuple[int] | tuple[int, int]
         if az_len is not None:
             shape = (3, az_len)
         elif el_len is not None:
             shape = (3, el_len)
         else:
-            shape = (3, )
+            shape = (3,)
 
         sph = np.empty(shape, dtype=np.float64)
         sph[0, ...] = azimuth
@@ -137,35 +141,35 @@ class Beam(ABC):
         """Return a copy of the current instance."""
         raise NotImplementedError("")
 
-    def to_npz(self, path):
+    def to_npz(self, path: Path | str):
         """Write defining parameters to a numpy npz file"""
         raise NotImplementedError("")
 
     @classmethod
-    def from_npz(cls, path):
+    def from_npz(cls, path: Path | str) -> t.Self:
         """Load defining parameters from a numpy npz file and instantiate a beam"""
         raise NotImplementedError("")
 
     @property
-    def frequency(self):
+    def frequency(self) -> NDArray_N | float:
         """The radar wavelength."""
         return self.parameters["frequency"]
 
     @frequency.setter
-    def frequency(self, val):
+    def frequency(self, val: NDArray_N | float):
         self.parameters["frequency"] = val
 
     @property
-    def wavelength(self):
+    def wavelength(self) -> NDArray_N | float:
         """The radar wavelength."""
         return scipy.constants.c / self.frequency
 
     @wavelength.setter
-    def wavelength(self, val):
+    def wavelength(self, val: NDArray_N | float):
         self.frequency = scipy.constants.c / val
 
     def sph_point(
-        self, azimuth: NDArray | float, elevation: NDArray | float, degrees: bool = False
+        self, azimuth: NDArray_N | float, elevation: NDArray_N | float, degrees: bool = False
     ):
         """Point beam towards azimuth and elevation coordinate.
 
@@ -184,7 +188,7 @@ class Beam(ABC):
         sph = Beam._azel_to_numpy(azimuth, elevation)
         self.parameters["pointing"] = coordinates.sph_to_cart(sph, degrees=degrees)
 
-    def point(self, k: NDArray):
+    def point(self, k: NDArray_3xN | NDArray_3):
         """Point beam in local Cartesian direction.
 
         Parameters
@@ -196,8 +200,8 @@ class Beam(ABC):
         self.parameters["pointing"] = k / np.linalg.norm(k, axis=0)
 
     def sph_angle(
-        self, azimuth: NDArray | float, elevation: NDArray | float, degrees: bool = False
-    ) -> NDArray | float:
+        self, azimuth: NDArray_N | float, elevation: NDArray_N | float, degrees: bool = False
+    ) -> NDArray_N | float:
         """Get angle between azimuth and elevation and pointing direction.
 
         Parameters
@@ -220,7 +224,7 @@ class Beam(ABC):
         k = coordinates.sph_to_cart(sph, degrees=degrees)
         return self.angle(k, degrees=degrees)
 
-    def angle(self, k: NDArray, degrees: bool = False) -> NDArray | float:
+    def angle(self, k: NDArray_3xN | NDArray_3, degrees: bool = False) -> NDArray_N | float:
         """Get angle between local direction and pointing direction.
 
         Parameters
@@ -238,11 +242,13 @@ class Beam(ABC):
             Angle between pointing and given direction.
 
         """
-        pt: NDArray = self.parameters["pointing"]
+        pt: NDArray_3 | NDArray_3xN = self.parameters["pointing"]
         return coordinates.vector_angle(pt, k, degrees=degrees)
 
     @abstractmethod
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
+    def gain(
+        self, k: NDArray_3xN | NDArray_3, polarization: NDArray_2 | None = None
+    ) -> NDArray_N | float:
         """Return the gain in the given direction. This method should be
         vectorized in the `k` variable.
 
@@ -267,11 +273,11 @@ class Beam(ABC):
 
     def sph_gain(
         self,
-        azimuth: NDArray | float,
-        elevation: NDArray | float,
-        polarization: NDArray | None = None,
+        azimuth: NDArray_N | float,
+        elevation: NDArray_N | float,
+        polarization: NDArray_2 | None = None,
         degrees: bool = False,
-    ):
+    ) -> NDArray_N | float:
         """Return the gain in the given direction.
 
         Parameters
