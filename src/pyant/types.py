@@ -40,6 +40,52 @@ P = TypeVar("P", bound="Parameters")
 
 @dataclass
 class Parameters:
+    """Definition of all the different parameters for the different models.
+
+    The type of an arbitrary parameter can be considered 'scalar' or 'vector'. If it is
+    vector, it is a `NDArray` and has one additional axis. If it is scalar, it has the
+    basic dimension given as the second element of the tuple or is a float if this is
+    `None`. The second argument contains the base shape of the parameter when it is
+    scalar, e.g. 'pointing' is a `(3,)` vector when it is a scalar.
+    """
+
+    @property
+    def keys(self):
+        return [key.name for key in fields(self)]
+
+    @classmethod
+    def replace_and_broadcast(
+        cls: Type[P],
+        parameters: P,
+        new_parameters: dict[str, npt.NDArray],
+    ) -> P:
+        data = {
+            key.name: [getattr(parameters, key.name), getattr(parameters, key.name + "_shape")]
+            for key in fields(parameters)
+        }
+        assert all(
+            [param in data for param in new_parameters]
+        ), f"A requested new parameter ({new_parameters.keys()}) does not exist in given parameters"
+        assert len(new_parameters) > 0, "empty new parameters, cannot broadcast"
+
+        # they should all be the same size, so lets just pick the first
+        key0 = list(new_parameters.keys())[0]
+        vector_len = new_parameters[key0].shape[-1]
+        for key, (val, shape) in data.items():
+            if key in new_parameters:
+                data[key][0] = new_parameters[key]
+                assert (
+                    new_parameters[key].shape[-1] == vector_len
+                ), "all new parameters must be vectorized with the same len"
+                continue
+
+            if shape is not None:
+                data[key][0] = np.broadcast_to(val.reshape((*shape, 1)), (*shape, vector_len))
+            else:
+                data[key][0] = np.full((vector_len,), val, dtype=np.float64)
+        data = {key: val[0] for key, val in data.items()}
+        return cls(**data)
+
     def to_npz(self, path: Path | str):
         """Write defining parameters to a numpy npz file"""
         data = {key.name: getattr(self, key.name) for key in fields(self)}
@@ -53,6 +99,7 @@ class Parameters:
         return cls(**data)
 
     def size(self) -> int | None:
+        """Return the size of the additional vectorized axis"""
         sizes = []
         size: int | None
         for key in fields(self):

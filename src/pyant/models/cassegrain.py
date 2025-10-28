@@ -1,15 +1,18 @@
 #!/usr/bin/env python
-import copy
 
+from dataclasses import dataclass
+from typing import ClassVar
 import numpy as np
-from numpy.typing import NDArray
 import scipy.special
 
-from ..beam import Beam
+from ..beam import Beam, get_and_validate_k_shape
 from .. import coordinates
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 
-def calculate_cassegrain_AB(theta, lam, a0, a1):
+def calculate_cassegrain_AB(
+    theta: NDArray_N | float, lam: NDArray_N | float, a0: NDArray_N | float, a1: NDArray_N | float
+):
     """Calculates the A and B parameters in the Cassegrain gain model"""
     scale = lam / (np.pi * np.sin(theta))
     A = (scale / (a0**2 - a1**2)) ** 2
@@ -20,17 +23,43 @@ def calculate_cassegrain_AB(theta, lam, a0, a1):
     return A, B
 
 
-class Cassegrain(Beam):
+@dataclass
+class CassegrainParams(Parameters):
+    """
+    Parameters
+    ----------
+    pointing
+        Pointing direction of the boresight
+    frequency
+        Frequency of the radar
+    outer_radius
+        Radius of main reflector
+    inner_radius
+        Radius of sub reflector
+    """
+
+    pointing: NDArray_3xN | NDArray_3
+    frequency: NDArray_N | float
+    outer_radius: NDArray_N | float
+    inner_radius: NDArray_N | float
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+    frequency_shape: ClassVar[None] = None
+    outer_radius_shape: ClassVar[None] = None
+    inner_radius_shape: ClassVar[None] = None
+
+
+class Cassegrain(Beam[CassegrainParams]):
     """Cassegrain gain model of a radar dish.
 
     Parameters
     ----------
-    I0 : float
+    peak_gain
         Peak gain (linear scale) in the pointing direction.
-    outer_radius : float
-        Radius of main reflector
-    inner_radius : float
-        Radius of sub reflector
+    min_off_axis
+        Minimum off axis angle where we instead use the limit value
+    eps
+        ??
 
     Notes
     -----
@@ -40,53 +69,48 @@ class Cassegrain(Beam):
         aperture plane or below the horizon should not be believed.
     """
 
-    def __init__(self, pointing, frequency, outer_radius, inner_radius, peak_gain=1):
+    def __init__(
+        self,
+        peak_gain=1,
+        min_off_axis=1e-9,
+        eps=1e-6,
+    ):
         super().__init__()
-        self.parameters["pointing"] = pointing
-        self.parameters_shape["pointing"] = (3,)
-        self.parameters["frequency"] = frequency
-        self.parameters["outer_radius"] = outer_radius
-        self.parameters["inner_radius"] = inner_radius
-        self.eps = 1e-6
-        self.min_off_axis = 1e-9
+        self.eps = eps
+        self.min_off_axis = min_off_axis
         self.peak_gain = peak_gain
-        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""
         beam = Cassegrain(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
-            frequency=copy.deepcopy(self.parameters["frequency"]),
-            outer_radius=copy.deepcopy(self.parameters["outer_radius"]),
-            inner_radius=copy.deepcopy(self.parameters["inner_radius"]),
             peak_gain=self.peak_gain,
+            min_off_axis=self.min_off_axis,
+            eps=self.eps,
         )
-        beam.eps = self.eps
-        beam.min_off_axis = self.min_off_axis
-
         return beam
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
-        k_len = self.get_and_validate_k_shape(k)
+    def gain(self, k: NDArray_3xN | NDArray_3, parameters: CassegrainParams) -> NDArray_N | float:
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
         if k_len == 0:
             return np.empty((0,), dtype=k.dtype)
-        size = self.size
         scalar_output = size == 0 and k_len is None
 
-        p = self.parameters["pointing"]
+        p = parameters.pointing
         theta = coordinates.vector_angle(p, k, degrees=False)
 
-        lam = scipy.constants.c / self.parameters["frequency"]
-        a0 = self.parameters["outer_radius"]
-        a1 = self.parameters["inner_radius"]
+        lam = scipy.constants.c / parameters.frequency
+        a0 = parameters.outer_radius
+        a1 = parameters.inner_radius
 
         if scalar_output:
             theta = np.array([theta])
         # pointings not close to zero off-axis angle
         inds = np.pi * np.sin(theta) > self.min_off_axis
 
-        if size > 0:
-            a0, a1, lam = a0[inds], a1[inds], lam[inds]
+        if size is not None:
+            # If the size is not None we know these are all numpy arrays
+            a0, a1, lam = a0[inds], a1[inds], lam[inds]  # type: ignore
 
         if scalar_output:
             g = np.empty((1,), dtype=np.float64)

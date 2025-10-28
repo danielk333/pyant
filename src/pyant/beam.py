@@ -3,9 +3,24 @@
 """Defines an antenna's or entire radar system's radiation pattern"""
 from abc import ABC, abstractmethod
 from typing import Generic
-from .types import NDArray_3xN, NDArray_3, NDArray_N, P
+from .types import NDArray_3xN, NDArray_3, NDArray_N, P, SizeError
 
 from . import coordinates
+
+
+def get_and_validate_k_shape(param_size: int | None, k: NDArray_3xN | NDArray_3) -> int | None:
+    """Helper function to validate the input direction vector shape is correct.
+    It returns the size of the second dimension of the k vector, if it does not
+    have this dimension then it returns None.
+    """
+    k_len = k.shape[1] if len(k.shape) > 1 else None
+
+    if len(k.shape) > 2 or k.shape[0] != 3:
+        raise SizeError(f"k vector shape cannot be {k.shape}")
+
+    if param_size is not None and k_len is not None and param_size != k_len:
+        raise SizeError(f"parameter size {param_size} != k vector size {k.shape}")
+    return k_len
 
 
 class Beam(ABC, Generic[P]):

@@ -23,7 +23,7 @@ import pyant
 beam = pyant.models.Airy(
     peak_gain=10**4.81,
 )
-params = pyant.models.Airy.make_params(
+params = pyant.models.AiryParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     radius=23.0,

@@ -67,8 +67,7 @@ where = ["src"]
 
 
 [tool.setuptools.package-data]
-"pyant.beams" = ["data/*"]
-
+pyant = ["py.typed"]
 
 [tool.black]
 line-length = 100

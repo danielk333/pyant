@@ -1,13 +1,36 @@
 #!/usr/bin/env python
 
+from dataclasses import dataclass
+from typing import ClassVar
 import numpy as np
 import scipy.constants
 import scipy.special
 
-from ..beam import Beam
-from .parameters import AiryParams, get_and_validate_k_shape
+from ..beam import Beam, get_and_validate_k_shape
 from .. import coordinates
-from ..types import NDArray_3, NDArray_3xN, NDArray_N
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
+
+
+@dataclass
+class AiryParams(Parameters):
+    """
+    Parameters
+    ----------
+    pointing
+        Pointing direction of the boresight
+    frequency
+        Frequency of the radar
+    radius
+        Radius in meters of the airy disk
+    """
+
+    pointing: NDArray_3xN | NDArray_3
+    frequency: NDArray_N | float
+    radius: NDArray_N | float
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+    frequency_shape: ClassVar[None] = None
+    radius_shape: ClassVar[None] = None
 
 
 class Airy(Beam[AiryParams]):
@@ -44,7 +67,7 @@ class Airy(Beam[AiryParams]):
         if k_len == 0:
             return np.empty((0,), dtype=k.dtype)
 
-        scalar_output = size == 0 and k_len is None
+        scalar_output = size is None and k_len is None
 
         p = parameters.pointing
         # size of theta is always k_len or size or a scalar

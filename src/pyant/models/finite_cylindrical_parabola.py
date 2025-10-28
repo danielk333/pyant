@@ -89,7 +89,7 @@ class FiniteCylindricalParabola(Beam):
         # Look direction rotated into the radar's boresight system
         if size > 0 and k_len > 0:
             kb = np.einsum("ijk,jk->ik", Rx, np.einsum("ijk,jk->ik", Rz, k))
-        elif size > 0 and k_len == 0:
+        elif size > 0 and k_len is None:
             kb = np.einsum(
                 "ijk,jk->ik",
                 Rx,

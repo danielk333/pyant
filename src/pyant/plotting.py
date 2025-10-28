@@ -4,12 +4,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from matplotlib import animation
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
 from .beam import Beam
+from .types import Parameters
 from . import coordinates as coord
 
 
@@ -303,40 +305,37 @@ def polarization_heatmap(
 
 
 def gain_heatmap(
-    beam,
-    polarization=None,
-    resolution=201,
-    min_elevation=0.0,
-    levels=20,
-    ax=None,
-    label=None,
-    centered=True,
-    cmap=None,
-):
+    beam: Beam,
+    beam_parameters: Parameters,
+    resolution: int = 201,
+    min_elevation: float = 0.0,
+    levels: int = 20,
+    ax: plt.Axes | None = None,
+    label: str | None = None,
+    centered: bool = True,
+    cmap: plt.Colormap | None = None,
+) -> tuple[plt.Figure | None, plt.Axes, mpl.collections.QuadMesh]:
     """Creates a heatmap of the beam-patterns as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
 
+    # todo update docstring
 
     Parameters
     ----------
-    beam : Beam
+    beam
         Beam to plot
-    inds : dict, tuple
-        Indexing of the beam instance, see :class:`pyant.Beam` for more details
-    polarization : numpy.ndarray
-        The Jones vector, see :class:`pyant.Beam` for more details
-    resolution : int
+    resolution
         Number of points to devide the wave vector x and y
         component range into, total number of caluclation points is the square of this number.
-    min_elevation : float
+    min_elevation
         Minimum elevation in degrees, elevation range
         is from this number to :math:`90^\\circ`. This number defines the half
         the length of the square that the gain is calculated over, i.e. :math:`\\cos(el_{min})`.
-    label : str
+    label
         Adds this to plot title
-    centered : bool
+    centered
         Choose if plot is centered on pointing direction (:code:`True`) or zenith (:code:`False`)
-    levels : int
+    levels
         Number of levels in the contour plot.
 
     Returns
@@ -353,21 +352,21 @@ def gain_heatmap(
 
     if not isinstance(beam, Beam):
         raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
-    if beam.size > 0:
+    if beam_parameters.size is None:
         raise ValueError(
             "Can only plot beam with scalar parameters -"
-            f"dont know which of the {beam.size} options to pick"
+            f"dont know which of the {beam_parameters.size} options to pick"
         )
-    if "pointing" not in beam.parameters:
+    if "pointing" not in beam_parameters.keys:
         pointing = np.array([0, 0, 1], dtype=np.float64)
     else:
-        pointing = beam.parameters["pointing"]
+        pointing = beam_parameters.pointing  # type: ignore
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
     S, K, k, inds, kx, ky = coord.compute_k_grid(pointing, resolution, centered, cmin)
 
-    S[inds] = beam.gain(k[:, inds], polarization=polarization)
+    S[inds] = beam.gain(k[:, inds], beam_parameters)
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
