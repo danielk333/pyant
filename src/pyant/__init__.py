@@ -2,7 +2,7 @@
 
 """ """
 import types
-import importlib
+import importlib.util
 from .version import __version__
 
 # Modules
