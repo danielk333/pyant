@@ -27,9 +27,11 @@ plt.style.use("dark_background")
 
 el_lim = 1
 beam = pyant.models.Cassegrain(
+    peak_gain=10**4.81,
+)
+params = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1.0]),
     frequency=930e6,
-    peak_gain=10**4.81,
     inner_radius=23.0,
     outer_radius=40.0,
 )
@@ -39,7 +41,7 @@ el = np.append(el, el[::-1])
 az = np.append(az, az + 180)
 
 
-g = beam.sph_gain(az, el, degrees=True)
+g = beam.sph_gain(az, el, parameters=params, degrees=True)
 
 
 fig = plt.figure(figsize=(5, 5))
@@ -48,5 +50,5 @@ ax.grid(False)
 ax.axis("off")
 cmap = mpl.colormaps["winter"]
 for scale in np.linspace(0, 1, num=100):
-    plt.semilogy(np.arange(g.size), g * scale, c=cmap(scale))
+    plt.semilogy(np.arange(g.size), g * scale, c=cmap(scale))  # type: ignore
 plt.show()

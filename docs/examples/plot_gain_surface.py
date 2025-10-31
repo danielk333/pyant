@@ -21,14 +21,16 @@ import pyant
 
 
 beam = pyant.models.Cassegrain(
+    peak_gain=10**4.81,
+)
+param = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    peak_gain=10**4.81,
     outer_radius=40.0,
     inner_radius=23.0,
 )
 
 
 # +
-pyant.plotting.gain_surface(beam, resolution=301, min_elevation=85.0)
+pyant.plotting.gain_surface(beam, param, resolution=301, min_elevation=85.0)
 plt.show()

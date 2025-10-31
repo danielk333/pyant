@@ -18,14 +18,17 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import spacecoords.spherical as sph
 import pyant
 
 
 beam = pyant.models.Airy(
+    peak_gain=10**4.81,
+)
+param = pyant.models.AiryParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=50e6,
     radius=10.0,
-    peak_gain=10**4.81,
 )
 num = 100
 el = np.concatenate(
@@ -37,10 +40,10 @@ el = np.concatenate(
 r = np.linspace(10, 20, num=num * 2)
 
 
-def update(beam, item):
-    beam.parameters["radius"] = r[item]
-    beam.sph_point(azimuth=0, elevation=el[item], degrees=True)
-    return beam
+def update(param, item):
+    param.radius = r[item]
+    param.pointing = sph.az_el_point(azimuth=0, elevation=el[item], degrees=True)
+    return param
 
 
 # Note: We need to make sure the animation object is kept in memory by
@@ -50,8 +53,9 @@ def update(beam, item):
 # +
 fig, ax, mesh, ani = pyant.plotting.gain_heatmap_movie(
     beam,
+    param,
     iterable=range(num * 2),
-    beam_update=update,
+    param_update=update,
     centered=False,
     fps=40,
 )

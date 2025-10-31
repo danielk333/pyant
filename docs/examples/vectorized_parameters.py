@@ -17,6 +17,7 @@
 
 import time
 import numpy as np
+import spacecoords.spherical as sph
 import pyant
 
 
@@ -27,7 +28,7 @@ beam = pyant.models.Airy(
     peak_gain=10**4.81,
 )
 params = pyant.models.AiryParams(
-    pointing=pyant.coordinates.sph_to_cart(np.array([0, 80.0, 1]), degrees=True),
+    pointing=sph.sph_to_cart(np.array([0, 80.0, 1]), degrees=True),
     frequency=930e6,
     radius=23.0,
 )
@@ -36,14 +37,14 @@ vector_params = pyant.models.AiryParams.replace_and_broadcast(
     new_parameters=dict(frequency=fs),
 )
 
-sph = np.stack(
+k_ang = np.stack(
     [
         np.full((num,), 0, dtype=np.float64),
         np.linspace(90.0, 45, num=num),
         np.full((num,), 1, dtype=np.float64),
     ]
 )
-k = pyant.coordinates.sph_to_cart(sph, degrees=True)
+k = sph.sph_to_cart(k_ang, degrees=True)
 
 start_time = time.time()
 g = np.empty(num, dtype=np.float64)

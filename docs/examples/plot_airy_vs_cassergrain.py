@@ -23,7 +23,7 @@ import pyant
 beam = pyant.models.Airy(
     peak_gain=10**4.81,
 )
-params = pyant.models.AiryParams(
+param = pyant.models.AiryParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     radius=23.0,
@@ -31,7 +31,7 @@ params = pyant.models.AiryParams(
 beam_c = pyant.models.Cassegrain(
     peak_gain=10**4.81,
 )
-params_c = pyant.models.CassegrainParams(
+param_c = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     outer_radius=40.0,
@@ -40,9 +40,9 @@ params_c = pyant.models.CassegrainParams(
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-pyant.plotting.gain_heatmap(beam, params, resolution=301, min_elevation=85.0, ax=ax1)
+pyant.plotting.gain_heatmap(beam, param, resolution=301, min_elevation=87.0, ax=ax1)
 ax1.set_title("Airy")
 
-pyant.plotting.gain_heatmap(beam_c, params_c, resolution=301, min_elevation=85.0, ax=ax2)
+pyant.plotting.gain_heatmap(beam_c, param_c, resolution=301, min_elevation=87.0, ax=ax2)
 ax2.set_title("Cassegrain")
 plt.show()
