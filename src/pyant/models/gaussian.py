@@ -81,7 +81,43 @@ class Gaussian(Beam[GaussianParams]):
         if k_len == 0:
             return np.empty((0,), dtype=k.dtype)
         scalar_output = size == 0 and k_len is None
-
+        # >>> import scipy.constants as c
+        # >>> c.c / 3.4e-9
+        # 8.817425235294118e+16
+        # >>> 3.4e-9 / c.c
+        # 1.1341179236737169e-17
+        # >>> 3.4e9 / c.c
+        # 11.341179236737169
+        # >>> c.c / 3.4e9 
+        # 0.08817425235294117
+        # >>> (c.c / 3.4e9)*1e-3
+        # 8.817425235294117e-05
+        # >>> (c.c / 3.4e9)*1e3
+        # 88.17425235294117
+        # >>> (c.c / 3.4e9)*1e2
+        # 8.817425235294117
+        # >>> (c.c / 1.2e9)*1e2
+        # 24.982704833333333
+        # >>> (c.c / 3.4e9)*1e2
+        # 8.817425235294117
+        # >>> lam = c.c / 3.4e9
+        # >>> alpha = 2
+        # >>> s = alpha * lam / 2
+        # >>> s
+        # 0.08817425235294117
+        # >>> N = int(500e3 / 500)
+        # >>> N
+        # 1000
+        # >>> N = int(500e3 / 50)
+        # >>> N
+        # 10000
+        # >>> import numpy as np
+        # >>> d = np.sqrt(4*N/np.pi)*s
+        # >>> d
+        # np.float64(9.94939894292813)
+        # >>> theta = lam / d
+        # >>> np.degrees(theta)
+        # np.float64(0.5077706251929806)
         pointing = self.parameters["pointing"]
         normal = self.parameters["normal_pointing"]
         lam = scipy.constants.c / self.parameters["frequency"]
