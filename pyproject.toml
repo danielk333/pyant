@@ -22,7 +22,7 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 ]
 requires-python = ">=3.10"
-dependencies = ["numpy >= 1.14.3", "scipy >= 1.1.0"]
+dependencies = ["numpy >= 2", "scipy >= 1.10.0", "spacecoords >= 0.1.0"]
 
 
 [project.urls]
