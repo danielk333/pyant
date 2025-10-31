@@ -5,9 +5,9 @@ from typing import ClassVar
 import numpy as np
 import scipy.constants
 import scipy.special
+import spacecoords.linalg as linalg
 
 from ..beam import Beam, get_and_validate_k_shape
-from .. import coordinates
 from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 
@@ -71,7 +71,7 @@ class Airy(Beam[AiryParams]):
 
         p = parameters.pointing
         # size of theta is always k_len or size or a scalar
-        theta = coordinates.vector_angle(p, k, degrees=False)
+        theta = linalg.vector_angle(p, k, degrees=False)
 
         lam = scipy.constants.c / parameters.frequency
         k_n = 2.0 * np.pi / lam

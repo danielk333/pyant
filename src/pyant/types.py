@@ -3,6 +3,7 @@ This module contains convenient type information so that typing can be precise
 but not too verbose in the code itself.
 """
 
+from copy import deepcopy
 from pathlib import Path
 from dataclasses import dataclass, fields
 from typing import TypeVar, Type
@@ -49,8 +50,12 @@ class Parameters:
     scalar, e.g. 'pointing' is a `(3,)` vector when it is a scalar.
     """
 
+    def copy(self: P) -> P:
+        kwargs = {key: deepcopy(getattr(self, key)) for key in self.keys}
+        return self.__class__(**kwargs)
+
     @property
-    def keys(self):
+    def keys(self) -> list[str]:
         return [key.name for key in fields(self)]
 
     @classmethod

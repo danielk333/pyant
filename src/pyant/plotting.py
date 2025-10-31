@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
 """Useful coordinate related functions."""
-
+from typing import Callable, Iterable
 import numpy as np
+import spacecoords.spherical as sph
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import mpl_toolkits.mplot3d as mpl3d
 
 from matplotlib import animation
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
 from .beam import Beam
-from .types import Parameters
-from . import coordinates as coord
+from .types import Parameters, NDArray_3xN, NDArray_3xNxM, NDArray_3
+from . import utils
 
 
 def add_circle(ax, c, r, fmt="k--", *args, **kw):
@@ -20,7 +22,12 @@ def add_circle(ax, c, r, fmt="k--", *args, **kw):
     ax.plot(c[0] + np.cos(th), c[1] + np.sin(th), fmt, *args, **kw)
 
 
-def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
+def antenna_configuration(
+    antennas: list[NDArray_3xN] | NDArray_3xNxM,
+    ax: plt.Axes | mpl3d.Axes3D | None = None,
+    color: str | None = None,
+    z_axis: bool = True,
+) -> tuple[plt.Figure | None, plt.Axes]:
     """Plot the 3d antenna positions"""
     if ax is None:
         fig = plt.figure(figsize=(15, 7))
@@ -60,51 +67,38 @@ def antenna_configuration(antennas, ax=None, color=None, z_axis=True):
     ax.set_xlabel("X-position [m]", fontsize=20)
     ax.set_ylabel("Y-position [m]", fontsize=20)
     if z_axis:
-        ax.set_zlabel("Z-position [m]", fontsize=20)
+        ax.set_zlabel("Z-position [m]", fontsize=20)  # type: ignore
 
     return fig, ax
 
 
 def gains(
-    beams,
-    inds=None,
-    polarizations=None,
-    resolution=1000,
-    min_elevation=0.0,
-    alpha=1,
-    legends=None,
-    ax=None,
-):
+    beams: list[Beam],
+    params: list[Parameters],
+    resolution: int = 1000,
+    min_elevation: float = 0.0,
+    alpha: float = 1,
+    legends: list[str] | None = None,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure | None, plt.Axes, list[plt.Line2D]]:
     """Plot the gain of a list of beam patterns as a function of elevation at
-    :math:`0^\\circ` degrees azimuth.
+    `0^\\circ` degrees azimuth.
 
     Parameters
     ----------
-    beam : Beam, list(Beam)
-        Beam or list of beams.
-    inds : dict, tuple, list(dict, tuple)
-        Indexing of the beam instance, see :class:`pyant.Beam` for more details
-    polarization : numpy.ndarray, list(numpy.ndarray)
-        The Jones vector, see :class:`pyant.Beam` for more details
-    resolution : int
+    resolution
         Number of points to divide the set elevation range into.
-    min_elevation : float
+    min_elevation
         Minimum elevation in degrees, elevation range is from this number to :math:`90^\\circ`.
-    alpha : float
+    alpha
         The alpha with which to draw the curves
-    legends : list(str)
+    legends
         Labels to put on each curve
 
     Returns
     -------
-    tuple(Figure, Axis, list(Lines))
         Returns the matplotlib figure, axis and list of drawn lines
     """
-
-    if not isinstance(beams, list):
-        beams = [beams]
-        inds = [inds]
-        polarizations = [polarizations]
 
     if ax is None:
         fig = plt.figure(figsize=(15, 7))
@@ -113,18 +107,18 @@ def gains(
         fig = None
 
     theta = np.linspace(min_elevation, 90.0, num=resolution)
-    sph = np.zeros((3, resolution), dtype=np.float64)
-    sph[1, :] = theta
-    sph[2, :] = 1.0
-    k = coord.sph_to_cart(sph, degrees=True)
+    k_ang = np.zeros((3, resolution), dtype=np.float64)
+    k_ang[1, :] = theta
+    k_ang[2, :] = 1.0
+    k = sph.sph_to_cart(k_ang, degrees=True)
 
     S = np.zeros((resolution, len(beams)))
-    for b, beam in enumerate(beams):
-        S[:, b] = beam.gain(k, polarization=polarizations[b])
+    for bind, (beam, param) in enumerate(zip(beams, params)):
+        S[:, bind] = beam.gain(k, param)
     lns = []
-    for b in range(len(beams)):
-        lg = legends[b] if legends is not None else None
-        ln = ax.plot(90 - theta, np.log10(S[:, b]) * 10.0, alpha=alpha, label=lg)
+    for bind in range(len(beams)):
+        lg = legends[bind] if legends is not None else None
+        (ln,) = ax.plot(90 - theta, np.log10(S[:, bind]) * 10.0, alpha=alpha, label=lg)
         lns.append(ln)
     if legends is not None:
         ax.legend()
@@ -138,42 +132,35 @@ def gains(
 
 
 def gain_surface(
-    beam,
-    polarization=None,
-    resolution=201,
-    min_elevation=0.0,
-    render_resolution=None,
-    clip_low_dB=True,
-    ax=None,
-    ind=None,
-    label=None,
-    centered=True,
-    cmap=None,
-):
+    beam: Beam,
+    param: Parameters,
+    resolution: int = 201,
+    min_elevation: float = 0.0,
+    render_resolution: int | None = None,
+    clip_low_dB: bool = True,
+    ax: plt.Axes | None = None,
+    label: str | None = None,
+    centered: bool = True,
+    cmap: plt.Colormap | None = None,
+) -> tuple[plt.Figure | None, plt.Axes, mpl3d.art3d.Patch3DCollection]:
     """Creates a 3d plot of the beam-patters as a function of azimuth and
     elevation in terms of wave vector ground projection coordinates.
 
     Parameters
     ----------
-    beam : Beam
-        Beam to plot
-    inds : dict, tuple
-        Indexing of the beam instance, see :class:`pyant.Beam` for more details
-    polarization : numpy.ndarray
-        The Jones vector, see :class:`pyant.Beam` for more details
-    resolution : int
+    resolution
         Number of points to devide the wave vector x and y
         component range into, total number of caluclation points is the square of this number.
-    min_elevation : float
+    min_elevation
         Minimum elevation in degrees, elevation range
-        is from this number to :math:`90^\\circ`. This number defines the half
-        the length of the square that the gain is calculated over, i.e. :math:`\\cos(el_{min})`.
-    label : str
+        is from this number to `90^\\circ`. This number defines the half
+        the length of the square that the gain is calculated over, i.e. `\\cos(el_{min})`.
+    label
         Adds this to plot title
-    centered : bool
+    centered
         Choose if plot is centered on pointing direction (:code:`True`) or zenith (:code:`False`)
-    clip_low_dB : bool
-        If :code:`True` set all gains below 0 dB to 0 dB
+    clip_low_dB
+        If `True` set all gains below 0 dB to 0 dB
 
     Returns
     -------
@@ -189,20 +176,20 @@ def gain_surface(
 
     if not isinstance(beam, Beam):
         raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
-    if beam.size > 0:
+    if param.size is None:
         raise ValueError(
             "Can only plot beam with scalar parameters -"
-            f"dont know which of the {beam.size} options to pick"
+            f"dont know which of the {param.size} options to pick"
         )
-    if "pointing" not in beam.parameters:
+    if "pointing" not in param.keys:
         pointing = np.array([0, 0, 1], dtype=np.float64)
     else:
-        pointing = beam.parameters["pointing"]
+        pointing = param.pointing  # type: ignore
 
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = coord.compute_k_grid(pointing, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = utils.compute_k_grid(pointing, resolution, centered, cmin)
 
-    S[inds] = beam.gain(k[:, inds], polarization=polarization)
+    S[inds] = beam.gain(k[:, inds], param)
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
@@ -217,7 +204,7 @@ def gain_surface(
     if clip_low_dB:
         SdB[SdB < 0] = 0
 
-    surf = ax.plot_surface(
+    surf = ax.plot_surface(  # type: ignore
         K[:, :, 0],
         K[:, :, 1],
         SdB,
@@ -237,19 +224,20 @@ def gain_surface(
 
     ax.set_xlabel("kx [1]")
     ax.set_ylabel("ky [1]")
-    ax.set_zlabel("Gain [dB]")
+    ax.set_zlabel("Gain [dB]")  # type: ignore
     return fig, ax, surf
 
 
 def polarization_heatmap(
-    beam,
-    k,
-    resolution=201,
-    levels=20,
-    ax=None,
-    label=None,
-    cmap=None,
-):
+    beam: Beam,
+    param: Parameters,
+    k: NDArray_3,
+    resolution: int = 201,
+    levels: int = 20,
+    ax: plt.Axes | None = None,
+    label: str | None = None,
+    cmap: plt.Colormap | None = None,
+) -> tuple[plt.Figure | None, plt.Axes, mpl.collections.QuadMesh]:
     """Creates a heatmap of the gain in the given direction as a function of polarization"""
     if ax is None:
         fig, ax = plt.subplots()
@@ -265,7 +253,7 @@ def polarization_heatmap(
         )
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
-    jones_vecs, thxmat, thymat = coord.compute_j_grid(resolution)
+    jones_vecs, thxmat, thymat = utils.compute_j_grid(resolution)
 
     g = np.zeros((jones_vecs.shape[1],), dtype=np.float64)
     for ind in range(jones_vecs.shape[1]):
@@ -306,7 +294,7 @@ def polarization_heatmap(
 
 def gain_heatmap(
     beam: Beam,
-    beam_parameters: Parameters,
+    param: Parameters,
     resolution: int = 201,
     min_elevation: float = 0.0,
     levels: int = 20,
@@ -352,21 +340,21 @@ def gain_heatmap(
 
     if not isinstance(beam, Beam):
         raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
-    if beam_parameters.size is None:
+    if param.size is None:
         raise ValueError(
             "Can only plot beam with scalar parameters -"
-            f"dont know which of the {beam_parameters.size} options to pick"
+            f"dont know which of the {param.size} options to pick"
         )
-    if "pointing" not in beam_parameters.keys:
+    if "pointing" not in param.keys:
         pointing = np.array([0, 0, 1], dtype=np.float64)
     else:
-        pointing = beam_parameters.pointing  # type: ignore
+        pointing = param.pointing  # type: ignore
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = coord.compute_k_grid(pointing, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = utils.compute_k_grid(pointing, resolution, centered, cmin)
 
-    S[inds] = beam.gain(k[:, inds], beam_parameters)
+    S[inds] = beam.gain(k[:, inds], param)
     S = S.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
@@ -405,44 +393,44 @@ def gain_heatmap(
 
 
 def hemisphere_plot(
-    func,
-    plotfunc,
-    preproc="dba",
-    f_args=[],
-    f_kw={},
-    p_args=[],
-    p_kw={},
-    resolution=201,
-    ax=None,
-    min_elevation=0,
-    centered=None,
-):
+    func: Callable,
+    plotfunc: Callable | str,
+    preproc: str | None = "dba",
+    f_args: list = [],
+    f_kw: dict = {},
+    p_args: list = [],
+    p_kw: dict = {},
+    resolution: int = 201,
+    ax: plt.Axes | None = None,
+    min_elevation: float = 0.0,
+    centered: bool = True,
+) -> tuple[plt.Figure | None, plt.Axes, mpl.collections.QuadMesh]:
     """
     Create a hemispherical plot of some function of pointing direction
 
     Parameters
     ----------
-    func : callable
+    func
         Some function that maps from a pointing vector in the upper hemisphere to a scalar
-    plotfunc : callable
+    plotfunc
         a function with call signature like `contourf` or
         `pcolormesh`, i.e.  plotfunc(xval, yval, zval, *args, **kw)
-    f_args : list
+    f_args
         extra arguments to `func`
-    f_kw : dict
+    f_kw
         extra keyword arguments to `func`
-    p_args : list
+    p_args
         extra arguments to `plotfunc`
-    p_kw : dict
+    p_kw
         extra keyword arguments to `plotfunc`
-    resolution : int
+    resolution
         Number of points to divide the wave vector x and y
         components into, total number of calculation points is the
         square of this number.
-    plot_axis : matplotlib.Axis
+    plot_axis
         Axis in which to make the plot.
         If not given, one will be created in a new figure window
-    preproc : string
+    preproc
         in ['none', 'abs', 'dba', 'dbp']
 
     """
@@ -459,14 +447,13 @@ def hemisphere_plot(
 
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = coord.compute_k_grid(pointing, resolution, centered, cmin)
+    S, K, k, inds, kx, ky = utils.compute_k_grid(pointing, resolution, centered, cmin)
 
     S[inds] = func(k[:, inds]).flatten()
     S = S.reshape(resolution, resolution)
 
-    if isinstance(plotfunc, str):
-        # TODO: Some cleverness with try/except, perhaps?
-        plotfunc = getattr(ax, plotfunc)
+    # TODO: Some cleverness with try/except, perhaps?
+    plotfunc_ = getattr(ax, plotfunc) if isinstance(plotfunc, str) else plotfunc
 
     if preproc in [None, "none"]:
         pass
@@ -481,27 +468,29 @@ def hemisphere_plot(
     else:
         print(f"preprocessor {preproc} unknown")
 
-    hh = plotfunc(K[:, :, 0], K[:, :, 1], S, *p_args, **p_kw)
+    hh = plotfunc_(K[:, :, 0], K[:, :, 1], S, *p_args, **p_kw)
     ax.axis("scaled")
 
     return fig, ax, hh
 
 
 def gain_heatmap_movie(
-    beam,
-    iterable,
-    beam_update,
-    polarization=None,
-    resolution=201,
-    min_elevation=0.0,
-    levels=20,
-    ax=None,
-    label=None,
-    centered=True,
-    cmap=None,
-    plot_update=None,
-    fps=20,
-    blit=True,
+    beam: Beam,
+    param: Parameters,
+    iterable: Iterable,
+    param_update: Callable[[Parameters, int], Parameters],
+    resolution: int = 201,
+    min_elevation: float = 0.0,
+    levels: int = 20,
+    label: str | None = None,
+    centered: bool = True,
+    cmap: plt.Colormap | None = None,
+    plot_update: Callable[
+        [plt.Figure, plt.Axes, mpl.collections.QuadMesh],
+        tuple[plt.Figure, plt.Axes, mpl.collections.QuadMesh],
+    ] | None = None,
+    fps: int = 20,
+    blit: bool = True,
 ):
     """
     Animates a movie of a heatmap
@@ -509,7 +498,7 @@ def gain_heatmap_movie(
 
     fig, ax, mesh = gain_heatmap(
         beam,
-        polarization=polarization,
+        param,
         resolution=resolution,
         min_elevation=min_elevation,
         levels=levels,
@@ -517,17 +506,20 @@ def gain_heatmap_movie(
         centered=centered,
         cmap=cmap,
     )
+    if fig is None:
+        raise TypeError("Need a figure handle")
 
-    if "pointing" not in beam.parameters:
+    if "pointing" not in param.keys:
         pointing = np.array([0, 0, 1], dtype=np.float64)
     else:
-        pointing = beam.parameters["pointing"]
-    cmin = np.cos(np.radians(min_elevation))
-    S, K, k, inds, kx, ky = coord.compute_k_grid(pointing, resolution, centered, cmin)
+        pointing = param.pointing  # type: ignore
 
-    def run(it, fig, ax, mesh, beam, polarization, resolution, S, k, inds):
-        beam = beam_update(beam, it)
-        S[inds] = beam.gain(k[:, inds], polarization=polarization).flatten()
+    cmin = np.cos(np.radians(min_elevation))
+    S, K, k, inds, kx, ky = utils.compute_k_grid(pointing, resolution, centered, cmin)
+
+    def run(it, fig, ax, mesh, beam, resolution, S, k, inds):
+        new_param = param_update(param, it)
+        S[inds] = beam.gain(k[:, inds], new_param).flatten()
         S = S.reshape(resolution, resolution)
 
         old = np.seterr(invalid="ignore")
@@ -547,7 +539,7 @@ def gain_heatmap_movie(
         blit=blit,
         interval=1.0e3 / float(fps),
         repeat=True,
-        fargs=(fig, ax, mesh, beam, polarization, resolution, S, k, inds),
+        fargs=(fig, ax, mesh, beam, resolution, S, k, inds),
     )
 
     return fig, ax, mesh, ani

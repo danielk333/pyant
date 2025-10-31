@@ -1,7 +1,6 @@
 import numpy as np
-
+import spacecoords.spherical as sph
 from ..models import Array
-from .. import coordinates
 
 
 def equidistant_archimedian_spiral(
@@ -19,7 +18,7 @@ def equidistant_archimedian_spiral(
         antennas[0, ind] = antennas[0, ind - 1] + d_theta
         antennas[2, ind] = range_coefficient * antennas[0, ind]
 
-    antennas = coordinates.sph_to_cart(antennas, degrees=False)
+    antennas = sph.sph_to_cart(antennas, degrees=False)
     antennas = antennas.reshape((3, 1, antenna_num))
 
     return Array(

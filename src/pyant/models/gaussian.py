@@ -1,77 +1,86 @@
 #!/usr/bin/env python
-import copy
 
+from dataclasses import dataclass
+from typing import ClassVar
 import numpy as np
 from numpy.typing import NDArray
 import scipy.constants
 import scipy.special
+import spacecoords.linalg as linalg
 
-from ..beam import Beam
-from .. import coordinates
+from ..beam import Beam, get_and_validate_k_shape
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 
-class Gaussian(Beam):
+@dataclass
+class GaussianParams(Parameters):
+    """
+    Parameters
+    ----------
+    pointing
+        Pointing direction of the array by phasing
+    normal_pointing
+        Pointing direction of the planar array
+    frequency
+        Frequency of the radar
+    radius
+        Radius of array
+    filling_factor
+        Amount of space on average that collects radiation inside the aperture
+    """
+
+    pointing: NDArray_3xN | NDArray_3
+    normal_pointing: NDArray_3xN | NDArray_3
+    frequency: NDArray_N | float
+    radius: NDArray_N | float
+    filling_factor: NDArray_N | float
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+    normal_pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+    frequency_shape: ClassVar[None] = None
+    radius_shape: ClassVar[None] = None
+    filling_factor_shape: ClassVar[None] = None
+
+
+class Gaussian(Beam[GaussianParams]):
     """Gaussian tapered planar array model
-    TODO: docstring
 
     Parameters
     ----------
-    I0 : float
+    peak_gain
         Peak gain (linear scale) in the pointing direction.
-    radius : float
-        Radius in meters of the planar array
-    normal_azimuth : float
-        Azimuth of normal vector of the planar array in degrees.
-    normal_elevation : float
-        Elevation of pointing direction in degrees.
-
-    Attributes
-    ----------
-    I0 : float
-        Peak gain (linear scale) in the pointing direction.
-    radius : float
-        Radius in meters of the airy disk
-    normal : numpy.ndarray
-        Planar array normal vector in local coordinates
-    normal_azimuth : float
-        Azimuth of normal vector of the planar array in degrees.
-    normal_elevation : float
-        Elevation of pointing direction in degrees.
+    min_off_axis
+        Minimum off axis angle where we instead use the limit value
     """
 
-    def __init__(self, pointing, frequency, radius, normal_pointing, peak_gain=1):
+    def __init__(
+        self,
+        peak_gain: float = 1,
+        min_off_axis: float = 1e-9,
+    ):
         super().__init__()
-        self.parameters["pointing"] = pointing
-        self.parameters_shape["pointing"] = (3,)
-        self.parameters["frequency"] = frequency
-        self.parameters["radius"] = radius
-        self.parameters["normal_pointing"] = normal_pointing
-        self.parameters_shape["normal_pointing"] = (3,)
-
         # Random number in case pointing and planar normal align
         # Used to determine basis vectors in the plane perpendicular to pointing
         self._randn_point = np.array([-0.58617009, 0.29357197, 0.75512921], dtype=np.float64)
+        self.min_off_axis = min_off_axis
         self.peak_gain = peak_gain
-        self.min_off_axis = 1e-6
-        self.validate_parameter_shapes()
 
     def copy(self):
         """Return a copy of the current instance."""
         beam = Gaussian(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
-            frequency=copy.deepcopy(self.parameters["frequency"]),
-            radius=copy.deepcopy(self.parameters["radius"]),
-            normal_pointing=copy.deepcopy(self.parameters["normal_pointing"]),
             peak_gain=self.peak_gain,
+            min_off_axis=self.min_off_axis,
         )
         beam._randn_point = self._randn_point.copy()
-        beam.min_off_axis = self.min_off_axis
 
         return beam
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
-        k_len = self.validate_k_shape(k)
-        size = self.size
+    def gain(self, k: NDArray_3xN | NDArray_3, parameters: GaussianParams) -> NDArray_N | float:
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
+        if k_len == 0:
+            return np.empty((0,), dtype=k.dtype)
+        scalar_output = size == 0 and k_len is None
 
         pointing = self.parameters["pointing"]
         normal = self.parameters["normal_pointing"]

@@ -3,9 +3,8 @@
 """Defines an antenna's or entire radar system's radiation pattern"""
 from abc import ABC, abstractmethod
 from typing import Generic
+import spacecoords.spherical as sph
 from .types import NDArray_3xN, NDArray_3, NDArray_N, P, SizeError
-
-from . import coordinates
 
 
 def get_and_validate_k_shape(param_size: int | None, k: NDArray_3xN | NDArray_3) -> int | None:
@@ -106,6 +105,6 @@ class Beam(ABC, Generic[P]):
             vector, output is a float. If input is a `(3,n)` matrix output
             is a `(n,)` vector of gains.
         """
-        sph = coordinates.az_el_to_sph(azimuth, elevation)
-        k = coordinates.sph_to_cart(sph, degrees=degrees)
+        k_ang = sph.az_el_to_sph(azimuth, elevation)
+        k = sph.sph_to_cart(k_ang, degrees=degrees)
         return self.gain(k, parameters)

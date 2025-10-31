@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ """
-import types
+import types as _t
 import importlib.util
 from .version import __version__
 
@@ -10,7 +10,7 @@ if importlib.util.find_spec("matplotlib") is not None:
     from . import plotting
 else:
 
-    class _MissingModule(types.ModuleType):
+    class _MissingModule(_t.ModuleType):
         def __getattr__(self, name):
             raise ImportError(
                 "The optional dependency `matplotlib` for 'plotting' module is missing.\n"
@@ -19,10 +19,10 @@ else:
 
     plotting = _MissingModule("plotting")
 
-from . import coordinates
 from . import models
 from . import statistics
 from . import beams
+from . import types
 
 # from . import clib
 

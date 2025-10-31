@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import ClassVar
 import numpy as np
 import scipy.special
+import spacecoords.linalg as linalg
 
 from ..beam import Beam, get_and_validate_k_shape
-from .. import coordinates
 from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 
@@ -71,9 +71,9 @@ class Cassegrain(Beam[CassegrainParams]):
 
     def __init__(
         self,
-        peak_gain=1,
-        min_off_axis=1e-9,
-        eps=1e-6,
+        peak_gain: float=1,
+        min_off_axis: float=1e-9,
+        eps: float=1e-6,
     ):
         super().__init__()
         self.eps = eps
@@ -97,14 +97,14 @@ class Cassegrain(Beam[CassegrainParams]):
         scalar_output = size == 0 and k_len is None
 
         p = parameters.pointing
-        theta = coordinates.vector_angle(p, k, degrees=False)
+        theta = linalg.vector_angle(p, k, degrees=False)
 
         lam = scipy.constants.c / parameters.frequency
         a0 = parameters.outer_radius
         a1 = parameters.inner_radius
 
-        if scalar_output:
-            theta = np.array([theta])
+        theta_arr = np.array([theta]) if isinstance(theta, float) else theta
+
         # pointings not close to zero off-axis angle
         inds = np.pi * np.sin(theta) > self.min_off_axis
 
@@ -112,12 +112,9 @@ class Cassegrain(Beam[CassegrainParams]):
             # If the size is not None we know these are all numpy arrays
             a0, a1, lam = a0[inds], a1[inds], lam[inds]  # type: ignore
 
-        if scalar_output:
-            g = np.empty((1,), dtype=np.float64)
-        else:
-            g = np.empty((len(theta),), dtype=np.float64)
+        g = np.empty(theta_arr.shape, dtype=np.float64)
 
-        A, B = calculate_cassegrain_AB(theta[inds], lam, a0, a1)
+        A, B = calculate_cassegrain_AB(theta_arr[inds], lam, a0, a1)
         A_eps, B_eps = calculate_cassegrain_AB(self.eps, lam, a0, a1)
 
         g[np.logical_not(inds)] = self.peak_gain
