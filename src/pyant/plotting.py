@@ -77,6 +77,7 @@ def gains(
     params: list[Parameters],
     resolution: int = 1000,
     min_elevation: float = 0.0,
+    max_elevation: float = 90.0,
     alpha: float = 1,
     legends: list[str] | None = None,
     ax: plt.Axes | None = None,
@@ -89,7 +90,9 @@ def gains(
     resolution
         Number of points to divide the set elevation range into.
     min_elevation
-        Minimum elevation in degrees, elevation range is from this number to :math:`90^\\circ`.
+        Minimum elevation in degrees
+    max_elevation
+        Maximum elevation in degrees
     alpha
         The alpha with which to draw the curves
     legends
@@ -106,7 +109,7 @@ def gains(
     else:
         fig = None
 
-    theta = np.linspace(min_elevation, 90.0, num=resolution)
+    theta = np.linspace(min_elevation, max_elevation, num=resolution)
     k_ang = np.zeros((3, resolution), dtype=np.float64)
     k_ang[1, :] = theta
     k_ang[2, :] = 1.0
@@ -298,6 +301,7 @@ def gain_heatmap(
     resolution: int = 201,
     min_elevation: float = 0.0,
     levels: int = 20,
+    cbar_min: float | None = None,
     ax: plt.Axes | None = None,
     label: str | None = None,
     centered: bool = True,
@@ -325,6 +329,8 @@ def gain_heatmap(
         Choose if plot is centered on pointing direction (:code:`True`) or zenith (:code:`False`)
     levels
         Number of levels in the contour plot.
+    cbar_min
+        The minimum color (in dB) shown in the colorbar
 
     Returns
     -------
@@ -365,11 +371,12 @@ def gain_heatmap(
         cmap = plt.get_cmap("plasma")
 
     if levels is None:
-        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=0)
+        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=cbar_min)
     else:
         # Recipe at
         # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
-        bins = MaxNLocator(nbins=levels).tick_values(np.nanmin(SdB), np.nanmax(SdB))
+        cmin = np.nanmin(SdB) if cbar_min is None else cbar_min
+        bins = MaxNLocator(nbins=levels).tick_values(cmin, np.nanmax(SdB))
         norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
         conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
@@ -485,10 +492,13 @@ def gain_heatmap_movie(
     label: str | None = None,
     centered: bool = True,
     cmap: plt.Colormap | None = None,
-    plot_update: Callable[
-        [plt.Figure, plt.Axes, mpl.collections.QuadMesh],
-        tuple[plt.Figure, plt.Axes, mpl.collections.QuadMesh],
-    ] | None = None,
+    plot_update: (
+        Callable[
+            [plt.Figure, plt.Axes, mpl.collections.QuadMesh],
+            tuple[plt.Figure, plt.Axes, mpl.collections.QuadMesh],
+        ]
+        | None
+    ) = None,
     fps: int = 20,
     blit: bool = True,
 ):
