@@ -17,10 +17,12 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import spacecoords.spherical as sph
 import pyant
 
 
-beam = pyant.models.FiniteCylindricalParabola(
+beam = pyant.models.FiniteCylindricalParabola()
+param = pyant.models.FiniteCylindricalParabolaParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=224.0e6,
     width=120.0,
@@ -33,14 +35,16 @@ beam = pyant.models.FiniteCylindricalParabola(
 fig, (ax1, ax2) = plt.subplots(1, 2)
 pyant.plotting.gain_heatmap(
     beam,
+    param,
     resolution=300,
     min_elevation=80.0,
     ax=ax1,
 )
 
-beam.sph_point(azimuth=0, elevation=30)
+param.pointing = sph.az_el_point(azimuth=0, elevation=30, degrees=True)
 pyant.plotting.gain_heatmap(
     beam,
+    param,
     resolution=300,
     min_elevation=80.0,
     label=" - pointed 30 deg elevation",

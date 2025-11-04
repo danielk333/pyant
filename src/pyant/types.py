@@ -15,6 +15,10 @@ class SizeError(ValueError):
     pass
 
 
+class ParamError(TypeError):
+    pass
+
+
 NDArray_N = npt.NDArray
 "(n,) shaped ndarray"
 

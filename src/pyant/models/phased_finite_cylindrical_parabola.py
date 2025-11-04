@@ -1,36 +1,57 @@
 #!/usr/bin/env python
 
-import copy
-
+from dataclasses import dataclass
 import numpy as np
+from typing import ClassVar
 import scipy.constants
 import scipy.special
 
-from .finite_cylindrical_parabola import FiniteCylindricalParabola
+from ..beam import Beam
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
+from ..utils import local_to_pointing
 
 
-class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
-    """A finite Cylindrical Parabola with a phased finite receiver line feed
-        in the longitudinal direction, i.e. in the direction of the cylinder axis.
-
+@dataclass
+class PhasedFiniteCylindricalParabolaParams(Parameters):
+    """
     Parameters
     ----------
-    width : float
-        Reflector width (axial/azimuth dimension) in meters
-    height : float
-        Reflector height (perpendicular/elevation dimension) in meters
-    depth : float
+    pointing
+        Pointing direction of the boresight
+    frequency
+        Frequency of the radar
+    width
+        Reflector panel width (axial/azimuth dimension) in meters.
+    height
+        Reflector panel height (perpendicular/elevation dimension) in meters.
+    aperture_width
+        Length of the feed in meters. Typical value is same as reflector width.
+    depth
         Perpendicular distance from feed to reflector in meters
-    phase_steering : float
-        Phase steering angle applied to the feed bridge of antennas
-    aperture : float
-        Optional, Length of the feed in meters.
-        Default is same as reflector width
-    I0 : float
-        Peak gain (linear scale) in the pointing direction.
-        Default use approximate analytical integral of 2D Fourier
-        transform of rectangle.
+    phase_steering
+        Phase steering (NOTE: radians) angle applied to the feed bridge of antennas
+    """
 
+    pointing: NDArray_3xN | NDArray_3
+    frequency: NDArray_N | float
+    height: NDArray_N | float
+    width: NDArray_N | float
+    aperture_width: NDArray_N | float
+    phase_steering: NDArray_N | float
+    depth: NDArray_N | float
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+    frequency_shape: ClassVar[None] = None
+    height_shape: ClassVar[None] = None
+    width_shape: ClassVar[None] = None
+    aperture_width_shape: ClassVar[None] = None
+    phase_steering_shape: ClassVar[None] = None
+    depth_shape: ClassVar[None] = None
+
+
+class PhasedFiniteCylindricalParabola(Beam[PhasedFiniteCylindricalParabolaParams]):
+    """A finite Cylindrical Parabola with a phased finite receiver line feed
+        in the longitudinal direction, i.e. in the direction of the cylinder axis.
 
     Notes
     ------
@@ -39,49 +60,46 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         be input, otherwise assumes width and height >> wavelength and approximates
         integral with analytic form.
 
-
     """
 
     def __init__(
         self,
-        pointing,
-        frequency,
-        width,
-        height,
-        aperture_width,
-        phase_steering,
-        depth,
-        peak_gain=None,
-        degrees=False,
+        peak_gain: float | None = None,
     ):
-        super().__init__(
-            pointing=pointing,
-            frequency=frequency,
-            width=width,
-            height=height,
-            aperture_width=aperture_width,
-            peak_gain=peak_gain,
-        )
-        self.parameters["phase_steering"] = phase_steering
-        self.parameters["depth"] = depth
-        self.degrees = degrees
-        self.validate_parameter_shapes()
+        super().__init__()
+        self.peak_gain = peak_gain
 
     def copy(self):
         """Return a copy of the current instance."""
         return PhasedFiniteCylindricalParabola(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
-            phase_steering=copy.deepcopy(self.parameters["phase_steering"]),
-            frequency=copy.deepcopy(self.parameters["frequency"]),
-            height=copy.deepcopy(self.parameters["height"]),
-            width=copy.deepcopy(self.parameters["width"]),
-            depth=copy.deepcopy(self.parameters["depth"]),
-            aperture_width=copy.deepcopy(self.parameters["aperture_width"]),
             peak_gain=self.peak_gain,
-            degrees=self.degrees,
         )
 
-    def gain_tf(self, theta, phi):
+    def normalize(
+        self,
+        width: NDArray_N | float,
+        height: NDArray_N | float,
+        wavelength: NDArray_N | float,
+    ) -> NDArray_N | float:
+        """Calculate normalization constant for beam pattern by assuming
+        width and height >> wavelength.
+        """
+        return 4 * np.pi * width * height / wavelength**2
+
+    def gain(
+        self,
+        k: NDArray_3xN | NDArray_3,
+        parameters: PhasedFiniteCylindricalParabolaParams,
+    ) -> NDArray_N | float:
+        theta, phi = local_to_pointing(k, parameters)
+        return self.gain_tf(theta, phi, parameters)
+
+    def gain_tf(
+        self,
+        theta: NDArray_N | float,
+        phi: NDArray_N | float,
+        parameters: PhasedFiniteCylindricalParabolaParams,
+    ) -> NDArray_N | float:
         """Calculate gain in the frame rotated to the aperture plane.
 
         Parameters
@@ -97,25 +115,21 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
             The parameters to use for gain calculation.
 
         """
-        wavelength = scipy.constants.c / self.parameters["frequency"]
-
-        if self.degrees:
-            phase_steering = np.radians(self.parameters["phase_steering"])
-        else:
-            phase_steering = self.parameters["phase_steering"]
+        wavelength = scipy.constants.c / parameters.frequency
+        phase_steering = parameters.phase_steering
 
         # Compute effective area loss due to spillover when phase-steering past edge of reflector.
         A = (
-            self.parameters["depth"] * np.tan(np.abs(phase_steering))
-            - (self.parameters["width"] - self.parameters["aperture_width"]) / 2
+            parameters.depth * np.tan(np.abs(phase_steering))
+            - (parameters.width - parameters.aperture_width) / 2
         )
         w_loss = np.clip(A, 0, None)
 
         # This implies geometric optics for the feed-to-reflector path
-        w_eff = np.clip(self.parameters["aperture_width"] - w_loss, 0, None)
+        w_eff = np.clip(parameters.aperture_width - w_loss, 0, None)
 
         if self.peak_gain is None:
-            g0 = self.normalize(w_eff, self.parameters["height"], wavelength)
+            g0 = self.normalize(w_eff, parameters.height, wavelength)
         else:
             g0 = self.peak_gain
 
@@ -126,10 +140,10 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         x = w_eff / wavelength * (np.sin(phi) - phase_steering)
 
         # sinc component (longitudinal)
-        y = self.parameters["height"] / wavelength * np.sin(theta)
+        y = parameters.height / wavelength * np.sin(theta)
 
         # sinc fn. (= field), NB: np.sinc includes pi !!
-        g = np.sinc(x) * np.sinc(y) * (w_eff / self.parameters["aperture_width"])
+        g = np.sinc(x) * np.sinc(y) * (w_eff / parameters.aperture_width)
 
         # NB! This factor of cos(phi) is NOT geometric foreshortening --
         # It is instead a crude model for element (i.e., dipole) gain!
@@ -143,6 +157,8 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         """
         For a given desired pointing `phi`, compute the nominal phase
         steering angle that gives a pattern that peaks at `phi`.
+
+        Always returns radians
 
         We know the azimuthal gain pattern `G(phi)` for a nominal phase
         steering angle `phi0`; it is given by
@@ -165,8 +181,4 @@ class PhasedFiniteCylindricalParabola(FiniteCylindricalParabola):
         assert np.all(np.abs(phi) <= np.pi / 2), f"cannot steer past the horizon {np.abs(phi)}"
 
         phi0 = np.sin(phi)
-
-        if degrees:
-            phi0 = np.degrees(phi0)
-
         return phi0
