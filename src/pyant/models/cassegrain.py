@@ -71,9 +71,9 @@ class Cassegrain(Beam[CassegrainParams]):
 
     def __init__(
         self,
-        peak_gain: float=1,
-        min_off_axis: float=1e-9,
-        eps: float=1e-6,
+        peak_gain: float = 1,
+        min_off_axis: float = 1e-9,
+        eps: float = 1e-6,
     ):
         super().__init__()
         self.eps = eps
@@ -94,7 +94,7 @@ class Cassegrain(Beam[CassegrainParams]):
         k_len = get_and_validate_k_shape(size, k)
         if k_len == 0:
             return np.empty((0,), dtype=k.dtype)
-        scalar_output = size == 0 and k_len is None
+        scalar_output = size is None and k_len is None
 
         p = parameters.pointing
         theta = linalg.vector_angle(p, k, degrees=False)
