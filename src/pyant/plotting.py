@@ -416,7 +416,7 @@ def hemisphere_plot(
     resolution: int = 201,
     ax: plt.Axes | None = None,
     min_elevation: float = 0.0,
-    centered: bool = True,
+    centered: NDArray_3 | None = None,
 ) -> tuple[plt.Figure | None, plt.Axes, mpl.collections.QuadMesh]:
     """
     Create a hemispherical plot of some function of pointing direction
