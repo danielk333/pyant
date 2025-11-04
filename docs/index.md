@@ -2,6 +2,7 @@
 
 PyAnt is a standardization of implementing radar gain pattern in Python. Nothing more, nothing less.
 
+> The docs are currently a work in progress!
 
 ## Getting started
 

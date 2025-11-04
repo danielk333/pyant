@@ -32,13 +32,15 @@ import matplotlib.pyplot as plt
 import pyant
 
 beam = pyant.models.Cassegrain(
+    peak_gain=10**4.81,
+)
+param = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
     outer_radius=40.0,
     inner_radius=23.0,
-    peak_gain=10**4.81,
 )
 
-pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0)
+pyant.plotting.gain_heatmap(beam, param, resolution=301, min_elevation=80.0)
 plt.show()
 ```
