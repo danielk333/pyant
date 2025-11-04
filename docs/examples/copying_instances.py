@@ -23,25 +23,60 @@ import pyant
 # Lets create a simple Airy disk model and copy it
 
 beam = pyant.models.Airy(
+    peak_gain=10**4.81,
+)
+param = pyant.models.AiryParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=500e6,
     radius=23.0,
-    peak_gain=10**4.81,
 )
-
 beam_2 = beam.copy()
+param_2 = param.copy()
 
-# These two copies are now independant
+# These copies are now independent
 
-beam_2.sph_point(
-    azimuth=45.0,
-    elevation=45.0,
-    degrees=True,
+beam_2.peak_gain = 10**3.8
+param_2.radius = 10.0
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 5))
+pyant.plotting.gain_heatmap(
+    beam,
+    param,
+    resolution=301,
+    min_elevation=80.0,
+    ax=axes[0, 0],
+    cbar_min=0,
+    cbar_max=48.1,
+    label="beam & param",
 )
-beam_2.frequency = 50e6
-
-
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-pyant.plotting.gain_heatmap(beam, resolution=301, min_elevation=80.0, ax=ax1)
-pyant.plotting.gain_heatmap(beam_2, resolution=301, min_elevation=80.0, ax=ax2)
+pyant.plotting.gain_heatmap(
+    beam_2,
+    param,
+    resolution=301,
+    min_elevation=80.0,
+    ax=axes[0, 1],
+    cbar_min=0,
+    cbar_max=48.1,
+    label="beam_2 & param",
+)
+pyant.plotting.gain_heatmap(
+    beam,
+    param_2,
+    resolution=301,
+    min_elevation=80.0,
+    ax=axes[1, 0],
+    cbar_min=0,
+    cbar_max=48.1,
+    label="beam & param_2",
+)
+pyant.plotting.gain_heatmap(
+    beam_2,
+    param_2,
+    resolution=301,
+    min_elevation=80.0,
+    ax=axes[1, 1],
+    cbar_min=0,
+    cbar_max=48.1,
+    label="beam_2 & param_2",
+)
 plt.show()

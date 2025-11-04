@@ -249,18 +249,20 @@ def polarization_heatmap(
 
     if not isinstance(beam, Beam):
         raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
-    if beam.size > 0:
+
+    if param.size is None:
         raise ValueError(
             "Can only plot beam with scalar parameters -"
-            f"dont know which of the {beam.size} options to pick"
+            f"dont know which of the {param.size} options to pick"
         )
-
     # We will draw a k-space circle centered on `pointing` with a radius of cos(min_elevation)
     jones_vecs, thxmat, thymat = utils.compute_j_grid(resolution)
 
     g = np.zeros((jones_vecs.shape[1],), dtype=np.float64)
+    param_c = param.copy()
     for ind in range(jones_vecs.shape[1]):
-        g[ind] = beam.gain(k, polarization=jones_vecs[:, ind])
+        param_c.polarization = jones_vecs[:, ind]
+        g[ind] = beam.gain(k, param_c)
     g = g.reshape(resolution, resolution)
 
     old = np.seterr(invalid="ignore")
@@ -287,7 +289,7 @@ def polarization_heatmap(
 
     cbar = plt.colorbar(conf, ax=ax)
     cbar.ax.set_ylabel("Gain [dB]")
-    tit = f"Gain for polarization k=({k[0]:.2f},{k[1]:.2f},{k[2]:.2f})"
+    tit = f"Gain for k=({k[0]:.2f},{k[1]:.2f},{k[2]:.2f}) as a function of polarization"
     if label:
         tit += " " + label
     ax.set_title(tit)
@@ -302,6 +304,7 @@ def gain_heatmap(
     min_elevation: float = 0.0,
     levels: int = 20,
     cbar_min: float | None = None,
+    cbar_max: float | None = None,
     ax: plt.Axes | None = None,
     label: str | None = None,
     centered: bool = True,
@@ -331,6 +334,8 @@ def gain_heatmap(
         Number of levels in the contour plot.
     cbar_min
         The minimum color (in dB) shown in the colorbar
+    cbar_max
+        The maximum color (in dB) shown in the colorbar
 
     Returns
     -------
@@ -371,12 +376,13 @@ def gain_heatmap(
         cmap = plt.get_cmap("plasma")
 
     if levels is None:
-        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=cbar_min)
+        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=cbar_min, vmax=cbar_max)
     else:
         # Recipe at
         # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
         cmin = np.nanmin(SdB) if cbar_min is None else cbar_min
-        bins = MaxNLocator(nbins=levels).tick_values(cmin, np.nanmax(SdB))
+        cmax = np.nanmax(SdB) if cbar_max is None else cbar_max
+        bins = MaxNLocator(nbins=levels).tick_values(cmin, cmax)
         norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
         conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, norm=norm)
 
