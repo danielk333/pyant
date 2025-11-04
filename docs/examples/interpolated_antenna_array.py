@@ -19,6 +19,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
+import spacecoords.spherical as sph
 import pyant
 
 # +
@@ -47,9 +48,12 @@ for ind in range(subgroups):
     antennas[1, :, ind] = subgroup[1, :] + max_r * 3 * np.sin(phi)
 
 beam = pyant.models.Array(
+    antennas=antennas,
+)
+param = pyant.models.ArrayParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=frequency,
-    antennas=antennas,
+    polarization=beam.polarization.copy(),
 )
 
 # +
@@ -60,19 +64,22 @@ ax.axis("equal")
 
 # +
 
-interp_beam = pyant.models.InterpolatedArray(pointing=beam.parameters["pointing"].copy())
+interp_beam = pyant.models.InterpolatedArray()
+interp_param = pyant.models.InterpolatedArrayParam(
+    pointing=param.pointing.copy(),
+)
 start_time = time.time()
 interp_beam.generate_interpolation(
-    beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
+    beam, param, resolution=(400, 400), min_elevation=60.0, interpolate_channels=[0]
 )
 generate_time = time.time() - start_time
 print(f"Interpolation generate: {generate_time:.1e} seconds")
 
 # +
-k = pyant.coordinates.sph_to_cart(np.array([20.0, 75.0, 1.0]), degrees=True)
+k = sph.sph_to_cart(np.array([20.0, 75.0, 1.0]), degrees=True)
 
-subarray_gains = interp_beam.channel_gain(k)
-array_gains = interp_beam.gain(k)
+subarray_gains = interp_beam.channel_gain(k, interp_param)
+array_gains = interp_beam.gain(k, interp_param)
 print(f"{k=}")
 print(f"{subarray_gains[0]=}")
 print(f"{array_gains=}")
@@ -81,12 +88,24 @@ print(f"{array_gains=}")
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
 start_time = time.time()
-pyant.plotting.gain_heatmap(beam, ax=axes[0], resolution=400, min_elevation=70.0)
+pyant.plotting.gain_heatmap(
+    beam,
+    param,
+    ax=axes[0],
+    resolution=400,
+    min_elevation=70.0,
+)
 axes[0].set_title("Array")
 array_time = time.time() - start_time
 
 start_time = time.time()
-pyant.plotting.gain_heatmap(interp_beam, ax=axes[1], resolution=400, min_elevation=70.0)
+pyant.plotting.gain_heatmap(
+    interp_beam,
+    interp_param,
+    ax=axes[1],
+    resolution=400,
+    min_elevation=70.0,
+)
 axes[1].set_title("Interpolated")
 interp_time = time.time() - start_time
 

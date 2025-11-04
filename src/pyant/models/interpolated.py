@@ -1,17 +1,27 @@
+#!/usr/bin/env python
+
+from dataclasses import dataclass
 import copy
 from typing import Literal
 import numpy as np
-from numpy.typing import NDArray
 import scipy.interpolate
 
 from ..beam import Beam
-from ..coordinates import compute_k_grid
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
+from ..utils import compute_k_grid
 
 InterpMethods = Literal["bivariate_spline", "linear"]
 
-class Interpolated(Beam):
-    """Interpolated gain pattern. Does not assume any effect on pointing.
-    """
+
+@dataclass
+class InterpolatedParams(Parameters):
+    """placeholder"""
+
+    pass
+
+
+class Interpolated(Beam[InterpolatedParams]):
+    """Interpolated gain pattern. Does not assume any effect on pointing."""
 
     def __init__(self):
         super().__init__()
@@ -29,27 +39,31 @@ class Interpolated(Beam):
 
     def generate_interpolation(
         self,
-        beam,
+        beam: Beam,
+        parameters: Parameters,
         interpolation_method: InterpMethods = "linear",
-        polarization=None,
-        centered=True,
-        min_elevation=0.0,
-        resolution=1000,
+        centered: bool = True,
+        min_elevation: float = 0.0,
+        resolution: int = 1000,
     ):
-        if beam.size > 0:
+        if not isinstance(beam, Beam):
+            raise TypeError(f"Can only interpolate Beam, not '{type(beam)}'")
+
+        if parameters.size is None:
             raise ValueError(
-                "Can only interpolate beam with scalar parameters -"
-                f"dont know which of the {beam.size} options to pick"
+                "Can only plot beam with scalar parameters -"
+                f"dont know which of the {parameters.size} options to pick"
             )
-        if "pointing" not in beam.parameters:
+
+        if "pointing" not in parameters.keys:
             pointing = np.array([0, 0, 1], dtype=np.float64)
         else:
-            pointing = beam.parameters["pointing"]
+            pointing = parameters.pointing  # type: ignore
 
         cmin = np.cos(np.radians(min_elevation))
         S, K, k, inds, kx, ky = compute_k_grid(pointing, resolution, centered, cmin)
         S = np.zeros_like(S)
-        S[inds] = beam.gain(k[:, inds], polarization=polarization)
+        S[inds] = beam.gain(k[:, inds], parameters)
 
         self._call_kw = {}
         if interpolation_method == "linear":
@@ -73,7 +87,6 @@ class Interpolated(Beam):
         f_obj = np.load(fname, allow_pickle=True)
         self.interpolated = f_obj.item()
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
-        k_ = k / np.linalg.norm(k, axis=0)
-        g = self.interpolated(k_[0, ...], k_[1, ...], **self._call_kw)
+    def gain(self, k: NDArray_3xN | NDArray_3, parameters: InterpolatedParams) -> NDArray_N | float:
+        g = self.interpolated(k[0, ...], k[1, ...], **self._call_kw)
         return g

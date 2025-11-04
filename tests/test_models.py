@@ -28,18 +28,6 @@ k_vector[0, :] = 0
 k_vector[1, :] = np.linspace(-0.1, 0.1, NUM)
 
 
-# array_beam = pyant.models.Array(
-#     pointing=np.array([0, 0, 1], dtype=np.float64),
-#     frequency=50e6,
-#     antennas=antennas,
-# )
-# cas_beam = pyant.models.Cassegrain(
-#     pointing=pointing,
-#     frequency=930e6,
-#     inner_radius=3.0,
-#     outer_radius=23.0,
-# )
-
 MODEL_FACTORIES = []
 
 
@@ -90,6 +78,100 @@ def make_cassegrain(scalar_param: bool = True):
             outer_radius=np.full((NUM,), 23.0, dtype=np.float64),
         )
     return beam, param
+
+
+@add_model_param_factory
+def make_gaussian(scalar_param: bool = True):
+    beam = pyant.models.Gaussian()
+    if scalar_param:
+        param = pyant.models.GaussianParams(
+            pointing=pointing,
+            normal_pointing=pointing,
+            frequency=930e6,
+            radius=20,
+            beam_width_scaling=1,
+        )
+    else:
+        param = pyant.models.GaussianParams(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+            normal_pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+            frequency=np.linspace(200e6, 930e6, num=NUM),
+            radius=np.full((NUM,), 20.0, dtype=np.float64),
+            beam_width_scaling=np.ones((NUM,), dtype=np.float64),
+        )
+    return beam, param
+
+
+@add_model_param_factory
+def make_isotropic(scalar_param: bool = True):
+    beam = pyant.models.Isotropic()
+    if scalar_param:
+        param = pyant.models.IsotropicParam()
+    else:
+        param = None
+    return beam, param
+
+
+def make_measured_az_sym(interpolation_method, scalar_param: bool = True):
+    beam = pyant.models.MeasuredAzimuthallySymmetric(
+        off_axis_angle=np.linspace(0, 90, 100),
+        gains=np.linspace(0, 1, 100),
+        interpolation_method=interpolation_method,
+        degrees=True,
+    )
+    if scalar_param:
+        param = pyant.models.MeasuredAzimuthallySymmetricParam(
+            pointing=pointing,
+        )
+    else:
+        param = pyant.models.MeasuredAzimuthallySymmetricParam(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+        )
+    return beam, param
+
+
+@add_model_param_factory
+def make_measured_az_sym_lin(scalar_param: bool = True):
+    return make_measured_az_sym(
+        interpolation_method="linear",
+        scalar_param=scalar_param,
+    )
+
+
+@add_model_param_factory
+def make_measured_az_sym_spline(scalar_param: bool = True):
+    return make_measured_az_sym(
+        interpolation_method="cubic_spline",
+        scalar_param=scalar_param,
+    )
+
+
+@add_model_param_factory
+def make_gaussian_interpolation(scalar_param: bool = True):
+    beam = pyant.models.Gaussian()
+    param = pyant.models.GaussianParams(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
+        normal_pointing=np.array([0, 0, 1], dtype=np.float64),
+        frequency=46.5e6,
+        radius=100.0,
+        beam_width_scaling=1,
+    )
+    interp_beam = pyant.models.Interpolated()
+    interp_beam.generate_interpolation(beam, param, resolution=100)
+    if scalar_param:
+        interp_param = pyant.models.InterpolatedParams()
+    else:
+        interp_param = None
+    return interp_beam, interp_param
 
 
 # models_vector = [
@@ -244,7 +326,8 @@ def test_param_size(factory):
     _, param_sc = factory(scalar_param=True)
     _, param_ve = factory(scalar_param=False)
     assert param_sc.size() is None
-    assert param_ve.size() == NUM
+    if param_ve is not None:
+        assert param_ve.size() == NUM
 
 
 @pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
@@ -256,7 +339,7 @@ def test_copy_beam(factory):
 
 @pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
 def test_copy_param_scalar(factory):
-    _, param = factory(scalar_param=False)
+    _, param = factory(scalar_param=True)
     param2 = param.copy()
     assert id(param2) != id(param)
 
@@ -272,7 +355,9 @@ def test_copy_param_scalar(factory):
 
 @pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
 def test_copy_param_vector(factory):
-    _, param = factory(scalar_param=True)
+    _, param = factory(scalar_param=False)
+    if param is None:
+        return
     param2 = param.copy()
     assert id(param2) != id(param)
 
@@ -286,39 +371,38 @@ def test_copy_param_vector(factory):
             nt.assert_almost_equal(p2, p)
 
 
-#
-# @pytest.mark.parametrize("beam", models_vector, ids=func_name)
-# def test_single_k_vector_params(beam):
-#     g = beam.gain(k_vector[:, 0])
-#     assert g.shape == (num,)
-#
-#
-# @pytest.mark.parametrize("beam", models_vector, ids=func_name)
-# def test_many_k_vector_params(beam):
-#     g = beam.gain(k_vector)
-#     assert g.shape == (num,)
-#
-#
-# @pytest.mark.parametrize("beam", models_scalar, ids=func_name)
-# def test_single_k_scalar_params(beam):
-#     g = beam.gain(k_vector[:, 0])
-#     assert len(g.shape) == 0
-#
-#
-# @pytest.mark.parametrize("beam", models_scalar, ids=func_name)
-# def test_many_k_scalar_params(beam):
-#     g = beam.gain(k_vector)
-#     assert g.shape == (num,)
-#
-#
-# # @pytest.mark.parametrize("beam", models_vector + models_scalar, ids=func_name)
+@pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
+def test_single_k_vector_params(factory):
+    beam, param = factory(scalar_param=False)
+    if param is None:
+        return
+    g = beam.gain(k_vector[:, 0], param)
+    assert g.shape == (NUM,)
+
+
+@pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
+def test_many_k_vector_params(factory):
+    beam, param = factory(scalar_param=False)
+    if param is None:
+        return
+    g = beam.gain(k_vector, param)
+    assert g.shape == (NUM,)
+
+
+@pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
+def test_single_k_scalar_params(factory):
+    beam, param = factory(scalar_param=True)
+    g = beam.gain(k_vector[:, 0], param)
+    assert len(g.shape) == 0
+
+
+@pytest.mark.parametrize("factory", MODEL_FACTORIES, ids=func_name)
+def test_many_k_scalar_params(factory):
+    beam, param = factory(scalar_param=True)
+    g = beam.gain(k_vector, param)
+    assert g.shape == (NUM,)
+
+
+# @pytest.mark.parametrize("beam", models_vector + models_scalar, ids=func_name)
 # def test_save_load(beam):
 #     raise NotImplementedError("todo")
-#
-#
-# if __name__ == "__main__":
-#     index = 2
-#     test_many_k_vector_params(models_vector[index])
-#     test_single_k_vector_params(models_vector[index])
-#     test_many_k_scalar_params(models_scalar[index])
-#     test_single_k_scalar_params(models_scalar[index])

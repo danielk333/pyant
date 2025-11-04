@@ -1,11 +1,22 @@
+#!/usr/bin/env python
+
+from dataclasses import dataclass
+from typing import ClassVar
 import copy
 
 import numpy as np
 import scipy.interpolate
 
-from ..beam import Beam
-from .array import Array
-from .. import coordinates
+from ..beam import Beam, get_and_validate_k_shape
+from . import array
+from ..types import (
+    NDArray_3,
+    NDArray_3xN,
+    NDArray_N,
+    NDArray_M,
+    NDArray_MxN,
+    Parameters,
+)
 
 
 def plane_wave_compund(kp, r):
@@ -23,7 +34,21 @@ def plane_wave_compund(kp, r):
     return wave
 
 
-class InterpolatedArray(Beam):
+@dataclass
+class InterpolatedArrayParam(Parameters):
+    """
+    Parameters
+    ----------
+    pointing
+        Pointing direction of the array
+    """
+
+    pointing: NDArray_3xN | NDArray_3
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+
+
+class InterpolatedArray(Beam[InterpolatedArrayParam]):
     """Interpolated gain pattern of array and each subgroup.
     DOES NOT REPRODUCE COMPLEX VOLTAGES.
 
@@ -37,28 +62,19 @@ class InterpolatedArray(Beam):
     supported. Only scaling can be set freely. If the pointing is fixed
     the problem is again a 2D one and a 2D interpolation can be made.
 
-    Parameters
-    ----------
-    scaling : float
-        Scaling of the gain pattern to apply.
-
-    Attributes
-    ----------
-    scaling : float
-        Scaling of the gain pattern to apply.
-
     """
 
-    def __init__(self, pointing):
+    def __init__(self):
         super().__init__()
-        self.parameters["pointing"] = pointing
-        self.parameters_shape["pointing"] = (3,)
+        self.channels = None
+        self.interp_dims = None
+        self.interpolated = None
+        self.interpolated_antenna = None
+        self.interpolated_channels = None
 
     def copy(self):
         """Return a copy of the current instance."""
-        bm = InterpolatedArray(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
-        )
+        bm = InterpolatedArray()
         bm.channels = self.channels
         bm.interp_dims = self.interp_dims
         bm.interpolated = copy.deepcopy(self.interpolated)
@@ -77,7 +93,6 @@ class InterpolatedArray(Beam):
         datas.update(
             dict(
                 channels=np.int64(self.channels),
-                pointing=self.pointing,
                 interp_dims=self.interp_dims,
             )
         )
@@ -86,7 +101,6 @@ class InterpolatedArray(Beam):
     def load(self, fname):
         data = np.load(fname, allow_pickle=True)
         self.channels = data["channels"]
-        self.pointing = data["pointing"]
         self.interp_dims = data["interp_dims"]
 
         self.interpolated_channels = [None] * self.channels
@@ -99,34 +113,39 @@ class InterpolatedArray(Beam):
 
     def generate_interpolation(
         self,
-        beam,
-        polarization=None,
-        min_elevation=0.0,
-        interpolate_channels=None,
-        resolution=(1000, 1000, None),
+        beam: array.Array,
+        parameters: array.ArrayParams,
+        min_elevation: float = 0.0,
+        interpolate_channels: list[int] | None = None,
+        resolution: tuple[int, int] | tuple[int, int, int] = (1000, 1000),
     ):
         """Generate an interpolated version of Array
 
         Parameters
         ----------
-        channels : optional, list of int
+        channels
             Index for which channels to save interpolations from.
 
         """
-        assert isinstance(beam, Array), "Can only interpolate arrays"
-        assert beam.size == 0, "Can only interpolate scalar parameters"
+        if not isinstance(beam, array.Array):
+            raise TypeError(f"Can only interpolate Array, not '{type(beam)}'")
+
+        if parameters.size is None:
+            raise ValueError(
+                "Can only plot beam with scalar parameters -"
+                f"dont know which of the {parameters.size} options to pick"
+            )
+
+        if "pointing" not in parameters.keys:
+            p = np.array([0, 0, 1], dtype=np.float64)
+        else:
+            p = parameters.pointing  # type: ignore
 
         # Transfer meta-data and parameters
         self.channels = beam.channels
+        pol = parameters.polarization
 
-        if polarization is None:
-            polarization = beam.polarization.copy()
-        elif not np.all(np.iscomplex(polarization)):
-            polarization = polarization.astype(np.complex128)
-
-        p = beam.parameters["pointing"]
-
-        wavelength = scipy.constants.c / beam.parameters["frequency"]
+        wavelength = scipy.constants.c / parameters.frequency
         cmin = np.cos(np.radians(min_elevation))
 
         size_k = np.prod(resolution[:2])
@@ -141,7 +160,7 @@ class InterpolatedArray(Beam):
         k[2, inds] = np.sqrt(1 - xy2[inds])
         k[2, np.logical_not(inds)] = 0
 
-        if resolution[2] is None:
+        if len(resolution) == 2:
             size = size_k
             kp = k[:, :] - p[:, None]
             kpx = kx - p[0]
@@ -165,7 +184,7 @@ class InterpolatedArray(Beam):
             self.interp_dims = 3
 
         sum_psi = np.zeros((size,), dtype=np.complex128)
-        G_subgrp = np.zeros((size,), dtype=np.float64)
+        g_subgrp = np.zeros((size,), dtype=np.float64)
         self.interpolated_channels = [None] * self.channels
         self.interpolated = None
         self.interpolated_antenna = None
@@ -183,10 +202,10 @@ class InterpolatedArray(Beam):
             subg_response = plane_wave_compund(kp[:, inds], grp / wavelength)
             psi[i, inds] = subg_response.sum(axis=0).T
 
-        ant_response = beam.antenna_element(k, polarization) * beam.peak_gain
+        ant_response = beam.antenna_element(k, pol)
 
         # broadcast over input polarization
-        ant_response = ant_response[:, :] * polarization[:, None]
+        ant_response = ant_response[:, :] * pol[:, None]
 
         # align according to receiving polarizations
         lin_pol_check = np.abs(beam.polarization) < 1e-6
@@ -204,40 +223,42 @@ class InterpolatedArray(Beam):
         )
 
         for i in range(self.channels):
-            G_subgrp[inds] = np.abs(psi[i, inds])
+            g_subgrp[inds] = np.abs(psi[i, inds])
             # coherent intergeneration over channels
             sum_psi[inds] += psi[i, inds]
 
             if interpolate_channels is None or i not in interpolate_channels:
                 continue
 
-            if resolution[2] is None:
+            if len(resolution) == 2:
                 self.interpolated_channels[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy),
-                    G_subgrp.reshape(*resolution[:2]),
+                    g_subgrp.reshape(*resolution[:2]),
                     bounds_error=False,
                 )
             else:
                 self.interpolated_channels[i] = scipy.interpolate.RegularGridInterpolator(
                     (kpx, kpy, kpz),
-                    G_subgrp.reshape(*resolution),
+                    g_subgrp.reshape(*resolution),
                     bounds_error=False,
                 )
-        G = np.abs(sum_psi).astype(np.float64)
-        if resolution[2] is None:
+        g = np.abs(sum_psi).astype(np.float64)
+        if len(resolution) == 2:
             self.interpolated = scipy.interpolate.RegularGridInterpolator(
                 (kpx, kpy),
-                G.reshape(*resolution[:2]),
+                g.reshape(*resolution[:2]),
                 bounds_error=False,
             )
         else:
             self.interpolated = scipy.interpolate.RegularGridInterpolator(
                 (kpx, kpy, kpz),
-                G.reshape(*resolution),
+                g.reshape(*resolution),
                 bounds_error=False,
             )
 
-    def channel_gain(self, k, channels=None):
+    def channel_gain(
+        self, k: NDArray_3xN | NDArray_3, parameters: InterpolatedArrayParam, channels=None
+    ) -> NDArray_MxN | NDArray_M:
         """Interpolated gain of each channel.
 
         Parameters
@@ -252,18 +273,21 @@ class InterpolatedArray(Beam):
             requested and `num_k` is the number of input wave vectors.
             If `num_k = 1` the returned ndarray is `(c,)`.
         """
-        k_len = self.validate_k_shape(k)
-        size = self.size
-        p = self.parameters["pointing"]
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
+        if k_len == 0:
+            return np.empty((self.channels, 0), dtype=k.dtype)
+
+        p = parameters.pointing
 
         kn = k / np.linalg.norm(k, axis=0)
-        if size > 0 and k_len > 0:
+        if size is not None and k_len is not None:
             kpn = kn - p
-        elif size > 0 and k_len == 0:
+        elif size is not None and k_len is None:
             kpn = kn[:, None] - p
-        elif size == 0 and k_len > 0:
+        elif size is None and k_len is not None:
             kpn = kn - p[:, None]
-        elif size == 0 and k_len == 0:
+        elif size is None and k_len is None:
             kpn = kn - p
         g_size = kpn.shape[1] if len(kpn.shape) > 1 else 1
 
@@ -287,22 +311,29 @@ class InterpolatedArray(Beam):
 
         return gains
 
-    def gain(self, k, ind=None, polarization=None, **kwargs):
+    def gain(
+        self,
+        k: NDArray_3xN | NDArray_3,
+        parameters: InterpolatedArrayParam,
+    ) -> NDArray_N | float:
         """Gain of the antenna array."""
-        k_len = self.validate_k_shape(k)
-        size = self.size
-        p = self.parameters["pointing"]
-        scalar_output = size == 0 and k_len == 0
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
+        if k_len == 0:
+            return np.empty((self.channels, 0), dtype=k.dtype)
+        scalar_output = size is None and k_len is None
+
+        p = parameters.pointing
 
         kn = k / np.linalg.norm(k, axis=0)
-        if size > 0 and k_len > 0:
+        if size is not None and k_len is not None:
             kpn = kn - p
-        elif size > 0 and k_len == 0:
+        elif size is not None and k_len is None:
             kpn = kn[:, None] - p
             kn = np.broadcast_to(kn.reshape((3, 1)), (3, size))
-        elif size == 0 and k_len > 0:
+        elif size is None and k_len is not None:
             kpn = kn - p[:, None]
-        elif size == 0 and k_len == 0:
+        elif scalar_output:
             kpn = kn - p
 
         if self.interp_dims == 3:

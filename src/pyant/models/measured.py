@@ -1,41 +1,60 @@
 #!/usr/bin/env python
 
 import copy
-from typing import Literal
-from ..types import NDArray_3, NDArray_3xN, NDArray_N
+from dataclasses import dataclass
+from typing import ClassVar, Literal
 
 import scipy.interpolate as sci
 import numpy as np
-from numpy.typing import NDArray
+import spacecoords.linalg as linalg
 
-from .. import coordinates
-from ..beam import Beam
+from ..beam import Beam, get_and_validate_k_shape
+from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 InterpMethods = Literal["cubic_spline", "linear"]
 
 
-class MeasuredAzimuthallySymmetric(Beam):
+@dataclass
+class MeasuredAzimuthallySymmetricParam(Parameters):
+    """
+    Parameters
+    ----------
+    pointing
+        Pointing direction of the boresight
+    """
+
+    pointing: NDArray_3xN | NDArray_3
+
+    pointing_shape: ClassVar[tuple[int, ...]] = (3,)
+
+
+class MeasuredAzimuthallySymmetric(Beam[MeasuredAzimuthallySymmetricParam]):
     """An interpolation of a measured 1d gain pattern"""
 
     def __init__(
         self,
-        pointing: NDArray_3 | NDArray_3xN,
         off_axis_angle: NDArray_N,
         gains: NDArray_N,
         interpolation_method: InterpMethods = "linear",
         degrees: bool = True,
     ):
         super().__init__()
-        self.parameters["pointing"] = pointing
-        self.parameters_shape["pointing"] = (3,)
-
         self.off_axis_angle = off_axis_angle
         self.gains = gains
         self.interpolation_method = interpolation_method
         self.degrees = degrees
 
-    def gain(self, k: NDArray, polarization: NDArray | None = None):
-        phi = coordinates.vector_angle(k, self.parameters["pointing"], degrees=self.degrees)
+    def gain(
+        self,
+        k: NDArray_3xN | NDArray_3,
+        parameters: MeasuredAzimuthallySymmetricParam,
+    ) -> NDArray_N | float:
+        size = parameters.size()
+        k_len = get_and_validate_k_shape(size, k)
+        if k_len == 0:
+            return np.empty((0,), dtype=k.dtype)
+
+        phi = linalg.vector_angle(k, parameters.pointing, degrees=self.degrees)
 
         if self.interpolation_method == "cubic_spline":
             cbs = sci.CubicSpline(self.off_axis_angle, self.gains, extrapolate=False)
@@ -51,7 +70,6 @@ class MeasuredAzimuthallySymmetric(Beam):
 
     def copy(self):
         return MeasuredAzimuthallySymmetric(
-            pointing=copy.deepcopy(self.parameters["pointing"]),
             off_axis_angle=copy.deepcopy(self.off_axis_angle),
             gains=copy.deepcopy(self.gains),
             interpolation_method=self.interpolation_method,

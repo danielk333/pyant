@@ -27,25 +27,31 @@ gains = np.exp(-phi) * (np.sin(phi) ** 2 + 0.01)
 gains = gains / np.max(gains)
 
 beam = pyant.models.MeasuredAzimuthallySymmetric(
-    pointing=np.array([0, 0, 1], dtype=np.float64),
     off_axis_angle=phi,
     gains=gains,
     interpolation_method="linear",
     degrees=True,
 )
+param = pyant.models.MeasuredAzimuthallySymmetricParam(
+    pointing=np.array([0, 0, 1], dtype=np.float64),
+)
 
 # +
 fig, axes = plt.subplots(2, 2, figsize=(12, 5))
 
-pyant.plotting.gain_heatmap(beam, min_elevation=80, ax=axes[0, 0])
-pyant.plotting.gains(beam, min_elevation=80, ax=axes[0, 1])
+pyant.plotting.gain_heatmap(beam, param, min_elevation=80, ax=axes[0, 0])
+pyant.plotting.gains([beam], [param], min_elevation=80, ax=axes[0, 1])
+axes[0, 1].plot(phi, np.log10(gains)*10, "xb", label="Measurnment points")
+axes[0, 1].legend()
 for ax in axes[0, :]:
     ax.set_title("Gain pattern - linear interpolation")
 
 beam.interpolation_method = "cubic_spline"
 
-pyant.plotting.gain_heatmap(beam, min_elevation=80, ax=axes[1, 0])
-pyant.plotting.gains(beam, min_elevation=80, ax=axes[1, 1])
+pyant.plotting.gain_heatmap(beam, param, min_elevation=80, ax=axes[1, 0])
+pyant.plotting.gains([beam], [param], min_elevation=80, ax=axes[1, 1])
+axes[1, 1].plot(phi, np.log10(gains)*10, "xb", label="Measurnment points")
+axes[1, 1].legend()
 for ax in axes[1, :]:
     ax.set_title("Gain pattern - clubic_spline interpolation")
 
