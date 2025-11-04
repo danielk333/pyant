@@ -13,19 +13,18 @@
 #     name: python3
 # ---
 
-# # Phase steerable Half-pipe effects
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-# from matplotlib import cm
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
-
 import pyant
 
+# +
+# # Phase steerable Half-pipe effects
 
-def steering_gain(beam, num_ph=701, num_az=901, symmetric=True, corrected=True):
+
+def steering_gain(beam, param, num_ph=701, num_az=901, symmetric=True, corrected=True):
     # phase steering
     G = np.zeros((num_ph, num_az), dtype=np.float64)
 
@@ -38,10 +37,10 @@ def steering_gain(beam, num_ph=701, num_az=901, symmetric=True, corrected=True):
     for i in range(num_ph):
         # set phase
         if corrected:
-            beam.parameters["phase_steering"] = beam._nominal_phase_steering(phi0[i], degrees=True)
+            param.phase_steering = beam._nominal_phase_steering(phi0[i], degrees=True)
         else:
-            beam.parameters["phase_steering"] = phi0[i]
-        G[i, :] = beam.gain(k)
+            param.phase_steering = np.radians(phi0[i])
+        G[i, :] = beam.gain(k, param)
 
     return k, phi0, G
 
@@ -84,6 +83,7 @@ def make_steering_plot(
 
 def steering_plot(
     beam,
+    param,
     num_ph=301,
     num_az=501,
     levels=14,
@@ -93,6 +93,7 @@ def steering_plot(
 ):
     k, phi0, G = steering_gain(
         beam,
+        param,
         num_ph=num_ph,
         num_az=num_az,
         symmetric=symmetric,
@@ -110,7 +111,8 @@ def steering_plot(
     )
 
 
-beam = pyant.models.PhasedFiniteCylindricalParabola(
+beam = pyant.models.PhasedFiniteCylindricalParabola()
+param = pyant.models.PhasedFiniteCylindricalParabolaParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=300e6,
     width=120.0,
@@ -118,13 +120,14 @@ beam = pyant.models.PhasedFiniteCylindricalParabola(
     aperture_width=120.0,
     phase_steering=0,
     depth=18,
-    degrees=True,
 )
 
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 6), sharex="all", sharey="all")
-steering_plot(beam, symmetric=False, corrected=False, ax=ax[0])
-steering_plot(beam, symmetric=False, corrected=True, ax=ax[1])
+steering_plot(beam, param, symmetric=False, corrected=False, ax=ax[0])
+steering_plot(beam, param, symmetric=False, corrected=True, ax=ax[1])
+
 ax[0].set_title("Phase steering (nominal)")
 ax[1].set_title("Phase steering (corrected)")
+
 plt.show()

@@ -13,16 +13,12 @@
 #     name: python3
 # ---
 
-
-# # Phased paracyl plots
-
 import numpy as np
 from matplotlib import pyplot as plt
-
+import spacecoords.spherical as sph
+import spacecoords.linalg as linalg
 import pyant
 from pyant.plotting import gain_heatmap, hemisphere_plot
-from pyant.models import FiniteCylindricalParabola
-from pyant.models import PhasedFiniteCylindricalParabola
 
 
 def printn(*args, **kw):
@@ -51,8 +47,13 @@ def thet():
     return greek("theta")
 
 
+# +
+# # Phased paracyl plots
+
+
 def get_parc():
-    return pyant.models.PhasedFiniteCylindricalParabola(
+    beam = pyant.models.PhasedFiniteCylindricalParabola()
+    param = pyant.models.PhasedFiniteCylindricalParabolaParams(
         pointing=np.array([0, 0, 1], dtype=np.float64),
         phase_steering=0,
         frequency=224.0e6,
@@ -60,18 +61,20 @@ def get_parc():
         height=40.0,
         depth=18.0,
         aperture_width=120.0,
-        degrees=True,
     )
+    return beam, param
 
 
 def get_farc():
-    return pyant.models.FiniteCylindricalParabola(
+    beam = pyant.models.FiniteCylindricalParabola()
+    param = pyant.models.FiniteCylindricalParabolaParams(
         pointing=np.array([0, 0, 1], dtype=np.float64),
+        phase_steering=0,
         frequency=224.0e6,
         width=120.0,
         height=40.0,
-        aperture_width=120.0,
     )
+    return beam, param
 
 
 def l2p_hemiplots(azim, elev, check=False):
@@ -91,10 +94,11 @@ def l2p_hemiplots(azim, elev, check=False):
     def uvec(v):
         return v / np.linalg.norm(v, axis=0)
 
-    Az = pyant.coordinates.rot_mat_z
+    def Az(t):
+        return linalg.rot_mat_z(t, degrees=True)
 
     def El(t):
-        return pyant.coordinates.rot_mat_x(90 - t)
+        return linalg.rot_mat_x(90 - t, degrees=True)
 
     def nphi(v):
         return np.degrees(np.arcsin((El(elev) @ Az(azim) @ uvec(v))[0]))
@@ -134,16 +138,16 @@ def l2p_hemiplots(azim, elev, check=False):
     _, aa, ph = hemisphere_plot(
         nphi,
         "contourf",
-        ax=ah[0, 0],
         preproc=None,
+        ax=ah[0, 0],
         p_kw=dict(levels=levels, cmap=cmap),
     )
     plt.colorbar(ph, ax=aa)
     _, aa, ph = hemisphere_plot(
         nthe,
         "contourf",
-        ax=ah[0, 1],
         preproc=None,
+        ax=ah[0, 1],
         p_kw=dict(levels=levels, cmap=cmap),
     )
     plt.colorbar(ph, ax=aa)
@@ -239,43 +243,43 @@ def test_local_to_pointing():
 
 
 def compare(az=30, el=60, frq=60e6, with_old=False, **kw):
-    parc = get_parc()
+    beam, param = get_parc()
 
     fh, ah = plt.subplots(2 + with_old, 2, sharex="col", sharey="all")
 
-    parc.parameters["frequency"] = frq
-    parc.sph_point(azimuth=0, elevation=el, degrees=True)
+    param.frequency = frq
+    param.pointing = sph.az_el_point(azimuth=0, elevation=el, degrees=True)
 
-    parc.parameters["phase_steering"] = -az
-    gain_heatmap(parc, ax=ah[0, 0], **kw)
+    param.phase_steering = np.radians(-az)
+    gain_heatmap(beam, param, ax=ah[0, 0], **kw)
     ah[0, 0].set_title(f"ph = {-az}")
 
-    parc.parameters["phase_steering"] = az
-    gain_heatmap(parc, ax=ah[0, 1], **kw)
+    param.phase_steering = np.radians(az)
+    gain_heatmap(beam, param, ax=ah[0, 1], **kw)
     ah[0, 1].set_title(f"ph = {az}")
 
-    parc.parameters["phase_steering"] = 0
+    param.phase_steering = 0
 
-    parc.sph_point(azimuth=-az, elevation=el, degrees=True)
-    gain_heatmap(parc, ax=ah[1, 0], **kw)
+    param.pointing = sph.az_el_point(azimuth=-az, elevation=el, degrees=True)
+    gain_heatmap(beam, param, ax=ah[1, 0], **kw)
     ah[1, 0].set_title(f"az = {-az}")
 
-    parc.sph_point(azimuth=az, elevation=el, degrees=True)
-    gain_heatmap(parc, ax=ah[1, 1])
+    param.pointing = sph.az_el_point(azimuth=az, elevation=el, degrees=True)
+    gain_heatmap(beam, param, ax=ah[1, 1])
     ah[1, 1].set_title(f"az = {az}")
 
     if with_old:
-        farc = get_farc()
-        farc.parameters["height"] = 40
-        farc.parameters["width"] = 120
-        farc.parameters["frequency"] = 30e6
-        farc.sph_point(azimuth=-az, elevation=el, degrees=True)
+        fbeam, fparam = get_farc()
+        fparam.height = 40
+        fparam.width = 120
+        fparam.frequency = 30e6
+        fparam.pointing = sph.az_el_point(azimuth=-az, elevation=el, degrees=True)
 
-        gain_heatmap(farc, ax=ah[2, 0])
+        gain_heatmap(fbeam, fparam, ax=ah[2, 0])
         ah[2, 0].set_title(f"(unphaseable) az = {-az}")
 
-        farc.sph_point(azimuth=az, elevation=el, degrees=True)
-        gain_heatmap(farc, ax=ah[2, 1])
+        fparam.pointing = sph.az_el_point(azimuth=az, elevation=el, degrees=True)
+        gain_heatmap(fbeam, fparam, ax=ah[2, 1])
         ah[2, 1].set_title(f"(unphaseable) az = {az}")
 
         # ah[2,0].set_xlim([-0.2, 0.8])
