@@ -117,11 +117,6 @@ class Gaussian(Beam[GaussianParams]):
         )
         sigma_lon = np.sqrt(np.log(2) / (2 * np.pi**2 * np.sin(alph * lam / (radius * 4)) ** 2))
 
-        sigma_lat_ = 0.7 * pn_dot * radius / lam
-        sigma_lon_ = 0.7 * radius / lam
-        print(sigma_lat, sigma_lat_)
-        print(sigma_lon, sigma_lon_)
-
         k0 = k / np.linalg.norm(k, axis=0)
         if size is not None and k_len is None:
             k0 = np.broadcast_to(k0.reshape(3, 1), (3, size))
