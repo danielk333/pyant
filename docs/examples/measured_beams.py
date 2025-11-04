@@ -32,7 +32,7 @@ beam = pyant.models.MeasuredAzimuthallySymmetric(
     interpolation_method="linear",
     degrees=True,
 )
-param = pyant.models.MeasuredAzimuthallySymmetricParam(
+param = pyant.models.MeasuredAzimuthallySymmetricParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
 )
 

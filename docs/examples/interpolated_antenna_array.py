@@ -65,7 +65,7 @@ ax.axis("equal")
 # +
 
 interp_beam = pyant.models.InterpolatedArray()
-interp_param = pyant.models.InterpolatedArrayParam(
+interp_param = pyant.models.InterpolatedArrayParams(
     pointing=param.pointing.copy(),
 )
 start_time = time.time()

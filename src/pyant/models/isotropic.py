@@ -9,13 +9,13 @@ from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
 
 
 @dataclass
-class IsotropicParam(Parameters):
+class IsotropicParams(Parameters):
     """placeholder"""
     pass
 
 
-class Isotropic(Beam[IsotropicParam]):
-    def gain(self, k: NDArray_3xN | NDArray_3, parameters: IsotropicParam) -> NDArray_N | float:
+class Isotropic(Beam[IsotropicParams]):
+    def gain(self, k: NDArray_3xN | NDArray_3, parameters: IsotropicParams) -> NDArray_N | float:
         size = parameters.size()
         k_len = get_and_validate_k_shape(size, k)
         if k_len is not None:

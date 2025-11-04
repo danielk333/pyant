@@ -112,7 +112,7 @@ def make_gaussian(scalar_param: bool = True):
 def make_isotropic(scalar_param: bool = True):
     beam = pyant.models.Isotropic()
     if scalar_param:
-        param = pyant.models.IsotropicParam()
+        param = pyant.models.IsotropicParams()
     else:
         param = None
     return beam, param
@@ -126,11 +126,11 @@ def make_measured_az_sym(interpolation_method, scalar_param: bool = True):
         degrees=True,
     )
     if scalar_param:
-        param = pyant.models.MeasuredAzimuthallySymmetricParam(
+        param = pyant.models.MeasuredAzimuthallySymmetricParams(
             pointing=pointing,
         )
     else:
-        param = pyant.models.MeasuredAzimuthallySymmetricParam(
+        param = pyant.models.MeasuredAzimuthallySymmetricParams(
             pointing=np.broadcast_to(
                 pointing.reshape(3, 1),
                 (3, NUM),
@@ -174,147 +174,112 @@ def make_gaussian_interpolation(scalar_param: bool = True):
     return interp_beam, interp_param
 
 
-# models_vector = [
-#     pyant.models.Gaussian(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         frequency=np.linspace(200e6, 930e6, num=num),
-#         radius=np.full((num,), 100.0, dtype=np.float64),
-#         normal_pointing=np.broadcast_to(
-#             zenith.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#     ),
-#     pyant.models.MeasuredAzimuthallySymmetric(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         off_axis_angle=np.linspace(0, 90, 100),
-#         gains=np.linspace(0, 1, 100),
-#         interpolation_method="linear",
-#         degrees=True,
-#     ),
-#     pyant.models.MeasuredAzimuthallySymmetric(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         off_axis_angle=np.linspace(0, 90, 100),
-#         gains=np.linspace(0, 1, 100),
-#         interpolation_method="cubic_spline",
-#         degrees=True,
-#     ),
-#     pyant.models.Array(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         frequency=np.full((num,), 50e6, dtype=np.float64),
-#         antennas=antennas,
-#     ),
-#     pyant.models.FiniteCylindricalParabola(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         frequency=np.full((num,), 50e6, dtype=np.float64),
-#         height=np.full((num,), 100.0, dtype=np.float64),
-#         width=np.full((num,), 40.0, dtype=np.float64),
-#         aperture_width=np.full((num,), 80.0, dtype=np.float64),
-#     ),
-#     pyant.models.PhasedFiniteCylindricalParabola(
-#         pointing=np.broadcast_to(
-#             pointing.reshape(3, 1),
-#             (3, num),
-#         ).copy(),
-#         frequency=np.full((num,), 30e6, dtype=np.float64),
-#         width=np.full((num,), 120, dtype=np.float64),
-#         height=np.full((num,), 40, dtype=np.float64),
-#         aperture_width=np.full((num,), 120, dtype=np.float64),
-#         phase_steering=np.linspace(0, 30, num=num),
-#         depth=np.full((num,), 18, dtype=np.float64),
-#         degrees=True,
-#     ),
-# ]
-#
-# models_scalar = [
-#     pyant.models.Gaussian(
-#         pointing=pointing,
-#         frequency=45e6,
-#         radius=100.0,
-#         normal_pointing=zenith,
-#     ),
-#     pyant.models.Isotropic(),
-#     pyant.models.MeasuredAzimuthallySymmetric(
-#         pointing=pointing,
-#         off_axis_angle=np.linspace(0, 90, 100),
-#         gains=np.linspace(0, 1, 100),
-#         interpolation_method="linear",
-#         degrees=True,
-#     ),
-#     pyant.models.MeasuredAzimuthallySymmetric(
-#         pointing=pointing,
-#         off_axis_angle=np.linspace(0, 90, 100),
-#         gains=np.linspace(0, 1, 100),
-#         interpolation_method="cubic_spline",
-#         degrees=True,
-#     ),
-#     pyant.models.Array(
-#         pointing=np.array([0, 0, 1.0]),
-#         frequency=46.5e6,
-#         antennas=antennas,
-#     ),
-#     pyant.models.FiniteCylindricalParabola(
-#         pointing=np.array([0, 0, 1], dtype=np.float64),
-#         frequency=224.0e6,
-#         width=120.0,
-#         height=40.0,
-#         aperture_width=120.0,
-#     ),
-#     pyant.models.PhasedFiniteCylindricalParabola(
-#         pointing=np.array([0, 0, 1], dtype=np.float64),
-#         phase_steering=0.1,
-#         frequency=30e6,
-#         width=120.0,
-#         height=40.0,
-#         depth=18.0,
-#         aperture_width=120.0,
-#     ),
-# ]
-#
-# _beam = pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
-# _beam.generate_interpolation(
-#     array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
-# )
-# models_scalar.append(_beam)
-#
-# _beam = pyant.models.InterpolatedArray(pointing=array_beam.parameters["pointing"].copy())
-# _beam.generate_interpolation(
-#     array_beam, resolution=(50, 50, 100), min_elevation=70.0, interpolate_channels=[0]
-# )
-# models_scalar.append(_beam)
-#
-# _beam_base = pyant.models.Interpolated()
-# _beam_base.generate_interpolation(
-#     cas_beam,
-#     resolution=150,
-# )
-# models_scalar.append(_beam_base)
-#
-# _beam = pyant.models.InterpolatedArray(
-#     pointing=np.broadcast_to(
-#         pointing.reshape(3, 1),
-#         (3, num),
-#     ).copy(),
-# )
-# _beam.generate_interpolation(
-#     array_beam, resolution=(400, 400, None), min_elevation=60.0, interpolate_channels=[0]
-# )
-# models_vector.append(_beam)
-#
+@add_model_param_factory
+def make_array_interpolation(scalar_param: bool = True):
+    beam = pyant.models.Array(
+        antennas=antennas,
+    )
+    param = pyant.models.ArrayParams(
+        pointing=np.array([0, 0, 1], dtype=np.float64),
+        frequency=50e6,
+        polarization=beam.polarization.copy(),
+    )
+
+    interp_beam = pyant.models.InterpolatedArray()
+    interp_beam.generate_interpolation(beam, param, min_elevation=80, resolution=(100, 100))
+    if scalar_param:
+        interp_param = pyant.models.InterpolatedArrayParams(
+            pointing=np.array([0, 0, 1], dtype=np.float64),
+        )
+    else:
+        interp_param = pyant.models.InterpolatedArrayParams(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+        )
+
+    return interp_beam, interp_param
+
+
+@add_model_param_factory
+def make_array(scalar_param: bool = True):
+    beam = pyant.models.Array(
+        antennas=antennas,
+    )
+    if scalar_param:
+        param = pyant.models.ArrayParams(
+            pointing=np.array([0, 0, 1], dtype=np.float64),
+            frequency=50e6,
+            polarization=beam.polarization.copy(),
+        )
+    else:
+        param = pyant.models.ArrayParams(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+            frequency=np.linspace(200e6, 930e6, num=NUM),
+            polarization=np.broadcast_to(
+                beam.polarization.copy().reshape(2, 1),
+                (2, NUM),
+            ).copy(),
+        )
+    return beam, param
+
+
+@add_model_param_factory
+def make_cyl_par(scalar_param: bool = True):
+    beam = pyant.models.FiniteCylindricalParabola()
+    if scalar_param:
+        param = pyant.models.FiniteCylindricalParabolaParams(
+            pointing=np.array([0, 0, 1], dtype=np.float64),
+            frequency=224.0e6,
+            width=120.0,
+            height=40.0,
+            aperture_width=120.0,
+        )
+    else:
+        param = pyant.models.FiniteCylindricalParabolaParams(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+            frequency=np.full((NUM,), 50e6, dtype=np.float64),
+            height=np.full((NUM,), 100.0, dtype=np.float64),
+            width=np.full((NUM,), 40.0, dtype=np.float64),
+            aperture_width=np.full((NUM,), 80.0, dtype=np.float64),
+        )
+    return beam, param
+
+
+@add_model_param_factory
+def make_phased_cyl_par(scalar_param: bool = True):
+    beam = pyant.models.PhasedFiniteCylindricalParabola()
+    if scalar_param:
+        param = pyant.models.PhasedFiniteCylindricalParabolaParams(
+            pointing=np.array([0, 0, 1], dtype=np.float64),
+            phase_steering=0.1,
+            frequency=30e6,
+            width=120.0,
+            height=40.0,
+            depth=18.0,
+            aperture_width=120.0,
+        )
+    else:
+        param = pyant.models.PhasedFiniteCylindricalParabolaParams(
+            pointing=np.broadcast_to(
+                pointing.reshape(3, 1),
+                (3, NUM),
+            ).copy(),
+            frequency=np.full((NUM,), 30e6, dtype=np.float64),
+            width=np.full((NUM,), 120, dtype=np.float64),
+            height=np.full((NUM,), 40, dtype=np.float64),
+            aperture_width=np.full((NUM,), 120, dtype=np.float64),
+            phase_steering=np.linspace(0, 30, num=NUM),
+            depth=np.full((NUM,), 18, dtype=np.float64),
+        )
+    return beam, param
 
 
 def func_name(factory):

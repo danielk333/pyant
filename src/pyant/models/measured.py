@@ -15,7 +15,7 @@ InterpMethods = Literal["cubic_spline", "linear"]
 
 
 @dataclass
-class MeasuredAzimuthallySymmetricParam(Parameters):
+class MeasuredAzimuthallySymmetricParams(Parameters):
     """
     Parameters
     ----------
@@ -28,7 +28,7 @@ class MeasuredAzimuthallySymmetricParam(Parameters):
     pointing_shape: ClassVar[tuple[int, ...]] = (3,)
 
 
-class MeasuredAzimuthallySymmetric(Beam[MeasuredAzimuthallySymmetricParam]):
+class MeasuredAzimuthallySymmetric(Beam[MeasuredAzimuthallySymmetricParams]):
     """An interpolation of a measured 1d gain pattern"""
 
     def __init__(
@@ -47,7 +47,7 @@ class MeasuredAzimuthallySymmetric(Beam[MeasuredAzimuthallySymmetricParam]):
     def gain(
         self,
         k: NDArray_3xN | NDArray_3,
-        parameters: MeasuredAzimuthallySymmetricParam,
+        parameters: MeasuredAzimuthallySymmetricParams,
     ) -> NDArray_N | float:
         size = parameters.size()
         k_len = get_and_validate_k_shape(size, k)

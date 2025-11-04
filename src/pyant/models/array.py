@@ -117,7 +117,6 @@ class Array(Beam[ArrayParams]):
         else:
             antennas = self.antennas.copy()
         return Array(
-            peak_gain=self.peak_gain,
             antennas=antennas,
             polarization=self.polarization.copy(),
             mutual_coupling_matrix=mem,
@@ -211,6 +210,9 @@ class Array(Beam[ArrayParams]):
             pol = np.broadcast_to(pol.reshape((2, 1)), (2, k_len))
         elif size is not None and k_len is not None:
             psi = np.zeros((chan_num, 2, k_len), dtype=np.complex128)
+        elif size is not None and k_len is None:
+            psi = np.zeros((chan_num, 2, size), dtype=np.complex128)
+            k = np.broadcast_to(k.reshape((3, 1)), (3, size))
 
         wavelength = scipy.constants.c / parameters.frequency
         pol = pol.transpose((1, 0))

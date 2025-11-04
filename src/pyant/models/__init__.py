@@ -1,7 +1,7 @@
 from .airy import Airy, AiryParams
 from .cassegrain import Cassegrain, CassegrainParams
 from .gaussian import Gaussian, GaussianParams
-from .isotropic import Isotropic, IsotropicParam
+from .isotropic import Isotropic, IsotropicParams
 from .array import Array, ArrayParams
 from .finite_cylindrical_parabola import (
     FiniteCylindricalParabola,
@@ -12,8 +12,8 @@ from .phased_finite_cylindrical_parabola import (
     PhasedFiniteCylindricalParabolaParams,
 )
 from .interpolated import Interpolated, InterpolatedParams
-from .interpolated_array import InterpolatedArray, InterpolatedArrayParam
+from .interpolated_array import InterpolatedArray, InterpolatedArrayParams
 from .measured import (
     MeasuredAzimuthallySymmetric,
-    MeasuredAzimuthallySymmetricParam,
+    MeasuredAzimuthallySymmetricParams,
 )

@@ -35,7 +35,7 @@ def plane_wave_compund(kp, r):
 
 
 @dataclass
-class InterpolatedArrayParam(Parameters):
+class InterpolatedArrayParams(Parameters):
     """
     Parameters
     ----------
@@ -48,7 +48,7 @@ class InterpolatedArrayParam(Parameters):
     pointing_shape: ClassVar[tuple[int, ...]] = (3,)
 
 
-class InterpolatedArray(Beam[InterpolatedArrayParam]):
+class InterpolatedArray(Beam[InterpolatedArrayParams]):
     """Interpolated gain pattern of array and each subgroup.
     DOES NOT REPRODUCE COMPLEX VOLTAGES.
 
@@ -257,7 +257,7 @@ class InterpolatedArray(Beam[InterpolatedArrayParam]):
             )
 
     def channel_gain(
-        self, k: NDArray_3xN | NDArray_3, parameters: InterpolatedArrayParam, channels=None
+        self, k: NDArray_3xN | NDArray_3, parameters: InterpolatedArrayParams, channels=None
     ) -> NDArray_MxN | NDArray_M:
         """Interpolated gain of each channel.
 
@@ -314,7 +314,7 @@ class InterpolatedArray(Beam[InterpolatedArrayParam]):
     def gain(
         self,
         k: NDArray_3xN | NDArray_3,
-        parameters: InterpolatedArrayParam,
+        parameters: InterpolatedArrayParams,
     ) -> NDArray_N | float:
         """Gain of the antenna array."""
         size = parameters.size()
