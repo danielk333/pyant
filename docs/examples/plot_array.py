@@ -18,6 +18,7 @@
 
 # import time
 import numpy as np
+import scipy.constants as const
 import matplotlib.pyplot as plt
 import pyant
 
@@ -27,21 +28,25 @@ beam = pyant.beams.arrays.equidistant_archimedian_spiral(
     antenna_num=antenna_num,
     arc_separation=1.1,
     range_coefficient=5.0,
+)
+param = pyant.models.ArrayParams(
     frequency=46.5e6,
     pointing=np.array([0, 0, 1], dtype=np.float64),
+    polarization=beam.polarization.copy(),
 )
+wavelength = const.c / param.frequency
 
 x = beam.antennas[0, 0, :]
 y = beam.antennas[1, 0, :]
-D = np.sqrt((x[None, :] - x[:, None]) ** 2 + (y[None, :] - y[:, None]) ** 2)
+d = np.sqrt((x[None, :] - x[:, None]) ** 2 + (y[None, :] - y[:, None]) ** 2)
 
-M = np.exp(1j * np.pi * 2.0 * D / beam.wavelength)
+m = np.exp(1j * np.pi * 2.0 * d / wavelength)
 diags = np.eye(antenna_num, dtype=bool)
 off_diags = np.logical_not(diags)
-M[diags] = 1
-M[off_diags] = M[off_diags] * (1 / D[off_diags]) ** 0.2
+m[diags] = 1
+m[off_diags] = m[off_diags] * (1 / d[off_diags]) ** 0.2
 
-beam.mutual_coupling_matrix = M
+beam.mutual_coupling_matrix = m
 
 
 # +
@@ -57,17 +62,18 @@ mat_ax = [
 ]
 
 pyant.plotting.antenna_configuration(beam.antennas, ax=axes[0])
-mat_ax[0].matshow(np.abs(M))
+mat_ax[0].matshow(np.abs(m))
 mat_ax[0].set_title("MCM magnitude")
 mat_ax[0].set_xlabel("Rows")
 mat_ax[0].set_ylabel("Columns")
 
-mat_ax[1].matshow(np.angle(M))
+mat_ax[1].matshow(np.angle(m))
 mat_ax[1].set_title("MCM angle")
 mat_ax[1].set_xlabel("Rows")
 
 pyant.plotting.gain_heatmap(
     beam,
+    param,
     resolution=100,
     min_elevation=80.0,
     centered=False,
@@ -79,6 +85,7 @@ beam.mutual_coupling_matrix = None
 
 pyant.plotting.gain_heatmap(
     beam,
+    param,
     resolution=100,
     min_elevation=80.0,
     centered=False,

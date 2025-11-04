@@ -18,6 +18,9 @@ class SizeError(ValueError):
 NDArray_N = npt.NDArray
 "(n,) shaped ndarray"
 
+NDArray_M = npt.NDArray
+"(n,) shaped ndarray"
+
 NDArray_2 = npt.NDArray
 "(2,) shaped ndarray"
 
@@ -25,7 +28,10 @@ NDArray_3 = npt.NDArray
 "(3,) shaped ndarray"
 
 NDArray_2xN = npt.NDArray
-"(3,n) shaped ndarray"
+"(2,n) shaped ndarray"
+
+NDArray_Mx2 = npt.NDArray
+"(m,2) shaped ndarray"
 
 NDArray_3xN = npt.NDArray
 "(3,n) shaped ndarray"
@@ -33,8 +39,14 @@ NDArray_3xN = npt.NDArray
 NDArray_3xNxM = npt.NDArray
 "(3,n,m) shaped ndarray"
 
+NDArray_Mx2xN = npt.NDArray
+"(m,2,n) shaped ndarray"
+
 NDArray_MxM = npt.NDArray
 "(m,m) shaped ndarray"
+
+NDArray_MxN = npt.NDArray
+"(m,n) shaped ndarray"
 
 P = TypeVar("P", bound="Parameters")
 

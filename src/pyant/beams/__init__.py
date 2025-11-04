@@ -4,4 +4,4 @@ array layouts and such.
 
 """
 
-# from .arrays import equidistant_archimedian_spiral
+from .arrays import equidistant_archimedian_spiral, circular_array

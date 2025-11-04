@@ -33,17 +33,18 @@ class GaussianParams(Parameters):
     normal_pointing: NDArray_3xN | NDArray_3
     frequency: NDArray_N | float
     radius: NDArray_N | float
-    filling_factor: NDArray_N | float
+    beam_width_scaling: NDArray_N | float
 
     pointing_shape: ClassVar[tuple[int, ...]] = (3,)
     normal_pointing_shape: ClassVar[tuple[int, ...]] = (3,)
     frequency_shape: ClassVar[None] = None
     radius_shape: ClassVar[None] = None
-    filling_factor_shape: ClassVar[None] = None
+    beam_width_scaling_shape: ClassVar[None] = None
 
 
 class Gaussian(Beam[GaussianParams]):
-    """Gaussian tapered planar array model
+    """Gaussian tapered planar array model. The model uses two Gaussian functions, one along the
+    latitude line in the azimuthal direction of pointing which is dependant on the angle
 
     Parameters
     ----------
@@ -80,52 +81,15 @@ class Gaussian(Beam[GaussianParams]):
         k_len = get_and_validate_k_shape(size, k)
         if k_len == 0:
             return np.empty((0,), dtype=k.dtype)
-        scalar_output = size == 0 and k_len is None
-        # >>> import scipy.constants as c
-        # >>> c.c / 3.4e-9
-        # 8.817425235294118e+16
-        # >>> 3.4e-9 / c.c
-        # 1.1341179236737169e-17
-        # >>> 3.4e9 / c.c
-        # 11.341179236737169
-        # >>> c.c / 3.4e9 
-        # 0.08817425235294117
-        # >>> (c.c / 3.4e9)*1e-3
-        # 8.817425235294117e-05
-        # >>> (c.c / 3.4e9)*1e3
-        # 88.17425235294117
-        # >>> (c.c / 3.4e9)*1e2
-        # 8.817425235294117
-        # >>> (c.c / 1.2e9)*1e2
-        # 24.982704833333333
-        # >>> (c.c / 3.4e9)*1e2
-        # 8.817425235294117
-        # >>> lam = c.c / 3.4e9
-        # >>> alpha = 2
-        # >>> s = alpha * lam / 2
-        # >>> s
-        # 0.08817425235294117
-        # >>> N = int(500e3 / 500)
-        # >>> N
-        # 1000
-        # >>> N = int(500e3 / 50)
-        # >>> N
-        # 10000
-        # >>> import numpy as np
-        # >>> d = np.sqrt(4*N/np.pi)*s
-        # >>> d
-        # np.float64(9.94939894292813)
-        # >>> theta = lam / d
-        # >>> np.degrees(theta)
-        # np.float64(0.5077706251929806)
-        pointing = self.parameters["pointing"]
-        normal = self.parameters["normal_pointing"]
-        lam = scipy.constants.c / self.parameters["frequency"]
-        radius = self.parameters["radius"]
+        pointing = parameters.pointing
+        normal = parameters.normal_pointing
+        lam = scipy.constants.c / parameters.frequency
+        radius = parameters.radius
+        alph = parameters.beam_width_scaling
 
         pn_dot = np.sum(pointing * normal, axis=0)
-        inds = np.abs(1 - pn_dot) < self.min_off_axis
-        if size == 0:
+        inds = np.abs(1 - pn_dot) < np.sin(self.min_off_axis)
+        if size is None:
             if inds:
                 ct = np.cross(self._randn_point, normal)
             else:
@@ -140,30 +104,35 @@ class Gaussian(Beam[GaussianParams]):
 
         ht = np.linalg.cross(normal, ct, axis=0)
         ht = ht / np.linalg.norm(ht, axis=0)
-        angle = coordinates.vector_angle(pointing, ht, degrees=False)
 
         ot = np.cross(pointing, ct, axis=0)
         ot = ot / np.linalg.norm(ot, axis=0)
 
-        peak_1 = np.sin(angle) * self.peak_gain
-        a0p = np.sin(angle) * radius
+        antenna_element_scaling = pn_dot * self.peak_gain
 
-        sigma1 = 0.7 * a0p / lam
-        sigma2 = 0.7 * radius / lam
+        # solve exp(-2 pi^2 sin^2(lam/d) sig^2)) = 0.5
+        # comes from the definition of half-power at theta = lambda / d
+        sigma_lat = np.sqrt(
+            np.log(2) / (2 * pn_dot * np.pi**2 * np.sin(alph * lam / (radius * 4)) ** 2)
+        )
+        sigma_lon = np.sqrt(np.log(2) / (2 * np.pi**2 * np.sin(alph * lam / (radius * 4)) ** 2))
+
+        sigma_lat_ = 0.7 * pn_dot * radius / lam
+        sigma_lon_ = 0.7 * radius / lam
+        print(sigma_lat, sigma_lat_)
+        print(sigma_lon, sigma_lon_)
 
         k0 = k / np.linalg.norm(k, axis=0)
-        if size > 0 and k_len == 0:
+        if size is not None and k_len is None:
             k0 = np.broadcast_to(k0.reshape(3, 1), (3, size))
-        elif k_len > 0 and size == 0:
+        elif k_len is not None and size is None:
             ct = np.broadcast_to(ct.reshape(3, 1), (3, k_len))
             ot = np.broadcast_to(ot.reshape(3, 1), (3, k_len))
 
         l1 = np.sum(k0 * ct, axis=0)
         m1 = np.sum(k0 * ot, axis=0)
 
-        g = (
-            peak_1
-            * np.exp(-np.pi * l1 * l1 * 2.0 * np.pi * sigma1**2.0)
-            * np.exp(-np.pi * m1 * m1 * 2.0 * np.pi * sigma2**2.0)
+        g = antenna_element_scaling * np.exp(
+            -2 * np.pi**2 * ((l1 * sigma_lat) ** 2 + (m1 * sigma_lon) ** 2)
         )
         return g
