@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from dataclasses import dataclass
-from typing import ClassVar
+import json
+from pathlib import Path
+from typing import ClassVar, Type, TypeVar
 import numpy as np
 import scipy.constants
 import scipy.special
@@ -9,6 +11,8 @@ import spacecoords.linalg as linalg
 
 from ..beam import Beam, get_and_validate_k_shape
 from ..types import NDArray_3, NDArray_3xN, NDArray_N, Parameters
+
+T = TypeVar("T", bound="Airy")
 
 
 @dataclass
@@ -52,6 +56,23 @@ class Airy(Beam[AiryParams]):
         super().__init__()
         self.peak_gain = peak_gain
         self.zero_limit_eps = zero_limit_eps
+
+    def to_json(self, path: Path):
+        data = dict(
+            peak_gain=self.peak_gain,
+            zero_limit_eps=self.zero_limit_eps,
+        )
+        with open(path, "w") as fh:
+            json.dump(data, fh)
+
+    @classmethod
+    def from_json(cls: Type[T], path: Path) -> T:
+        with open(path, "r") as fh:
+            data = json.load(fh)
+        return cls(
+            peak_gain=data["peak_gain"],
+            zero_limit_eps=data["zero_limit_eps"],
+        )
 
     def copy(self):
         """Return a copy of the current instance."""

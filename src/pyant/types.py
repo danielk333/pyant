@@ -113,6 +113,7 @@ class Parameters:
         """Load defining parameters from a numpy npz file and instantiate parameters"""
         with np.load(path) as dat:
             data = {key: dat[key] for key in dat}
+        data = {key: x[()] if x.ndim == 0 else x for key, x in data.items()}
         return cls(**data)
 
     def size(self) -> int | None:
