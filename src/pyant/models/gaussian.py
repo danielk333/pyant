@@ -110,12 +110,12 @@ class Gaussian(Beam[GaussianParams]):
 
         antenna_element_scaling = pn_dot * self.peak_gain
 
-        # solve exp(-2 pi^2 sin^2(lam/d) sig^2)) = 0.5
+        # solve exp(-sin^2(lam/d) sig^2)) = 0.5
         # comes from the definition of half-power at theta = lambda / d
         sigma_lat = np.sqrt(
-            np.log(2) / (2 * pn_dot * np.pi**2 * np.sin(alph * lam / (radius * 4)) ** 2)
+            np.log(2) / (pn_dot * np.sin(alph * lam / (radius * 4)) ** 2)
         )
-        sigma_lon = np.sqrt(np.log(2) / (2 * np.pi**2 * np.sin(alph * lam / (radius * 4)) ** 2))
+        sigma_lon = np.sqrt(np.log(2) / (np.sin(alph * lam / (radius * 4)) ** 2))
 
         k0 = k / np.linalg.norm(k, axis=0)
         if size is not None and k_len is None:
@@ -128,6 +128,6 @@ class Gaussian(Beam[GaussianParams]):
         m1 = np.sum(k0 * ot, axis=0)
 
         g = antenna_element_scaling * np.exp(
-            -2 * np.pi**2 * ((l1 * sigma_lat) ** 2 + (m1 * sigma_lon) ** 2)
+            -((l1 * sigma_lat) ** 2 + (m1 * sigma_lon) ** 2)
         )
         return g

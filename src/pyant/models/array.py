@@ -88,6 +88,7 @@ class Array(Beam[ArrayParams]):
         mutual_coupling_matrix: NDArray_MxM | None = None,
         antenna_element: AntennaGain = default_element,
         polarization: NDArray_2 = np.array([1, 1j]) / np.sqrt(2),
+        scaling_factor: float = 1.0,
     ):
         super().__init__()
         if isinstance(antennas, list):
@@ -106,6 +107,7 @@ class Array(Beam[ArrayParams]):
         self.antennas = antennas
         self.polarization = polarization
         self.antenna_element = antenna_element
+        self.scaling_factor = scaling_factor
 
     def copy(self):
         """Return a copy of the current instance."""
@@ -143,7 +145,7 @@ class Array(Beam[ArrayParams]):
         """Gain of the antenna array."""
         g = self.channel_signals(k, parameters)
         g = np.sum(g, axis=0)  # coherent intergeneration over channels
-        return np.abs(g)
+        return np.abs(g) * self.scaling_factor
 
     def channel_signals(
         self, k: NDArray_3xN | NDArray_3, parameters: ArrayParams

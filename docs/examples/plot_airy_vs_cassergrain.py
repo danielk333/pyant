@@ -40,9 +40,23 @@ param_c = pyant.models.CassegrainParams(
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-pyant.plotting.gain_heatmap(beam, param, resolution=301, min_elevation=87.0, ax=ax1)
+pyant.plotting.gain_heatmap(
+    beam,
+    param,
+    resolution=301,
+    min_elevation=87.0,
+    ax=ax1,
+    cbar_min=0,
+)
 ax1.set_title("Airy")
 
-pyant.plotting.gain_heatmap(beam_c, param_c, resolution=301, min_elevation=87.0, ax=ax2)
+pyant.plotting.gain_heatmap(
+    beam_c,
+    param_c,
+    resolution=301,
+    min_elevation=87.0,
+    ax=ax2,
+    cbar_min=0,
+)
 ax2.set_title("Cassegrain")
 plt.show()

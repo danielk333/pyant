@@ -55,6 +55,12 @@ class Beam(ABC, Generic[P]):
         """Return a copy of the current instance."""
         raise NotImplementedError("")
 
+    def normalize(self, parameters: P) -> NDArray_N | float:
+        """Calculate the normalization factor for converting converting a arbitrarily scaled
+        morphology to directive gain
+        """
+        raise NotImplementedError("")
+
     @abstractmethod
     def gain(self, k: NDArray_3xN | NDArray_3, parameters: P) -> NDArray_N | float:
         """Return the gain in the given direction. This method should be

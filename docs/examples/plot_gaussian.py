@@ -94,13 +94,29 @@ param = pyant.models.GaussianParams(
 # +
 # # Plot the gain pattern in zenith for two different planar tilts
 fig, (ax1, ax2) = plt.subplots(1, 2)
-pyant.plotting.gain_heatmap(beam, param, resolution=301, min_elevation=80.0, ax=ax1, cbar_min=0)
+pyant.plotting.gain_heatmap(
+    beam,
+    param,
+    resolution=301,
+    min_elevation=80.0,
+    ax=ax1,
+    cbar_min=0,
+    cbar_max=np.log10(beam.peak_gain) * 10,
+)
 ax1.set_title("Plane normal-elevation = 90 deg")
 
-off_axis = 10
+off_axis = 50
 param.normal_pointing = sph.sph_to_cart(np.array([0.0, 90.0 - off_axis, 1.0]), degrees=True)
 
-pyant.plotting.gain_heatmap(beam, param, resolution=301, min_elevation=80.0, ax=ax2, cbar_min=0)
+pyant.plotting.gain_heatmap(
+    beam,
+    param,
+    resolution=301,
+    min_elevation=80.0,
+    ax=ax2,
+    cbar_min=0,
+    cbar_max=np.log10(beam.peak_gain) * 10,
+)
 ax2.set_title(f"Plane normal-elevation = {off_axis} deg")
 
 
