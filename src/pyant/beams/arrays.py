@@ -18,7 +18,7 @@ def equidistant_archimedian_spiral(
         antennas_ang[2, ind] = range_coefficient * antennas_ang[0, ind]
 
     antennas = sph.sph_to_cart(antennas_ang, degrees=False)
-    antennas = antennas.reshape((3, antenna_num, 1))
+    antennas = antennas.reshape((3, 1, antenna_num))
 
     if array_kwargs is None:
         array_kwargs = dict()
