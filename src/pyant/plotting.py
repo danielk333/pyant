@@ -27,10 +27,13 @@ def antenna_configuration(
     ax: plt.Axes | mpl3d.Axes3D | None = None,
     color: str | None = None,
     z_axis: bool = True,
+    scatter: bool = True,
+    size: float = 1.0,
+    figsize: tuple[float | int, float | int] = (15, 7),
 ) -> tuple[plt.Figure | None, plt.Axes]:
     """Plot the 3d antenna positions"""
     if ax is None:
-        fig = plt.figure(figsize=(15, 7))
+        fig = plt.figure(figsize=figsize)
         if z_axis:
             ax = fig.add_subplot(111, projection="3d")
         else:
@@ -38,36 +41,48 @@ def antenna_configuration(
     else:
         fig = None
 
-    z_axis = ax.name == "3d"
-
-    if color is None:
-        style_ = "."
-    else:
-        style_ = "." + color
-
     if isinstance(antennas, list):
         stacked_antennas = np.concatenate(antennas, axis=1)
     else:
         stacked_antennas = antennas.reshape(3, -1)
 
     if z_axis:
-        ax.plot(
-            stacked_antennas[0, :],
-            stacked_antennas[1, :],
-            stacked_antennas[2, :],
-            style_,
-        )
+        if scatter:
+            ax.scatter(
+                stacked_antennas[0, :],
+                stacked_antennas[1, :],
+                stacked_antennas[2, :],
+                s=size,
+                c=color,
+            )
+        else:
+            ax.plot(
+                stacked_antennas[0, :],
+                stacked_antennas[1, :],
+                stacked_antennas[2, :],
+                ".",
+                c=color,
+            )
     else:
-        ax.plot(
-            stacked_antennas[0, :],
-            stacked_antennas[1, :],
-            style_,
-        )
-    ax.set_title("Antennas", fontsize=22)
-    ax.set_xlabel("X-position [m]", fontsize=20)
-    ax.set_ylabel("Y-position [m]", fontsize=20)
+        if scatter:
+            ax.scatter(
+                stacked_antennas[0, :],
+                stacked_antennas[1, :],
+                s=size,
+                c=color,
+            )
+        else:
+            ax.plot(
+                stacked_antennas[0, :],
+                stacked_antennas[1, :],
+                ".",
+                c=color,
+            )
+    ax.set_title("Antennas")
+    ax.set_xlabel("X-position [m]")
+    ax.set_ylabel("Y-position [m]")
     if z_axis:
-        ax.set_zlabel("Z-position [m]", fontsize=20)  # type: ignore
+        ax.set_zlabel("Z-position [m]")  # type: ignore
 
     return fig, ax
 
