@@ -47,22 +47,13 @@ def antenna_configuration(
         stacked_antennas = antennas.reshape(3, -1)
 
     if z_axis:
-        if scatter:
-            ax.scatter(
-                stacked_antennas[0, :],
-                stacked_antennas[1, :],
-                stacked_antennas[2, :],
-                s=size,
-                c=color,
-            )
-        else:
-            ax.plot(
-                stacked_antennas[0, :],
-                stacked_antennas[1, :],
-                stacked_antennas[2, :],
-                ".",
-                c=color,
-            )
+        ax.plot(
+            stacked_antennas[0, :],
+            stacked_antennas[1, :],
+            stacked_antennas[2, :],
+            ".",
+            c=color,
+        )
     else:
         if scatter:
             ax.scatter(
