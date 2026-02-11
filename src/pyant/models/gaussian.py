@@ -112,8 +112,10 @@ class Gaussian(Beam[GaussianParams]):
 
         # solve exp(-sin^2(lam/d) sig^2)) = 0.5
         # comes from the definition of half-power at theta = lambda / d
+        # raise NotImplementedError("fix this later, need re-redivation")
+        # derive explicit expression for beam width!!!
         sigma_lat = np.sqrt(
-            np.log(2) / (pn_dot * np.sin(alph * lam / (radius * 4)) ** 2)
+            pn_dot * np.log(2) / (np.sin(alph * lam / (radius * 4)) ** 2)
         )
         sigma_lon = np.sqrt(np.log(2) / (np.sin(alph * lam / (radius * 4)) ** 2))
 

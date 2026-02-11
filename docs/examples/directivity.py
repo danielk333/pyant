@@ -56,7 +56,6 @@ fig, ax = plt.subplots()
 ax.plot(zang, np.log10(g) * 10)
 ax.axvline(beam_width / 2)
 plt.show()
-exit()
 
 fig, ax = plt.subplots(1, figsize=(7, 7))
 
