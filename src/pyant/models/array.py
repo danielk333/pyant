@@ -165,7 +165,7 @@ class Array(Beam[ArrayParams]):
         j_e = np.conj(self.polarization)
 
         # coherent intergeneration over polarization
-        psi_out = psi[:, 0, :] * j_e[0] + psi[:, 1, :] * j_e[1]
+        psi_out = psi[:, 0, ...] * j_e[0] + psi[:, 1, ...] * j_e[1]
         return psi_out
 
     def signals(
