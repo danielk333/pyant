@@ -16,6 +16,7 @@
 # # Airy disk antenna gain
 
 import numpy as np
+import scipy.constants as consts
 import matplotlib.pyplot as plt
 import pyant
 
@@ -26,7 +27,7 @@ beam = pyant.models.Airy(
 param = pyant.models.AiryParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    radius=23.0,
+    radius=16.0,
 )
 beam_c = pyant.models.Cassegrain(
     peak_gain=10**4.81,
@@ -34,7 +35,7 @@ beam_c = pyant.models.Cassegrain(
 param_c = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    outer_radius=23.0,
+    outer_radius=16.0,
     inner_radius=2.0,
 )
 
@@ -59,4 +60,25 @@ pyant.plotting.gain_heatmap(
     cbar_min=0,
 )
 ax2.set_title("Cassegrain")
+
+# +
+fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+pyant.plotting.gains(
+    [beam, beam_c],
+    [param, param_c],
+    resolution=500,
+    min_elevation=87.0,
+    ax=ax,
+    legends=[
+        f"Airy r={param.radius}",
+        f"Cassegrain R={param_c.outer_radius}, r={param_c.inner_radius}",
+    ],
+)
+ax.axvline(
+    np.degrees(np.arcsin(1.22 * consts.c / param.frequency / (2 * param.radius))),
+    c="r",
+    label="Diffraction: $sin(\\theta_{first}) = 1.22 \\frac{\\lambda}{d}$",
+)
+ax.legend()
+
 plt.show()
