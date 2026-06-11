@@ -48,6 +48,10 @@ class FiniteCylindricalParabola(Beam[FiniteCylindricalParabolaParams]):
     be input, otherwise assumes width (aperture) and height >> wavelength and
     approximates integral with analytic form.
 
+    Notes
+    -----
+    Power gain
+        This model defines power gain, not E-field gain
     """
 
     def __init__(

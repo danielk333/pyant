@@ -52,6 +52,12 @@ class Gaussian(Beam[GaussianParams]):
         Peak gain (linear scale) in the pointing direction.
     min_off_axis
         Minimum off axis angle where we instead use the limit value
+
+    Notes
+    -----
+    Power or E-field gain
+        Since this is an empirical type model that just uses an arbitrary function, this could
+        define power gain or E-field gain depending on the peak gain
     """
 
     def __init__(

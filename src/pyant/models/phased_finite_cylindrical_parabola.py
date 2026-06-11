@@ -55,6 +55,8 @@ class PhasedFiniteCylindricalParabola(Beam[PhasedFiniteCylindricalParabolaParams
 
     Notes
     ------
+    Power gain
+        This model defines power gain, not E-field gain
     Peak gain
         Custom (measured or more accurately estimated) peak gain at boresight can
         be input, otherwise assumes width and height >> wavelength and approximates

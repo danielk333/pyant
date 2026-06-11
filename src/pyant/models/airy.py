@@ -42,6 +42,8 @@ class Airy(Beam[AiryParams]):
 
     Notes
     -----
+    Power gain
+        This model defines power gain, not E-field gain
     Singularities
         To avoid singularity at beam center, use
         :math:`\\lim_{x\\mapsto 0} \\frac{J_1(x)}{x} = \\frac{1}{2}` and a threshold.

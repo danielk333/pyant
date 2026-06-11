@@ -26,7 +26,9 @@ from ..types import (
 AntennaGain = Callable[[NDArray_3 | NDArray_3xN, NDArray_2 | NDArray_2xN], NDArray_2xN]
 
 
-def default_element(k: NDArray_3 | NDArray_3xN, polarization: NDArray_2 | NDArray_2xN) -> NDArray_2xN:
+def default_element(
+    k: NDArray_3 | NDArray_3xN, polarization: NDArray_2 | NDArray_2xN
+) -> NDArray_2xN:
     """Antenna element gain pattern, azimuthally symmetric dipole response."""
     ret = np.ones((2,), dtype=k.dtype)
     return ret[:, None] * k[2, :]
@@ -79,6 +81,11 @@ class Array(Beam[ArrayParams]):
     ----------
     channels
         Number of sub-arrays the antenna array has, i.e the number of channels.
+
+    Notes
+    -----
+    Power gain
+        This model defines power gain, not E-field gain
 
     """
 
@@ -144,11 +151,17 @@ class Array(Beam[ArrayParams]):
         else:
             return self.antennas.shape[2]
 
-    def gain(self, k: NDArray_3xN | NDArray_3, parameters: ArrayParams) -> NDArray_N | float:
+    def gain(
+        self, k: NDArray_3xN | NDArray_3, parameters: ArrayParams
+    ) -> NDArray_N | float:
         """Gain of the antenna array."""
         g = self.channel_signals(k, parameters)
-        g = np.sum(g, axis=0)  # coherent intergeneration over channels
-        return np.abs(g) * self.scaling_factor
+
+        # coherent intergeneration over channels
+        g = np.sum(g, axis=0)
+        # NOTE: dividing by antenna number here since the array factor
+        #   in power gain is defined as a weighted sum over the inputs
+        return np.abs(g) ** 2 * self.scaling_factor / self.antenna_number
 
     def channel_signals(
         self, k: NDArray_3xN | NDArray_3, parameters: ArrayParams
@@ -225,7 +238,9 @@ class Array(Beam[ArrayParams]):
                 grp = self.antennas[:, :, inds[i]]
 
             kp = (k - p) / wavelength
-            spat_wave = np.exp(1j * np.pi * 2.0 * np.sum(grp[:, :, None] * kp[:, None, :], axis=0))
+            spat_wave = np.exp(
+                1j * np.pi * 2.0 * np.sum(grp[:, :, None] * kp[:, None, :], axis=0)
+            )
 
             # broadcast to polarizations (pol was transposed to match dimensions)
             psi[i, :, ...] = spat_wave.sum(axis=0).T * pol

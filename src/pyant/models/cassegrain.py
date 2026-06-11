@@ -63,10 +63,12 @@ class Cassegrain(Beam[CassegrainParams]):
     min_off_axis
         Minimum off axis angle where we instead use the limit value
     eps
-        ??
+        # TODO ??
 
     Notes
     -----
+    Power gain
+        This model defines power gain, not E-field gain
     Derivation
         The gain pattern is expressed as the Fourier transform of an annular
         region with outer radius a0 and inner radius a1.  Values below the
