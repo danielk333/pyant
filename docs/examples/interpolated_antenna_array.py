@@ -58,8 +58,7 @@ param = pyant.models.ArrayParams(
 
 # +
 
-fig, ax = plt.subplots()
-pyant.plotting.antenna_configuration(beam.antennas, ax=ax)
+fig, ax = pyant.plotting.antenna_configuration(beam.antennas)
 ax.axis("equal")
 
 # +
