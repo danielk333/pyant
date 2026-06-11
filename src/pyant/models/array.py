@@ -113,7 +113,10 @@ class Array(Beam[ArrayParams]):
         """Return a copy of the current instance."""
         mem = self.mutual_coupling_matrix
         if mem is not None:
-            mem = self.mutual_coupling_matrix.copy()
+            if self.mutual_coupling_matrix is not None:
+                mem = self.mutual_coupling_matrix.copy()
+            else:
+                mem = None
         if isinstance(self.antennas, list):
             antennas = [x.copy() for x in self.antennas]
         else:
