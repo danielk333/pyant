@@ -34,8 +34,8 @@ beam_c = pyant.models.Cassegrain(
 param_c = pyant.models.CassegrainParams(
     pointing=np.array([0, 0, 1], dtype=np.float64),
     frequency=930e6,
-    outer_radius=40.0,
-    inner_radius=23.0,
+    outer_radius=23.0,
+    inner_radius=2.0,
 )
 
 # +

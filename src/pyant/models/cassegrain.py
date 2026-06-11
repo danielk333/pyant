@@ -123,8 +123,8 @@ class Cassegrain(Beam[CassegrainParams]):
         theta = linalg.vector_angle(p, k, degrees=False)
 
         lam = scipy.constants.c / parameters.frequency
-        a0 = parameters.outer_radius
-        a1 = parameters.inner_radius
+        a0 = 2 * parameters.outer_radius
+        a1 = 2 * parameters.inner_radius
 
         theta_arr = np.array([theta]) if isinstance(theta, float) else theta
 
