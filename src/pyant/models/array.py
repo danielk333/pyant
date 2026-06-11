@@ -23,10 +23,10 @@ from ..types import (
     Parameters,
 )
 
-AntennaGain = Callable[[NDArray_3 | NDArray_3xN, NDArray_2], NDArray_2xN]
+AntennaGain = Callable[[NDArray_3 | NDArray_3xN, NDArray_2 | NDArray_2xN], NDArray_2xN]
 
 
-def default_element(k: NDArray_3 | NDArray_3xN, polarization: NDArray_2) -> NDArray_2xN:
+def default_element(k: NDArray_3 | NDArray_3xN, polarization: NDArray_2 | NDArray_2xN) -> NDArray_2xN:
     """Antenna element gain pattern, azimuthally symmetric dipole response."""
     ret = np.ones((2,), dtype=k.dtype)
     return ret[:, None] * k[2, :]
@@ -162,14 +162,10 @@ class Array(Beam[ArrayParams]):
             If `num_k = 1` the returned ndarray is `(c,)`.
         """
         psi = self.signals(k, parameters, channels=None)
+        j_e = np.conj(self.polarization)
 
-        lin_pol_check = np.abs(self.polarization) < 1e-6
-        if not np.any(lin_pol_check):
-            pol_comp = self.polarization[0] * self.polarization[1].conj()
-            pol_comp = pol_comp.conj() / np.abs(pol_comp)
-            psi[:, 0, ...] *= pol_comp  # align polarizations
-
-        psi_out = np.sum(psi, axis=1)  # coherent intergeneration over polarization
+        # coherent intergeneration over polarization
+        psi_out = psi[:, 0, :] * j_e[0] + psi[:, 1, :] * j_e[1]
         return psi_out
 
     def signals(
@@ -220,7 +216,6 @@ class Array(Beam[ArrayParams]):
             k = np.broadcast_to(k.reshape((3, 1)), (3, size))
 
         wavelength = scipy.constants.c / parameters.frequency
-        pol = pol.transpose((1, 0))
 
         # r in meters, divide by lambda
         for i in range(chan_num):
@@ -233,9 +228,7 @@ class Array(Beam[ArrayParams]):
             spat_wave = np.exp(1j * np.pi * 2.0 * np.sum(grp[:, :, None] * kp[:, None, :], axis=0))
 
             # broadcast to polarizations (pol was transposed to match dimensions)
-            subg_response = spat_wave[:, :, None] * pol[None, :, :]
-
-            psi[i, :, ...] = subg_response.sum(axis=0).T
+            psi[i, :, ...] = spat_wave.sum(axis=0).T * pol
 
         # This is an approximation assuming that the summed response of the subgroup
         # can be representative of the mutual coupling
