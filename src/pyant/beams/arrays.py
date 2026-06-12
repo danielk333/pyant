@@ -32,12 +32,14 @@ def circular_array(
     array_kwargs: dict | None = None,
 ) -> Array:
     xmat, ymat = np.meshgrid(
-        np.arange(-array_radius, array_radius + antenna_spacing, antenna_spacing),
-        np.arange(-array_radius, array_radius + antenna_spacing, antenna_spacing),
+        np.arange(-array_radius, array_radius + antenna_spacing, antenna_spacing) + antenna_spacing
+        * 0.5,
+        np.arange(-array_radius, array_radius + antenna_spacing, antenna_spacing) + antenna_spacing
+        * 0.5,
     )
     xmat = xmat.reshape((xmat.size,))
     ymat = ymat.reshape((ymat.size,))
-    filt = xmat**2 + ymat**2 < array_radius**2
+    filt = xmat**2 + ymat**2 <= array_radius**2
     xmat = xmat[filt]
     ymat = ymat[filt]
     antenna_num = len(xmat)
