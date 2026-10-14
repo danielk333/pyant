@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 """Useful coordinate related functions."""
+
 from typing import Callable, Iterable
 import numpy as np
 import spacecoords.spherical as sph
@@ -279,13 +280,17 @@ def polarization_heatmap(
         cmap = plt.get_cmap("plasma")
 
     if levels is None:
-        conf = ax.pcolormesh(np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, vmin=0)
+        conf = ax.pcolormesh(
+            np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, vmin=0
+        )
     else:
         # Recipe at
         # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
         bins = MaxNLocator(nbins=levels).tick_values(np.nanmin(gdB), np.nanmax(gdB))
         norm = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
-        conf = ax.pcolormesh(np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, norm=norm)
+        conf = ax.pcolormesh(
+            np.degrees(thxmat), np.degrees(thymat), gdB, cmap=cmap, norm=norm
+        )
 
     ax.axis("scaled")
     ax.set_clip_box(ax.bbox)
@@ -382,7 +387,9 @@ def gain_heatmap(
         cmap = plt.get_cmap("plasma")
 
     if levels is None:
-        conf = ax.pcolormesh(K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=cbar_min, vmax=cbar_max)
+        conf = ax.pcolormesh(
+            K[:, :, 0], K[:, :, 1], SdB, cmap=cmap, vmin=cbar_min, vmax=cbar_max
+        )
     else:
         # Recipe at
         # https://matplotlib.org/3.1.3/gallery/images_contours_and_fields/pcolormesh_levels.html
@@ -408,6 +415,141 @@ def gain_heatmap(
         tit += " " + label
     ax.set_title(tit)
 
+    return fig, ax, conf
+
+
+def gain_heatmap_polar(
+    beam: Beam,
+    param: Parameters,
+    resolution: int = 201,
+    min_elevation: float = 0.0,
+    levels: int | None = 20,
+    cbar_min: float | None = None,
+    cbar_max: float | None = None,
+    ax: plt.Axes | None = None,
+    label: str | None = None,
+    centered: bool = True,
+    cmap: plt.Colormap | None = None,
+) -> tuple[plt.Figure | None, plt.Axes, mpl.collections.QuadMesh]:
+    """Plot gain on polar axes using angular distance from the plot centre.
+
+    Parameters
+    ----------
+    beam, param
+        Beam model and scalar parameters used to evaluate gain.
+    resolution
+        Number of radial and azimuthal cells (resolution squared evaluations).
+    min_elevation
+        Minimum elevation in the plot-centred frame, in degrees, in [0, 90).
+        The radial extent is 90 - min_elevation degrees. For example, 80
+        displays directions within 10 degrees of the centre.
+    centered
+        Centre on param.pointing when True, or zenith when False. Parameters
+        without a pointing direction use zenith. Directions below the local
+        horizon are masked in either case.
+    levels
+        Number of colour intervals, or None for a continuous colour scale.
+    cbar_min, cbar_max
+        Colour scale bounds in dB; omitted bounds are inferred from finite gains.
+    ax
+        Existing Matplotlib polar axes, or None to create a figure.
+    label
+        Optional suffix for the plot title.
+    cmap
+        Colour map; defaults to plasma.
+
+    Notes
+    -----
+    Radius is angular separation in degrees, not projected wave-vector length.
+    Polar azimuth increases clockwise from north. For an off-zenith centre,
+    zero azimuth follows the projection of local north onto its tangent plane
+    (local east is used when the centre is parallel to north).
+
+    Returns
+    -------
+    tuple(Figure, Axis, pcolormesh)
+        Figure (None for supplied axes), polar axes and gain mesh.
+    """
+    if not isinstance(beam, Beam):
+        raise TypeError(f"Can only plot Beam, not '{type(beam)}'")
+    if param.size() is not None:
+        raise ValueError("Can only plot beam with scalar parameters")
+    if not isinstance(resolution, (int, np.integer)) or resolution < 2:
+        raise ValueError("resolution must be an integer of at least 2")
+    if not np.isfinite(min_elevation) or not 0 <= min_elevation < 90:
+        raise ValueError("min_elevation must be in [0, 90) degrees")
+    if levels is not None and (not isinstance(levels, (int, np.integer)) or levels < 1):
+        raise ValueError("levels must be a positive integer or None")
+    if ax is not None and ax.name != "polar":
+        raise ValueError("ax must be a polar axes")
+
+    centre = np.array([0.0, 0.0, 1.0])
+    if centered and "pointing" in param.keys:
+        centre = np.asarray(param.pointing, dtype=np.float64).copy()
+    length = np.linalg.norm(centre)
+    if centre.shape != (3,) or not np.all(np.isfinite(centre)) or length == 0:
+        raise ValueError("pointing must be a finite, nonzero three-vector")
+    centre /= length
+    north = np.array([0.0, 1.0, 0.0])
+    north -= np.dot(north, centre) * centre
+    if np.linalg.norm(north) < 1e-12:
+        north = np.array([1.0, 0.0, 0.0])
+        north -= np.dot(north, centre) * centre
+    north /= np.linalg.norm(north)
+    east = np.cross(north, centre)
+
+    # Explicit cell edges avoid gaps or interpolation across the azimuth seam.
+    az_edges = np.linspace(0, 2 * np.pi, resolution + 1)
+    r_edges = np.linspace(0, 90 - min_elevation, resolution + 1)
+    az, radius = np.meshgrid(
+        (az_edges[:-1] + az_edges[1:]) / 2,
+        np.radians((r_edges[:-1] + r_edges[1:]) / 2),
+    )
+    az, radius = az.ravel(), radius.ravel()
+    k = centre[:, None] * np.cos(radius) + np.sin(radius) * (
+        north[:, None] * np.cos(az) + east[:, None] * np.sin(az)
+    )
+    visible = k[2] >= 0
+    gain = np.full(resolution**2, np.nan)
+    if np.any(visible):
+        gain[visible] = beam.gain(k[:, visible], param)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        gain_db = 10 * np.log10(gain)
+    finite = gain_db[np.isfinite(gain_db)]
+    if finite.size == 0:
+        raise ValueError("No finite gains above the horizon in the requested region")
+    vmin = finite.min() if cbar_min is None else cbar_min
+    vmax = finite.max() if cbar_max is None else cbar_max
+    if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin > vmax:
+        raise ValueError("Colour bounds must be finite with cbar_min <= cbar_max")
+    cmap = plt.get_cmap("plasma") if cmap is None else cmap
+    colors = {"cmap": cmap}
+    if levels is None:
+        colors.update(vmin=vmin, vmax=vmax)
+    else:
+        bins = MaxNLocator(nbins=levels).tick_values(vmin, vmax)
+        colors["norm"] = BoundaryNorm(bins, ncolors=cmap.N, clip=True)
+
+    if ax is None:
+        fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
+    else:
+        fig = None
+    ax.grid(False)
+    conf = ax.pcolormesh(
+        az_edges,
+        r_edges,
+        np.ma.masked_invalid(gain_db.reshape(resolution, resolution)),
+        shading="flat",
+        **colors,
+    )
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)
+    ax.set_ylim(0, r_edges[-1])
+    ax.set_ylabel("Angular distance from centre [deg]", labelpad=30)
+    ax.grid(True, color="#c0c0c0", linewidth=0.5)
+    cbar = plt.colorbar(conf, ax=ax)
+    cbar.ax.set_ylabel("Gain [dB]")
+    ax.set_title("Gain pattern" + (" " + label if label else ""))
     return fig, ax, conf
 
 

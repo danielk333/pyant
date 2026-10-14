@@ -50,4 +50,10 @@ pyant.plotting.gain_heatmap(
     label=" - pointed 30 deg elevation",
     ax=ax2,
 )
+
+# +
+pyant.plotting.gain_heatmap_polar(
+    beam, param, min_elevation=80.0, resolution=501, cbar_min=0.0,
+)
+
 plt.show()
